@@ -3330,7 +3330,8 @@ find_get_context(struct pmu *pmu, struct task_struct *task, int cpu)
 
 	if (!task) {
 		/* Must be root to operate on a CPU event: */
-		if (perf_paranoid_cpu() && !capable(CAP_SYS_ADMIN))
+		if (!(pmu->capabilities & PERF_PMU_CAP_IS_DEVICE) &&
+		    perf_paranoid_cpu() && !capable(CAP_SYS_ADMIN))
 			return ERR_PTR(-EACCES);
 
 		/*
@@ -7475,11 +7476,6 @@ SYSCALL_DEFINE5(perf_event_open,
 	if (err)
 		return err;
 
-	if (!attr.exclude_kernel) {
-		if (perf_paranoid_kernel() && !capable(CAP_SYS_ADMIN))
-			return -EACCES;
-	}
-
 	if (attr.freq) {
 		if (attr.sample_freq > sysctl_perf_event_sample_rate)
 			return -EINVAL;
@@ -7536,6 +7532,37 @@ SYSCALL_DEFINE5(perf_event_open,
 	if (IS_ERR(event)) {
 		err = PTR_ERR(event);
 		goto err_cpus;
+	}
+
+	if (event->pmu->capabilities & PERF_PMU_CAP_IS_DEVICE) {
+
+		/* Don't allow cpu centric attributes... */
+		if (event->attr.exclude_user ||
+		    event->attr.exclude_callchain_user ||
+		    event->attr.exclude_kernel ||
+		    event->attr.exclude_callchain_kernel ||
+		    event->attr.exclude_hv ||
+		    event->attr.exclude_idle ||
+		    event->attr.exclude_host ||
+		    event->attr.exclude_guest ||
+		    event->attr.mmap ||
+		    event->attr.comm ||
+		    event->attr.task)
+			return -EINVAL;
+
+		if (attr.sample_type &
+		    (PERF_SAMPLE_IP |
+		     PERF_SAMPLE_TID |
+		     PERF_SAMPLE_ADDR |
+		     PERF_SAMPLE_CALLCHAIN |
+		     PERF_SAMPLE_CPU |
+		     PERF_SAMPLE_BRANCH_STACK |
+		     PERF_SAMPLE_REGS_USER |
+		     PERF_SAMPLE_STACK_USER))
+			return -EINVAL;
+	} else if (!attr.exclude_kernel) {
+		if (perf_paranoid_kernel() && !capable(CAP_SYS_ADMIN))
+			return -EACCES;
 	}
 
 	if (flags & PERF_FLAG_PID_CGROUP) {

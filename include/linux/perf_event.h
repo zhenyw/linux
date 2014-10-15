@@ -166,6 +166,7 @@ struct perf_event;
  * pmu::capabilities flags
  */
 #define PERF_PMU_CAP_NO_INTERRUPT		0x01
+#define PERF_PMU_CAP_IS_DEVICE			0x02
 
 /**
  * struct pmu - generic performance monitoring unit
