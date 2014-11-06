@@ -1694,6 +1694,67 @@ struct i915_execbuffer_params {
 	struct drm_i915_gem_request     *request;
 };
 
+struct i915_perf_read_state {
+	int count;
+	ssize_t read;
+	char __user *buf;
+};
+
+struct i915_perf_event {
+	struct drm_i915_private *dev_priv;
+
+	struct list_head link;
+
+	u32 sample_flags;
+
+	struct intel_context *ctx;
+	bool enabled;
+
+	/* Enables the collection of HW events, either in response to
+	 * I915_PERF_IOCTL_ENABLE or implicitly called when event is
+	 * opened without I915_PERF_FLAG_DISABLED */
+	void (*enable)(struct i915_perf_event *event);
+
+	/* Disables the collection of HW events, either in response to
+	 * I915_PERF_IOCTL_DISABLE or implicitly called before
+	 * destroying the event. */
+	void (*disable)(struct i915_perf_event *event);
+
+	/* Return: true if any i915 perf records are ready to read()
+	 * for this event */
+	bool (*can_read)(struct i915_perf_event *event);
+
+	/* Call poll_wait, passing a wait queue that will be woken
+	 * once there is something to ready to read() for the event */
+	void (*poll_wait)(struct i915_perf_event *event,
+			  struct file *file,
+			  poll_table *wait);
+
+	/* For handling a blocking read, wait until there is something
+	 * to ready to read() for the event. E.g. wait on the same
+	 * wait queue that would be passed to poll_wait() until
+	 * ->can_read() returns true (if its safe to call ->can_read()
+	 * without the i915 perf lock held). */
+	int (*wait_unlocked)(struct i915_perf_event *event);
+
+	/* Copy as many buffered i915 perf samples and records for
+	 * this event to userspace as will fit in the given buffer.
+	 *
+	 * Only write complete records.
+	 *
+	 * read_state->count is the length of read_state->buf
+	 *
+	 * Update read_state->read with the number of bytes written.
+	 */
+	void (*read)(struct i915_perf_event *event,
+		     struct i915_perf_read_state *read_state);
+
+	/* Cleanup any event specific resources.
+	 *
+	 * The event will always be disabled before this is called */
+	void (*destroy)(struct i915_perf_event *event);
+};
+
 struct drm_i915_private {
 	struct drm_device *dev;
 	struct kmem_cache *objects;
@@ -1927,6 +1988,12 @@ struct drm_i915_private {
 	} wm;
 
 	struct i915_runtime_pm pm;
+
+	struct {
+		bool initialized;
+		struct mutex lock;
+		struct list_head events;
+	} perf;
 
 	/* Abstract the submission mechanism (legacy ringbuffer or execlists) away */
 	struct {
@@ -3130,6 +3197,9 @@ int i915_gem_context_getparam_ioctl(struct drm_device *dev, void *data,
 int i915_gem_context_setparam_ioctl(struct drm_device *dev, void *data,
 				    struct drm_file *file_priv);
 
+int i915_perf_open_ioctl(struct drm_device *dev, void *data,
+			 struct drm_file *file);
+
 /* i915_gem_evict.c */
 int __must_check i915_gem_evict_something(struct drm_device *dev,
 					  struct i915_address_space *vm,
@@ -3238,6 +3308,10 @@ int i915_parse_cmds(struct intel_engine_cs *ring,
 		    u32 batch_start_offset,
 		    u32 batch_len,
 		    bool is_master);
+
+/* i915_perf.c */
+extern void i915_perf_init(struct drm_device *dev);
+extern void i915_perf_fini(struct drm_device *dev);
 
 /* i915_suspend.c */
 extern int i915_save_state(struct drm_device *dev);

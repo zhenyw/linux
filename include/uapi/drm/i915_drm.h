@@ -230,6 +230,7 @@ typedef struct _drm_i915_sarea {
 #define DRM_I915_GEM_USERPTR		0x33
 #define DRM_I915_GEM_CONTEXT_GETPARAM	0x34
 #define DRM_I915_GEM_CONTEXT_SETPARAM	0x35
+#define DRM_I915_PERF_OPEN		0x36
 
 #define DRM_IOCTL_I915_INIT		DRM_IOW( DRM_COMMAND_BASE + DRM_I915_INIT, drm_i915_init_t)
 #define DRM_IOCTL_I915_FLUSH		DRM_IO ( DRM_COMMAND_BASE + DRM_I915_FLUSH)
@@ -283,6 +284,7 @@ typedef struct _drm_i915_sarea {
 #define DRM_IOCTL_I915_GEM_USERPTR			DRM_IOWR (DRM_COMMAND_BASE + DRM_I915_GEM_USERPTR, struct drm_i915_gem_userptr)
 #define DRM_IOCTL_I915_GEM_CONTEXT_GETPARAM	DRM_IOWR (DRM_COMMAND_BASE + DRM_I915_GEM_CONTEXT_GETPARAM, struct drm_i915_gem_context_param)
 #define DRM_IOCTL_I915_GEM_CONTEXT_SETPARAM	DRM_IOWR (DRM_COMMAND_BASE + DRM_I915_GEM_CONTEXT_SETPARAM, struct drm_i915_gem_context_param)
+#define DRM_IOCTL_I915_PERF_OPEN	DRM_IOWR(DRM_COMMAND_BASE + DRM_I915_PERF_OPEN, struct drm_i915_perf_open_param)
 
 /* Allow drivers to submit batchbuffers directly to hardware, relying
  * on the security mechanisms provided by hardware.
@@ -1127,6 +1129,66 @@ struct drm_i915_gem_context_param {
 #define I915_CONTEXT_PARAM_BAN_PERIOD 0x1
 #define I915_CONTEXT_PARAM_NO_ZEROMAP 0x2
 	__u64 value;
+};
+
+enum drm_i915_perf_event_type {
+	I915_PERF_EVENT_TYPE_MAX	/* non-ABI */
+};
+
+#define I915_PERF_FLAG_FD_CLOEXEC	(1<<0)
+#define I915_PERF_FLAG_FD_NONBLOCK	(1<<1)
+#define I915_PERF_FLAG_SINGLE_CONTEXT	(1<<2)
+#define I915_PERF_FLAG_DISABLED         (1<<3)
+
+#define I915_PERF_SAMPLE_OA_REPORT	(1<<0)
+#define I915_PERF_SAMPLE_CTXID		(1<<1)
+#define I915_PERF_SAMPLE_TIMESTAMP	(1<<2)
+
+struct drm_i915_perf_open_param {
+	/* Such as I915_PERF_OA_EVENT */
+	__u32 type;
+
+	/* CLOEXEC, NONBLOCK, SINGLE_CONTEXT, PERIODIC... */
+	__u32 flags;
+
+	/* What to include in samples */
+	__u64 sample_flags;
+
+	/* A specific context to profile */
+	__u32 ctx_id;
+
+	/* Event specific attributes */
+	__u64 __user attr;
+
+	/* OUT */
+	__u32 fd;
+};
+
+#define I915_PERF_IOCTL_ENABLE	_IO('i', 0x0)
+#define I915_PERF_IOCTL_DISABLE	_IO('i', 0x1)
+
+/* Note: same as struct perf_event_header */
+struct drm_i915_perf_event_header {
+	__u32 type;
+	__u16 misc;
+	__u16 size;
+};
+
+enum drm_i915_perf_record_type {
+
+	/*
+	 * struct {
+	 *     struct drm_i915_perf_event_header header;
+	 *
+	 *     { u32 ctx_id; }	    && I915_PERF_SAMPLE_CTXID
+	 *     { u32 timestamp; }   && I915_PERF_SAMPLE_TIMESTAMP
+	 *     { u32 oa_report[]; } && I915_PERF_SAMPLE_OA_REPORT
+	 *
+	 * };
+	 */
+	DRM_I915_PERF_RECORD_SAMPLE = 1,
+
+	DRM_I915_PERF_RECORD_MAX /* non-ABI */
 };
 
 #endif /* _UAPI_I915_DRM_H_ */

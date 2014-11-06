@@ -93,6 +93,9 @@ i915-y += dvo_ch7017.o \
 # virtual gpu code
 i915-y += i915_vgpu.o
 
+# perf code
+i915-y += i915_perf.o
+
 # legacy horrors
 i915-y += i915_dma.o
 
