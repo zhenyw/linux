@@ -58,6 +58,26 @@
 #define I915_ERROR_UEVENT		"ERROR"
 #define I915_RESET_UEVENT		"RESET"
 
+/**
+ * DOC: perf events configuration exposed by i915 through /sys/bus/event_sources/drivers/i915_oa
+ *
+ */
+#define I915_PERF_OA_CTX_ID_MASK	    0xffffffff
+#define I915_PERF_OA_SINGLE_CONTEXT_ENABLE  (1ULL << 32)
+
+#define I915_PERF_OA_FORMAT_SHIFT	    33
+#define I915_PERF_OA_FORMAT_MASK	    (0x7ULL << 33)
+#define I915_PERF_OA_FORMAT_A13_HSW	    (0ULL << 33)
+#define I915_PERF_OA_FORMAT_A29_HSW	    (1ULL << 33)
+#define I915_PERF_OA_FORMAT_A13_B8_C8_HSW   (2ULL << 33)
+#define I915_PERF_OA_FORMAT_B4_C8_HSW	    (4ULL << 33)
+#define I915_PERF_OA_FORMAT_A45_B8_C8_HSW   (5ULL << 33)
+#define I915_PERF_OA_FORMAT_B4_C8_A16_HSW   (6ULL << 33)
+#define I915_PERF_OA_FORMAT_C4_B8_HSW	    (7ULL << 33)
+
+#define I915_PERF_OA_TIMER_EXPONENT_SHIFT   36
+#define I915_PERF_OA_TIMER_EXPONENT_MASK    (0x3fULL << 36)
+
 /* Each region is a minimum of 16k, and there are at most 255 of them.
  */
 #define I915_NR_TEX_REGIONS 255	/* table size 2k - maximum due to use
