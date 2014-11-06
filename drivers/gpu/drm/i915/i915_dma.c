@@ -818,6 +818,11 @@ int i915_driver_load(struct drm_device *dev, unsigned long flags)
 	mutex_init(&dev_priv->modeset_restore_lock);
 	mutex_init(&dev_priv->csr_lock);
 
+	/* Must at least be registered before trying to pin any context
+	 * otherwise i915_oa_context_pin_notify() will lock an un-initialized
+	 * spinlock, upsetting lockdep checks */
+	i915_oa_pmu_register(dev);
+
 	intel_pm_setup(dev);
 
 	intel_display_crc_init(dev);
@@ -1067,6 +1072,7 @@ int i915_driver_unload(struct drm_device *dev)
 		return ret;
 	}
 
+	i915_oa_pmu_unregister(dev);
 	intel_power_domains_fini(dev_priv);
 
 	intel_gpu_ips_teardown();

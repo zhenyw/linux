@@ -15,6 +15,7 @@ i915-y := i915_drv.o \
 
 i915-$(CONFIG_COMPAT)   += i915_ioc32.o
 i915-$(CONFIG_DEBUG_FS) += i915_debugfs.o
+i915-$(CONFIG_PERF_EVENTS) += i915_oa_perf.o
 
 # GEM code
 i915-y += i915_cmd_parser.o \

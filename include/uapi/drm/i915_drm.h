@@ -58,6 +58,35 @@
 #define I915_ERROR_UEVENT		"ERROR"
 #define I915_RESET_UEVENT		"RESET"
 
+/**
+ * DOC: perf events configuration exposed by i915 through /sys/bus/event_sources/drivers/i915_oa
+ *
+ */
+
+#define I915_OA_FORMAT_A13_HSW		0
+#define I915_OA_FORMAT_A29_HSW		1
+#define I915_OA_FORMAT_A13_B8_C8_HSW	2
+#define I915_OA_FORMAT_B4_C8_HSW	4
+#define I915_OA_FORMAT_A45_B8_C8_HSW	5
+#define I915_OA_FORMAT_B4_C8_A16_HSW	6
+#define I915_OA_FORMAT_C4_B8_HSW	7
+
+#define I915_OA_ATTR_SIZE_VER0		32  /* sizeof first published struct */
+
+typedef struct _drm_i915_oa_attr {
+	__u32 size;
+
+	__u32 format;
+	__u32 metrics_set;
+	__u32 timer_exponent;
+
+	__u32 drm_fd;
+	__u32 ctx_id;
+
+	__u64 single_context : 1,
+	      __reserved_1 : 63;
+} drm_i915_oa_attr_t;
+
 /* Each region is a minimum of 16k, and there are at most 255 of them.
  */
 #define I915_NR_TEX_REGIONS 255	/* table size 2k - maximum due to use
