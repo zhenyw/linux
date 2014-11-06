@@ -1726,6 +1726,85 @@ struct intel_wm_config {
 	bool sprites_scaled;
 };
 
+struct i915_perf_read_state {
+	int count;
+	ssize_t read;
+	char __user *buf;
+};
+
+struct i915_perf_stream;
+
+struct i915_perf_stream_ops {
+	/* Enables the collection of HW samples, either in response to
+	 * I915_PERF_IOCTL_ENABLE or implicitly called when stream is
+	 * opened without I915_PERF_FLAG_DISABLED.
+	 */
+	void (*enable)(struct i915_perf_stream *stream);
+
+	/* Disables the collection of HW samples, either in response to
+	 * I915_PERF_IOCTL_DISABLE or implicitly called before
+	 * destroying the stream.
+	 */
+	void (*disable)(struct i915_perf_stream *stream);
+
+	/* Return: true if any i915 perf records are ready to read()
+	 * for this stream.
+	 */
+	bool (*can_read)(struct i915_perf_stream *stream);
+
+	/* Call poll_wait, passing a wait queue that will be woken
+	 * once there is something ready to read() for the stream
+	 */
+	void (*poll_wait)(struct i915_perf_stream *stream,
+			  struct file *file,
+			  poll_table *wait);
+
+	/* For handling a blocking read, wait until there is something
+	 * to ready to read() for the stream. E.g. wait on the same
+	 * wait queue that would be passed to poll_wait() until
+	 * ->can_read() returns true (if its safe to call ->can_read()
+	 * without the i915 perf lock held).
+	 */
+	int (*wait_unlocked)(struct i915_perf_stream *stream);
+
+	/* Copy as many buffered i915 perf samples and records for
+	 * this stream to userspace as will fit in the given buffer.
+	 *
+	 * Only write complete records.
+	 *
+	 * read_state->count is the length of read_state->buf
+	 *
+	 * Update read_state->read with the number of bytes written.
+	 *
+	 * Return any error condition that results in a short read
+	 * such as -ENOSPC or -EFAULT, even though these may be
+	 * squashed to 0 before returning to userspace (if at least
+	 * one record was successfully copied, as determined via
+	 * the read_state->read length)
+	 */
+	int (*read)(struct i915_perf_stream *stream,
+		    struct i915_perf_read_state *read_state);
+
+	/* Cleanup any stream specific resources.
+	 *
+	 * The stream will always be disabled before this is called.
+	 */
+	void (*destroy)(struct i915_perf_stream *stream);
+};
+
+struct i915_perf_stream {
+	struct drm_i915_private *dev_priv;
+
+	struct list_head link;
+
+	u32 sample_flags;
+
+	struct intel_context *ctx;
+	bool enabled;
+
+	struct i915_perf_stream_ops *ops;
+};
+
 struct drm_i915_private {
 	struct drm_device *dev;
 	struct kmem_cache *objects;
@@ -2007,6 +2086,12 @@ struct drm_i915_private {
 	} wm;
 
 	struct i915_runtime_pm pm;
+
+	struct {
+		bool initialized;
+		struct mutex lock;
+		struct list_head streams;
+	} perf;
 
 	/* Abstract the submission mechanism (legacy ringbuffer or execlists) away */
 	struct {
@@ -3382,6 +3467,9 @@ int i915_gem_context_setparam_ioctl(struct drm_device *dev, void *data,
 int i915_gem_context_reset_stats_ioctl(struct drm_device *dev, void *data,
 				       struct drm_file *file);
 
+int i915_perf_open_ioctl(struct drm_device *dev, void *data,
+			 struct drm_file *file);
+
 /* i915_gem_evict.c */
 int __must_check i915_gem_evict_something(struct drm_device *dev,
 					  struct i915_address_space *vm,
@@ -3498,6 +3586,10 @@ int i915_parse_cmds(struct intel_engine_cs *engine,
 		    u32 batch_start_offset,
 		    u32 batch_len,
 		    bool is_master);
+
+/* i915_perf.c */
+extern void i915_perf_init(struct drm_device *dev);
+extern void i915_perf_fini(struct drm_device *dev);
 
 /* i915_suspend.c */
 extern int i915_save_state(struct drm_device *dev);
