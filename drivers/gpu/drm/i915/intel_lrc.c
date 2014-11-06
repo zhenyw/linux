@@ -183,6 +183,7 @@
 #define CTX_LRI_HEADER_2		0x41
 #define CTX_R_PWR_CLK_STATE		0x42
 #define CTX_GPGPU_CSR_BASE_ADDRESS	0x44
+#define CTX_OACTXCONTROL		0x120
 
 #define GEN8_CTX_VALID (1<<0)
 #define GEN8_CTX_FORCE_PD_RESTORE (1<<1)
@@ -2250,6 +2251,8 @@ populate_lr_context(struct intel_context *ctx, struct drm_i915_gem_object *ctx_o
 		reg_state[CTX_R_PWR_CLK_STATE] = GEN8_R_PWR_CLK_STATE;
 		reg_state[CTX_R_PWR_CLK_STATE+1] = make_rpcs(dev);
 	}
+	reg_state[CTX_OACTXCONTROL] = GEN8_OACTXCONTROL;
+	reg_state[CTX_OACTXCONTROL+1] = GEN8_OA_COUNTER_RESUME;
 
 	kunmap_atomic(reg_state);
 

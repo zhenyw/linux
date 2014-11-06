@@ -133,6 +133,33 @@ static int get_context_size(struct drm_device *dev)
 	return ret;
 }
 
+static int i915_gem_context_pin_state(struct drm_device *dev,
+				      struct intel_context *ctx)
+{
+	int ret;
+
+	BUG_ON(!mutex_is_locked(&dev->struct_mutex));
+
+	ret = i915_gem_obj_ggtt_pin(ctx->legacy_hw_ctx.rcs_state,
+				    get_context_alignment(dev), 0);
+	if (ret)
+		return ret;
+
+	i915_oa_context_pin_notify(dev->dev_private, ctx);
+
+	return 0;
+}
+
+static void i915_gem_context_unpin_state(struct drm_device *dev,
+					 struct intel_context *ctx)
+{
+	/* Ensure that we stop the OA unit referencing the context *before*
+	 * actually unpinning the ctx */
+	i915_oa_context_unpin_notify(dev->dev_private, ctx);
+
+	i915_gem_object_ggtt_unpin(ctx->legacy_hw_ctx.rcs_state);
+}
+
 void i915_gem_context_free(struct kref *ctx_ref)
 {
 	struct intel_context *ctx = container_of(ctx_ref, typeof(*ctx), ref);
@@ -258,8 +285,7 @@ i915_gem_create_context(struct drm_device *dev,
 		 * be available. To avoid this we always pin the default
 		 * context.
 		 */
-		ret = i915_gem_obj_ggtt_pin(ctx->legacy_hw_ctx.rcs_state,
-					    get_context_alignment(dev), 0);
+		ret = i915_gem_context_pin_state(dev, ctx);
 		if (ret) {
 			DRM_DEBUG_DRIVER("Couldn't pin %d\n", ret);
 			goto err_destroy;
@@ -285,7 +311,7 @@ i915_gem_create_context(struct drm_device *dev,
 
 err_unpin:
 	if (is_global_default_ctx && ctx->legacy_hw_ctx.rcs_state)
-		i915_gem_object_ggtt_unpin(ctx->legacy_hw_ctx.rcs_state);
+		i915_gem_context_unpin_state(dev, ctx);
 err_destroy:
 	idr_remove(&file_priv->context_idr, ctx->user_handle);
 	i915_gem_context_unreference(ctx);
@@ -313,7 +339,7 @@ void i915_gem_context_reset(struct drm_device *dev)
 
 		if (lctx) {
 			if (lctx->legacy_hw_ctx.rcs_state && i == RCS)
-				i915_gem_object_ggtt_unpin(lctx->legacy_hw_ctx.rcs_state);
+				i915_gem_context_unpin_state(dev, lctx);
 
 			i915_gem_context_unreference(lctx);
 			ring->last_context = NULL;
@@ -387,12 +413,12 @@ void i915_gem_context_fini(struct drm_device *dev)
 		if (dev_priv->ring[RCS].last_context == dctx) {
 			/* Fake switch to NULL context */
 			WARN_ON(dctx->legacy_hw_ctx.rcs_state->active);
-			i915_gem_object_ggtt_unpin(dctx->legacy_hw_ctx.rcs_state);
+			i915_gem_context_unpin_state(dev, dctx);
 			i915_gem_context_unreference(dctx);
 			dev_priv->ring[RCS].last_context = NULL;
 		}
 
-		i915_gem_object_ggtt_unpin(dctx->legacy_hw_ctx.rcs_state);
+		i915_gem_context_unpin_state(dev, dctx);
 	}
 
 	for (i = 0; i < I915_NUM_RINGS; i++) {
@@ -634,8 +660,7 @@ static int do_switch(struct drm_i915_gem_request *req)
 
 	/* Trying to pin first makes error handling easier. */
 	if (ring == &dev_priv->ring[RCS]) {
-		ret = i915_gem_obj_ggtt_pin(to->legacy_hw_ctx.rcs_state,
-					    get_context_alignment(ring->dev), 0);
+		ret = i915_gem_context_pin_state(ring->dev, to);
 		if (ret)
 			return ret;
 	}
@@ -747,7 +772,7 @@ static int do_switch(struct drm_i915_gem_request *req)
 		from->legacy_hw_ctx.rcs_state->dirty = 1;
 
 		/* obj is kept alive until the next request by its active ref */
-		i915_gem_object_ggtt_unpin(from->legacy_hw_ctx.rcs_state);
+		i915_gem_context_unpin_state(ring->dev, from);
 		i915_gem_context_unreference(from);
 	}
 
@@ -770,7 +795,7 @@ done:
 
 unpin_out:
 	if (ring->id == RCS)
-		i915_gem_object_ggtt_unpin(to->legacy_hw_ctx.rcs_state);
+		i915_gem_context_unpin_state(ring->dev, to);
 	return ret;
 }
 
