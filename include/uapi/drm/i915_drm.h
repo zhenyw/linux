@@ -78,6 +78,10 @@
 #define I915_PERF_OA_TIMER_EXPONENT_SHIFT   36
 #define I915_PERF_OA_TIMER_EXPONENT_MASK    (0x3fULL << 36)
 
+#define I915_PERF_OA_PROFILE_SHIFT	    42
+#define I915_PERF_OA_PROFILE_MASK	    (0x3fULL << 42)
+#define I915_PERF_OA_PROFILE_3D		    1
+
 /* Each region is a minimum of 16k, and there are at most 255 of them.
  */
 #define I915_NR_TEX_REGIONS 255	/* table size 2k - maximum due to use
