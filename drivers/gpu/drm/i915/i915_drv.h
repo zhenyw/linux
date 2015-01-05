@@ -1580,6 +1580,13 @@ struct i915_virtual_gpu {
 	bool active;
 };
 
+#ifdef CONFIG_PERF_EVENTS
+struct i915_oa_reg {
+	u32 addr;
+	u32 value;
+};
+#endif
+
 struct drm_i915_private {
 	struct drm_device *dev;
 	struct kmem_cache *objects;

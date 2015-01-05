@@ -71,6 +71,8 @@
 #define I915_OA_FORMAT_B4_C8_A16_HSW	6
 #define I915_OA_FORMAT_C4_B8_HSW	7
 
+#define I915_OA_METRICS_SET_3D		1
+
 #define I915_OA_ATTR_SIZE_VER0		32  /* sizeof first published struct */
 
 typedef struct _drm_i915_oa_attr {

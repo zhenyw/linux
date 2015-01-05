@@ -23,6 +23,80 @@ static int hsw_perf_format_sizes[] = {
 	64   /* C4_B8_HSW */
 };
 
+
+/* A generated mux config to select counters useful for profiling 3D
+ * workloads */
+static struct i915_oa_reg hsw_profile_3d_mux_config[] = {
+
+	{ 0x253A4, 0x01600000 },
+	{ 0x25440, 0x00100000 },
+	{ 0x25128, 0x00000000 },
+	{ 0x2691C, 0x00000800 },
+	{ 0x26AA0, 0x01500000 },
+	{ 0x26B9C, 0x00006000 },
+	{ 0x2791C, 0x00000800 },
+	{ 0x27AA0, 0x01500000 },
+	{ 0x27B9C, 0x00006000 },
+	{ 0x2641C, 0x00000400 },
+	{ 0x25380, 0x00000010 },
+	{ 0x2538C, 0x00000000 },
+	{ 0x25384, 0x0800AAAA },
+	{ 0x25400, 0x00000004 },
+	{ 0x2540C, 0x06029000 },
+	{ 0x25410, 0x00000002 },
+	{ 0x25404, 0x5C30FFFF },
+	{ 0x25100, 0x00000016 },
+	{ 0x25110, 0x00000400 },
+	{ 0x25104, 0x00000000 },
+	{ 0x26804, 0x00001211 },
+	{ 0x26884, 0x00000100 },
+	{ 0x26900, 0x00000002 },
+	{ 0x26908, 0x00700000 },
+	{ 0x26904, 0x00000000 },
+	{ 0x26984, 0x00001022 },
+	{ 0x26A04, 0x00000011 },
+	{ 0x26A80, 0x00000006 },
+	{ 0x26A88, 0x00000C02 },
+	{ 0x26A84, 0x00000000 },
+	{ 0x26B04, 0x00001000 },
+	{ 0x26B80, 0x00000002 },
+	{ 0x26B8C, 0x00000007 },
+	{ 0x26B84, 0x00000000 },
+	{ 0x27804, 0x00004844 },
+	{ 0x27884, 0x00000400 },
+	{ 0x27900, 0x00000002 },
+	{ 0x27908, 0x0E000000 },
+	{ 0x27904, 0x00000000 },
+	{ 0x27984, 0x00004088 },
+	{ 0x27A04, 0x00000044 },
+	{ 0x27A80, 0x00000006 },
+	{ 0x27A88, 0x00018040 },
+	{ 0x27A84, 0x00000000 },
+	{ 0x27B04, 0x00004000 },
+	{ 0x27B80, 0x00000002 },
+	{ 0x27B8C, 0x000000E0 },
+	{ 0x27B84, 0x00000000 },
+	{ 0x26104, 0x00002222 },
+	{ 0x26184, 0x0C006666 },
+	{ 0x26284, 0x04000000 },
+	{ 0x26304, 0x04000000 },
+	{ 0x26400, 0x00000002 },
+	{ 0x26410, 0x000000A0 },
+	{ 0x26404, 0x00000000 },
+	{ 0x25420, 0x04108020 },
+	{ 0x25424, 0x1284A420 },
+	{ 0x2541C, 0x00000000 },
+	{ 0x25428, 0x00042049 },
+};
+
+/* A corresponding B counter configuration for profiling 3D workloads */
+static struct i915_oa_reg hsw_profile_3d_b_counter_config[] = {
+	{ 0x2724, 0x00800000 },
+	{ 0x2720, 0x00000000 },
+	{ 0x2714, 0x00800000 },
+	{ 0x2710, 0x00000000 },
+};
+
 static void forward_one_oa_snapshot_to_event(struct drm_i915_private *dev_priv,
 					     u8 *snapshot,
 					     struct perf_event *event)
@@ -431,6 +505,9 @@ static int i915_oa_event_init(struct perf_event *event)
 			return -EINVAL;
 
 		dev_priv->oa_pmu.oa_buffer.format_size = snapshot_size;
+
+		if (oa_attr.metrics_set > I915_OA_METRICS_SET_3D)
+			return -EINVAL;
 	} else {
 		BUG(); /* pmu shouldn't have been registered */
 		return -ENODEV;
@@ -570,6 +647,19 @@ static void update_oacontrol(struct drm_i915_private *dev_priv)
 	I915_WRITE(GEN7_OACONTROL, 0);
 }
 
+static void config_oa_regs(struct drm_i915_private *dev_priv,
+			   struct i915_oa_reg *regs,
+			   int n_regs)
+{
+	int i;
+
+	for (i = 0; i < n_regs; i++) {
+		struct i915_oa_reg *reg = regs + i;
+
+		I915_WRITE(reg->addr, reg->value);
+	}
+}
+
 static void i915_oa_event_start(struct perf_event *event, int flags)
 {
 	struct drm_i915_private *dev_priv =
@@ -590,22 +680,31 @@ static void i915_oa_event_start(struct perf_event *event, int flags)
 	WARN_ONCE(I915_READ(GEN6_UCGCTL3) & GEN6_OACSUNIT_CLOCK_GATE_DISABLE,
 		  "disabled OA unit level clock gating will result in incorrect per-context OA counters");
 
-	/* XXX: On Haswell, when threshold disable mode is desired,
-	 * instead of setting the threshold enable to '0', we need to
-	 * program it to '1' and set OASTARTTRIG1 bits 15:0 to 0
-	 * (threshold value of 0)
-	 */
-	I915_WRITE(OASTARTTRIG6, (OASTARTTRIG6_B4_TO_B7_THRESHOLD_ENABLE |
-				  OASTARTTRIG6_B4_CUSTOM_EVENT_ENABLE));
-	I915_WRITE(OASTARTTRIG5, 0); /* threshold value */
+	I915_WRITE(GDT_CHICKEN_BITS, GT_NOA_ENABLE);
 
-	I915_WRITE(OASTARTTRIG2, (OASTARTTRIG2_B0_TO_B3_THRESHOLD_ENABLE |
-				  OASTARTTRIG2_B0_CUSTOM_EVENT_ENABLE));
-	I915_WRITE(OASTARTTRIG1, 0); /* threshold value */
+	if (dev_priv->oa_pmu.metrics_set == I915_OA_METRICS_SET_3D) {
+		config_oa_regs(dev_priv, hsw_profile_3d_mux_config,
+			       ARRAY_SIZE(hsw_profile_3d_mux_config));
+		config_oa_regs(dev_priv, hsw_profile_3d_b_counter_config,
+			       ARRAY_SIZE(hsw_profile_3d_b_counter_config));
+	} else {
+		/* XXX: On Haswell, when threshold disable mode is desired,
+		 * instead of setting the threshold enable to '0', we need to
+		 * program it to '1' and set OASTARTTRIG1 bits 15:0 to 0
+		 * (threshold value of 0)
+		 */
+		I915_WRITE(OASTARTTRIG6, (OASTARTTRIG6_THRESHOLD_ENABLE |
+					  OASTARTTRIG6_EVENT_SELECT_4));
+		I915_WRITE(OASTARTTRIG5, 0); /* threshold value */
 
-	/* Setup B0 as the gpu clock counter... */
-	I915_WRITE(OACEC0_0, OACEC0_0_B0_COMPARE_GREATER_OR_EQUAL); /* to 0 */
-	I915_WRITE(OACEC0_1, 0xfffe); /* Select NOA[0] */
+		I915_WRITE(OASTARTTRIG2, (OASTARTTRIG2_THRESHOLD_ENABLE |
+					  OASTARTTRIG2_EVENT_SELECT_0));
+		I915_WRITE(OASTARTTRIG1, 0); /* threshold value */
+
+		/* Setup B0 as the gpu clock counter... */
+		I915_WRITE(OACEC0_0, OACEC_COMPARE_GREATER_OR_EQUAL); /* to 0 */
+		I915_WRITE(OACEC0_1, 0xfffe); /* Select NOA[0] */
+	}
 
 	spin_lock_irqsave(&dev_priv->oa_pmu.lock, lock_flags);
 
