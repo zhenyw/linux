@@ -3981,6 +3981,11 @@ static long _perf_ioctl(struct perf_event *event, unsigned int cmd, unsigned lon
 	case PERF_EVENT_IOC_SET_FILTER:
 		return perf_event_set_filter(event, (void __user *)arg);
 
+	case PERF_EVENT_IOC_FLUSH:
+		if (event->pmu->flush)
+			event->pmu->flush(event);
+		return 0;
+
 	default:
 		return -ENOTTY;
 	}

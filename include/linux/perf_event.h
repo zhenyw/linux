@@ -266,6 +266,13 @@ struct pmu {
 	 * flush branch stack on context-switches (needed in cpu-wide mode)
 	 */
 	void (*flush_branch_stack)	(void);
+
+	/*
+	 * Flush buffered samples (E.g. for pmu hardware that writes samples to
+	 * some intermediate buffer) userspace may need to explicitly ensure
+	 * such samples have been forwarded to perf.
+	 */
+	void (*flush)			(struct perf_event *event); /* optional */
 };
 
 /**
