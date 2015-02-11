@@ -579,6 +579,81 @@ static void i915_dump_device_info(struct drm_i915_private *dev_priv)
 #undef SEP_COMMA
 }
 
+static void broadwell_sseu_info_init(struct drm_device *dev)
+{
+	struct drm_i915_private *dev_priv = dev->dev_private;
+	struct intel_device_info *info;
+	int s_max = 2, ss_max = 3, eu_max = 8;
+	int s, ss;
+	u32 fuse2, eu_dis0, eu_dis1, eu_disable[s_max], s_enable, ss_disable;
+
+	info = (struct intel_device_info *)&dev_priv->info;
+	fuse2 = I915_READ(GEN8_FUSE2);
+	s_enable = (fuse2 & GEN8_F2_S_ENA_MASK) >>
+		   GEN8_F2_S_ENA_SHIFT;
+	ss_disable = (fuse2 & GEN8_F2_SS_DIS_MASK) >>
+		     GEN8_F2_SS_DIS_SHIFT;
+
+	eu_dis0 = I915_READ(GEN8_EU_DISABLE0);
+	eu_dis1 = I915_READ(GEN8_EU_DISABLE1);
+	eu_disable[0] = eu_dis0 & GEN8_EU_DIS0_S0_MASK;
+	eu_disable[1] = (eu_dis0 & GEN8_EU_DIS0_S1_MASK) >> 8;
+	eu_disable[1] |= (eu_dis1 & GEN8_EU_DIS1_S1_MASK);
+
+	info->slice_total = hweight32(s_enable);
+	/*
+	 * The subslice disable field is global, i.e. it applies
+	 * to each of the enabled slices.
+	*/
+	info->subslice_per_slice = ss_max - hweight32(ss_disable);
+	info->subslice_total = info->slice_total *
+			       info->subslice_per_slice;
+
+	/*
+	 * Iterate through enabled slices and subslices to
+	 * count the total enabled EU.
+	*/
+	for (s = 0; s < s_max; s++) {
+		if (!(s_enable & (0x1 << s)))
+			/* skip disabled slice */
+			continue;
+
+		for (ss = 0; ss < ss_max; ss++) {
+			int n_disabled;
+			int eu_per_ss;
+
+			if (ss_disable & (0x1 << ss))
+				/* skip disabled subslice */
+				continue;
+
+			n_disabled = hweight8(eu_disable[s] >> (ss * eu_max));
+			eu_per_ss = eu_max - n_disabled;
+
+			if (eu_per_ss != 8)
+				DRM_DEBUG("Unexpected EU distribution: slice %d, subslice %d has %d EUs\n",
+					  s, ss, eu_per_ss);
+
+			info->eu_total += eu_per_ss;
+		}
+	}
+
+	/*
+	 * BDW expected to always have a uniform distribution of EU
+	 * across subslices.
+	*/
+	info->eu_per_subslice = info->subslice_total ?
+				DIV_ROUND_UP(info->eu_total,
+					     info->subslice_total) : 0;
+	/*
+	 * BDW supports slice power gating on devices with more than
+	 * one slice, and supports EU power gating on devices with
+	 * more than one EU pair per subslice.
+	*/
+	info->has_slice_pg = (info->slice_total > 1);
+	info->has_subslice_pg = 0;
+	info->has_eu_pg = (info->eu_per_subslice > 2);
+}
+
 static void cherryview_sseu_info_init(struct drm_device *dev)
 {
 	struct drm_i915_private *dev_priv = dev->dev_private;
@@ -781,7 +856,9 @@ static void intel_device_info_runtime_init(struct drm_device *dev)
 	}
 
 	/* Initialize slice/subslice/EU info */
-	if (IS_CHERRYVIEW(dev))
+	if (IS_BROADWELL(dev))
+		broadwell_sseu_info_init(dev);
+	else if (IS_CHERRYVIEW(dev))
 		cherryview_sseu_info_init(dev);
 	else if (INTEL_INFO(dev)->gen >= 9)
 		gen9_sseu_info_init(dev);
