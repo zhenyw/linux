@@ -2192,6 +2192,8 @@ enum skl_disp_power_wells {
 #define   CHV_FGT_EU_DIS_SS1_R1_MASK	(0xf << CHV_FGT_EU_DIS_SS1_R1_SHIFT)
 
 #define GEN8_FUSE2			0x9120
+#define   GEN8_F2_SS_DIS_SHIFT		21
+#define   GEN8_F2_SS_DIS_MASK		(0x7 << GEN8_F2_SS_DIS_SHIFT)
 #define   GEN8_F2_S_ENA_SHIFT		25
 #define   GEN8_F2_S_ENA_MASK		(0x7 << GEN8_F2_S_ENA_SHIFT)
 
