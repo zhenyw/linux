@@ -11,6 +11,8 @@
 #define FREQUENCY 200
 #define PERIOD max_t(u64, 10000, NSEC_PER_SEC / FREQUENCY)
 
+static u32 i915_oa_event_paranoid = true;
+
 static int hsw_perf_format_sizes[] = {
 	64,  /* A13_HSW */
 	128, /* A29_HSW */
@@ -568,7 +570,8 @@ static int i915_oa_event_init(struct perf_event *event)
 			return -EINVAL;
 	}
 
-	if (!dev_priv->oa_pmu.specific_ctx && !capable(CAP_SYS_ADMIN))
+	if (!dev_priv->oa_pmu.specific_ctx &&
+	    i915_oa_event_paranoid && !capable(CAP_SYS_ADMIN))
 		return -EACCES;
 
 	ret = init_oa_buffer(event);
@@ -824,12 +827,45 @@ void i915_oa_context_unpin_notify(struct drm_i915_private *dev_priv,
 	spin_unlock_irqrestore(&dev_priv->oa_pmu.lock, flags);
 }
 
+static struct ctl_table oa_table[] = {
+	{
+	 .procname = "oa_event_paranoid",
+	 .data = &i915_oa_event_paranoid,
+	 .maxlen = sizeof(i915_oa_event_paranoid),
+	 .mode = 0644,
+	 .proc_handler = proc_dointvec,
+	 },
+	{}
+};
+
+static struct ctl_table i915_root[] = {
+	{
+	 .procname = "i915",
+	 .maxlen = 0,
+	 .mode = 0555,
+	 .child = oa_table,
+	 },
+	{}
+};
+
+static struct ctl_table dev_root[] = {
+	{
+	 .procname = "dev",
+	 .maxlen = 0,
+	 .mode = 0555,
+	 .child = i915_root,
+	 },
+	{}
+};
+
 void i915_oa_pmu_register(struct drm_device *dev)
 {
 	struct drm_i915_private *i915 = to_i915(dev);
 
 	if (!IS_HASWELL(dev))
 		return;
+
+	i915->oa_pmu.sysctl_header = register_sysctl_table(dev_root);
 
 	/* We need to be careful about forwarding cpu metrics to
 	 * userspace considering that PERF_PMU_CAP_IS_DEVICE bypasses
@@ -869,6 +905,8 @@ void i915_oa_pmu_unregister(struct drm_device *dev)
 
 	if (i915->oa_pmu.pmu.event_init == NULL)
 		return;
+
+	unregister_sysctl_table(i915->oa_pmu.sysctl_header);
 
 	perf_pmu_unregister(&i915->oa_pmu.pmu);
 	i915->oa_pmu.pmu.event_init = NULL;

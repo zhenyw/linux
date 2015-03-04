@@ -1854,6 +1854,8 @@ struct drm_i915_private {
 		struct hrtimer timer;
 		struct pt_regs dummy_regs;
 
+		struct ctl_table_header *sysctl_header;
+
 		struct perf_event *exclusive_event;
 		struct intel_context *specific_ctx;
 		bool event_active;
