@@ -38,6 +38,8 @@
 #define POLL_FREQUENCY 200
 #define POLL_PERIOD max_t(u64, 10000, NSEC_PER_SEC / POLL_FREQUENCY)
 
+static u32 i915_perf_event_paranoid = true;
+
 #define OA_EXPONENT_MAX 0x3f
 
 static struct i915_oa_format hsw_oa_formats[I915_OA_FORMAT_MAX] = {
@@ -1016,7 +1018,13 @@ int i915_perf_open_ioctl_locked(struct drm_device *dev, void *data,
 		}
 	}
 
-	if (!specific_ctx && !capable(CAP_SYS_ADMIN)) {
+	/* Similar to perf's kernel.perf_paranoid_cpu sysctl option
+	 * we check a dev.i915.perf_event_paranoid sysctl option
+	 * to determine if it's ok to access system wide OA counters
+	 * without CAP_SYS_ADMIN privileges.
+	 */
+	if (!specific_ctx &&
+	    i915_perf_event_paranoid && !capable(CAP_SYS_ADMIN)) {
 		DRM_ERROR("Insufficient privileges to open perf event\n");
 		ret = -EACCES;
 		goto err_ctx;
@@ -1096,12 +1104,46 @@ int i915_perf_open_ioctl(struct drm_device *dev, void *data,
 	return ret;
 }
 
+
+static struct ctl_table oa_table[] = {
+	{
+	 .procname = "perf_event_paranoid",
+	 .data = &i915_perf_event_paranoid,
+	 .maxlen = sizeof(i915_perf_event_paranoid),
+	 .mode = 0644,
+	 .proc_handler = proc_dointvec,
+	 },
+	{}
+};
+
+static struct ctl_table i915_root[] = {
+	{
+	 .procname = "i915",
+	 .maxlen = 0,
+	 .mode = 0555,
+	 .child = oa_table,
+	 },
+	{}
+};
+
+static struct ctl_table dev_root[] = {
+	{
+	 .procname = "dev",
+	 .maxlen = 0,
+	 .mode = 0555,
+	 .child = i915_root,
+	 },
+	{}
+};
+
 void i915_perf_init(struct drm_device *dev)
 {
 	struct drm_i915_private *dev_priv = to_i915(dev);
 
 	if (!IS_HASWELL(dev))
 		return;
+
+	dev_priv->perf.sysctl_header = register_sysctl_table(dev_root);
 
 	hrtimer_init(&dev_priv->perf.oa.poll_check_timer,
 		     CLOCK_MONOTONIC, HRTIMER_MODE_REL);
@@ -1131,6 +1173,8 @@ void i915_perf_fini(struct drm_device *dev)
 
 	if (!dev_priv->perf.initialized)
 		return;
+
+	unregister_sysctl_table(dev_priv->perf.sysctl_header);
 
 	dev_priv->perf.oa.ops.init_oa_buffer = NULL;
 
