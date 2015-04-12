@@ -1837,7 +1837,10 @@ struct drm_i915_private {
 		struct intel_context *specific_ctx;
 		bool event_active;
 
-		u64 period_exponent;
+		bool periodic;
+		u32 period_exponent;
+
+		u32 metrics_set;
 
 		struct {
 			struct drm_i915_gem_object *obj;

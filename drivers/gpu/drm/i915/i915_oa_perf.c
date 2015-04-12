@@ -392,22 +392,84 @@ lookup_context(struct drm_i915_private *dev_priv,
 	return NULL;
 }
 
+static int i915_oa_copy_attr(drm_i915_oa_attr_t __user *uattr,
+			     drm_i915_oa_attr_t *attr)
+{
+	u32 size;
+	int ret;
+
+	if (!access_ok(VERIFY_WRITE, uattr, I915_OA_ATTR_SIZE_VER0))
+		return -EFAULT;
+
+	/*
+	 * zero the full structure, so that a short copy will be nice.
+	 */
+	memset(attr, 0, sizeof(*attr));
+
+	ret = get_user(size, &uattr->size);
+	if (ret)
+		return ret;
+
+	if (size > PAGE_SIZE)	/* silly large */
+		goto err_size;
+
+	if (size < I915_OA_ATTR_SIZE_VER0)
+		goto err_size;
+
+	/*
+	 * If we're handed a bigger struct than we know of,
+	 * ensure all the unknown bits are 0 - i.e. new
+	 * user-space does not rely on any kernel feature
+	 * extensions we dont know about yet.
+	 */
+	if (size > sizeof(*attr)) {
+		unsigned char __user *addr;
+		unsigned char __user *end;
+		unsigned char val;
+
+		addr = (void __user *)uattr + sizeof(*attr);
+		end  = (void __user *)uattr + size;
+
+		for (; addr < end; addr++) {
+			ret = get_user(val, addr);
+			if (ret)
+				return ret;
+			if (val)
+				goto err_size;
+		}
+		size = sizeof(*attr);
+	}
+
+	ret = copy_from_user(attr, uattr, size);
+	if (ret)
+		return -EFAULT;
+
+	if (attr->__reserved_1)
+		return -EINVAL;
+
+out:
+	return ret;
+
+err_size:
+	put_user(sizeof(*attr), &uattr->size);
+	ret = -E2BIG;
+	goto out;
+}
+
 static int i915_oa_event_init(struct perf_event *event)
 {
 	struct drm_i915_private *dev_priv =
 		container_of(event->pmu, typeof(*dev_priv), oa_pmu.pmu);
+	drm_i915_oa_attr_t oa_attr;
 	u64 report_format;
 	int ret = 0;
 
 	if (event->attr.type != event->pmu->type)
 		return -ENOENT;
 
-        if (event->attr.config & ~(I915_PERF_OA_CTX_ID_MASK |
-				   I915_PERF_OA_SINGLE_CONTEXT_ENABLE |
-				   I915_PERF_OA_PROFILE_MASK |
-				   I915_PERF_OA_FORMAT_MASK |
-				   I915_PERF_OA_TIMER_EXPONENT_MASK))
-		return -EINVAL;
+	ret = i915_oa_copy_attr(to_user_ptr(event->attr.config), &oa_attr);
+	if (ret)
+		return ret;
 
 	/* To avoid the complexity of having to accurately filter
 	 * counter snapshots and marshal to the appropriate client
@@ -415,9 +477,9 @@ static int i915_oa_event_init(struct perf_event *event)
 	if (dev_priv->oa_pmu.oa_buffer.obj)
 		return -EBUSY;
 
-	report_format = event->attr.config & I915_PERF_OA_FORMAT_MASK;
-	report_format >>= I915_PERF_OA_FORMAT_SHIFT;
+	report_format = oa_attr.format;
 	dev_priv->oa_pmu.oa_buffer.format = report_format;
+	dev_priv->oa_pmu.metrics_set = oa_attr.metrics_set;
 
 	if (IS_HASWELL(dev_priv->dev)) {
 		int snapshot_size;
@@ -430,6 +492,9 @@ static int i915_oa_event_init(struct perf_event *event)
 			return -EINVAL;
 
 		dev_priv->oa_pmu.oa_buffer.format_size = snapshot_size;
+
+		if (oa_attr.metrics_set > I915_OA_METRICS_SET_3D)
+			return -EINVAL;
 	} else {
 		BUG(); /* pmu shouldn't have been registered */
 		return -ENODEV;
@@ -443,6 +508,8 @@ static int i915_oa_event_init(struct perf_event *event)
 	     event->attr.sample_period != 1))
 		return -EINVAL;
 
+	dev_priv->oa_pmu.periodic = event->attr.sample_period;
+
 	/* Instead of allowing userspace to configure the period via
 	 * attr.sample_period we instead accept an exponent whereby
 	 * the sample_period will be:
@@ -452,14 +519,18 @@ static int i915_oa_event_init(struct perf_event *event)
 	 * Programming a period of 160 nanoseconds would not be very
 	 * polite, so higher frequencies are reserved for root.
 	 */
-	if (event->attr.sample_period) {
-		u64 period_exponent =
-			event->attr.config & I915_PERF_OA_TIMER_EXPONENT_MASK;
-		period_exponent >>= I915_PERF_OA_TIMER_EXPONENT_SHIFT;
+	if (dev_priv->oa_pmu.periodic) {
+		u64 period_exponent = oa_attr.timer_exponent;
+
+		if (period_exponent > 63)
+			return -EINVAL;
 
 		if (period_exponent < 15 && !capable(CAP_SYS_ADMIN))
 			return -EACCES;
-	}
+
+		dev_priv->oa_pmu.period_exponent = period_exponent;
+	} else if (oa_attr.timer_exponent)
+		return -EINVAL;
 
 	/* We bypass the default perf core perf_paranoid_cpu() ||
 	 * CAP_SYS_ADMIN check by using the PERF_PMU_CAP_IS_DEVICE
@@ -468,9 +539,9 @@ static int i915_oa_event_init(struct perf_event *event)
 	 * when collecting cross-context metrics.
 	 */
 	dev_priv->oa_pmu.specific_ctx = NULL;
-	if (event->attr.config & I915_PERF_OA_SINGLE_CONTEXT_ENABLE) {
-		u32 ctx_id = event->attr.config & I915_PERF_OA_CTX_ID_MASK;
-		unsigned int drm_fd = event->attr.config1;
+	if (oa_attr.single_context) {
+		u32 ctx_id = oa_attr.ctx_id;
+		unsigned int drm_fd = oa_attr.drm_fd;
 		struct fd fd = fdget(drm_fd);
 
 		if (fd.file) {
@@ -535,14 +606,15 @@ static void update_oacontrol(struct drm_i915_private *dev_priv)
 		}
 
 		if ((ctx_id == 0 || pinning_ok)) {
-			u64 period_exponent = dev_priv->oa_pmu.period_exponent;
-			u64 report_format = dev_priv->oa_pmu.oa_buffer.format;
+			bool periodic = dev_priv->oa_pmu.periodic;
+			u32 period_exponent = dev_priv->oa_pmu.period_exponent;
+			u32 report_format = dev_priv->oa_pmu.oa_buffer.format;
 
 			I915_WRITE(GEN7_OACONTROL,
 				   (ctx_id & GEN7_OACONTROL_CTX_MASK) |
 				   (period_exponent <<
 				    GEN7_OACONTROL_TIMER_PERIOD_SHIFT) |
-				   (period_exponent ?
+				   (periodic ?
 				    GEN7_OACONTROL_TIMER_ENABLE : 0) |
 				   (report_format <<
 				    GEN7_OACONTROL_FORMAT_SHIFT) |
@@ -573,11 +645,8 @@ static void i915_oa_event_start(struct perf_event *event, int flags)
 {
 	struct drm_i915_private *dev_priv =
 		container_of(event->pmu, typeof(*dev_priv), oa_pmu.pmu);
-	u64 report_format;
-	int snapshot_size;
 	unsigned long lock_flags;
 	u32 oastatus1, tail;
-	u64 profile;
 
 	/* PRM - observability performance counters:
 	 *
@@ -592,12 +661,9 @@ static void i915_oa_event_start(struct perf_event *event, int flags)
 	WARN_ONCE(I915_READ(GEN6_UCGCTL3) & GEN6_OACSUNIT_CLOCK_GATE_DISABLE,
 		  "disabled OA unit level clock gating will result in incorrect per-context OA counters");
 
-        profile = event->attr.config & I915_PERF_OA_PROFILE_MASK;
-        profile >>= I915_PERF_OA_PROFILE_SHIFT;
-
 	I915_WRITE(GDT_CHICKEN_BITS, GT_NOA_ENABLE);
 
-        if (profile == I915_PERF_OA_PROFILE_3D) {
+        if (dev_priv->oa_pmu.metrics_set == I915_OA_METRICS_SET_3D) {
                 config_oa_regs(dev_priv, hsw_profile_3d_mux_config,
                                ARRAY_SIZE(hsw_profile_3d_mux_config));
                 config_oa_regs(dev_priv, hsw_profile_3d_b_counter_config,
@@ -620,22 +686,6 @@ static void i915_oa_event_start(struct perf_event *event, int flags)
                 I915_WRITE(OACEC0_0, OACEC_COMPARE_GREATER_OR_EQUAL); /* to 0 */
                 I915_WRITE(OACEC0_1, 0xfffe); /* Select NOA[0] */
         }
-
-	if (event->attr.sample_period) {
-		u64 period_exponent = event->attr.config &
-			I915_PERF_OA_TIMER_EXPONENT_MASK;
-
-		period_exponent >>= I915_PERF_OA_TIMER_EXPONENT_SHIFT;
-		dev_priv->oa_pmu.period_exponent = period_exponent;
-	} else
-		dev_priv->oa_pmu.period_exponent = 0;
-
-	report_format = event->attr.config & I915_PERF_OA_FORMAT_MASK;
-	report_format >>= I915_PERF_OA_FORMAT_SHIFT;
-	dev_priv->oa_pmu.oa_buffer.format = report_format;
-
-	snapshot_size = hsw_perf_format_sizes[report_format];
-	dev_priv->oa_pmu.oa_buffer.format_size = snapshot_size;
 
 	spin_lock_irqsave(&dev_priv->oa_pmu.lock, lock_flags);
 
