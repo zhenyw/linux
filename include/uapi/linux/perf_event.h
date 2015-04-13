@@ -818,6 +818,18 @@ enum perf_event_type {
 	 */
 	PERF_RECORD_LOST_SAMPLES		= 13,
 
+	/*
+	 * The DEVICE record implies some device driver specific record that
+	 * will have some further mechanism for describing the contents of
+	 * the record (i.e. some driver specific event header).
+	 *
+	 * struct {
+	 *	struct perf_event_header	header;
+	 *	struct DEVICE_EVENT_HEADER	device_header;
+	 * };
+	 */
+	PERF_RECORD_DEVICE			= 14,
+
 	PERF_RECORD_MAX,			/* non-ABI */
 };
 
