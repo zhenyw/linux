@@ -202,12 +202,14 @@ out:
 
 	return -ENOSPC;
 }
+EXPORT_SYMBOL_GPL(perf_output_begin);
 
 unsigned int perf_output_copy(struct perf_output_handle *handle,
 		      const void *buf, unsigned int len)
 {
 	return __output_copy(handle, buf, len);
 }
+EXPORT_SYMBOL_GPL(perf_output_copy);
 
 unsigned int perf_output_skip(struct perf_output_handle *handle,
 			      unsigned int len)
@@ -220,6 +222,7 @@ void perf_output_end(struct perf_output_handle *handle)
 	perf_output_put_handle(handle);
 	rcu_read_unlock();
 }
+EXPORT_SYMBOL_GPL(perf_output_end);
 
 static void
 ring_buffer_init(struct ring_buffer *rb, long watermark, int flags)

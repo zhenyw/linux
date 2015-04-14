@@ -633,6 +633,10 @@ struct perf_sample_data {
 		    PERF_MEM_S(LOCK, NA)  |\
 		    PERF_MEM_S(TLB, NA))
 
+extern void perf_event_header__init_id(struct perf_event_header *header,
+				       struct perf_sample_data *data,
+				       struct perf_event *event);
+
 static inline void perf_sample_data_init(struct perf_sample_data *data,
 					 u64 addr, u64 period)
 {
@@ -654,6 +658,9 @@ extern void perf_prepare_sample(struct perf_event_header *header,
 				struct perf_sample_data *data,
 				struct perf_event *event,
 				struct pt_regs *regs);
+extern void perf_event__output_id_sample(struct perf_event *event,
+					 struct perf_output_handle *handle,
+					 struct perf_sample_data *sample);
 
 extern int perf_event_overflow(struct perf_event *event,
 				 struct perf_sample_data *data,

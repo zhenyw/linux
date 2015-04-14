@@ -4793,6 +4793,7 @@ void perf_event_header__init_id(struct perf_event_header *header,
 	if (event->attr.sample_id_all)
 		__perf_event_header__init_id(header, data, event);
 }
+EXPORT_SYMBOL_GPL(perf_event_header__init_id);
 
 static void __perf_event__output_id_sample(struct perf_output_handle *handle,
 					   struct perf_sample_data *data)
@@ -4825,6 +4826,7 @@ void perf_event__output_id_sample(struct perf_event *event,
 	if (event->attr.sample_id_all)
 		__perf_event__output_id_sample(handle, sample);
 }
+EXPORT_SYMBOL_GPL(perf_event__output_id_sample);
 
 static void perf_output_read_one(struct perf_output_handle *handle,
 				 struct perf_event *event,
