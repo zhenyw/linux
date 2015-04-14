@@ -159,6 +159,34 @@ static u32 forward_oa_snapshots(struct drm_i915_private *dev_priv,
 	return dev_priv->oa_pmu.oa_buffer.gtt_offset + head;
 }
 
+static void log_oa_status(struct drm_i915_private *dev_priv,
+			  enum drm_i915_oa_event_type status)
+{
+	struct {
+		struct perf_event_header header;
+		drm_i915_oa_event_header_t i915_oa_header;
+	} oa_event;
+	struct perf_output_handle handle;
+	struct perf_sample_data sample_data;
+	struct perf_event *event = dev_priv->oa_pmu.exclusive_event;
+	int ret;
+
+	oa_event.header.size = sizeof(oa_event);
+	oa_event.header.type = PERF_RECORD_DEVICE;
+	oa_event.i915_oa_header.type = status;
+	oa_event.i915_oa_header.__reserved_1 = 0;
+
+	perf_event_header__init_id(&oa_event.header, &sample_data, event);
+
+	ret = perf_output_begin(&handle, event, oa_event.header.size);
+	if (ret)
+		return;
+
+	perf_output_put(&handle, oa_event);
+	perf_event__output_id_sample(event, &handle, &sample_data);
+	perf_output_end(&handle);
+}
+
 static void flush_oa_snapshots(struct drm_i915_private *dev_priv,
 			       bool skip_if_flushing)
 {
@@ -189,25 +217,14 @@ static void flush_oa_snapshots(struct drm_i915_private *dev_priv,
 	head = oastatus2 & GEN7_OASTATUS2_HEAD_MASK;
 	tail = oastatus1 & GEN7_OASTATUS1_TAIL_MASK;
 
-	if (oastatus1 & (GEN7_OASTATUS1_OABUFFER_OVERFLOW |
-			 GEN7_OASTATUS1_REPORT_LOST)) {
+	if (unlikely(oastatus1 & (GEN7_OASTATUS1_OABUFFER_OVERFLOW |
+				  GEN7_OASTATUS1_REPORT_LOST))) {
 
-		/* XXX: How can we convey report-lost errors to userspace?  It
-		 * doesn't look like perf's _REPORT_LOST mechanism is
-		 * appropriate in this case; that's just for cases where we
-		 * run out of space for samples in the perf circular buffer.
-		 *
-		 * Maybe we can claim a special report-id and use that to
-		 * forward status flags?
-		 */
-		pr_debug("OA buffer read error: addr = %p, head = %u, offset = %u, tail = %u cnt o'flow = %d, buf o'flow = %d, rpt lost = %d\n",
-			 dev_priv->oa_pmu.oa_buffer.addr,
-			 head,
-			 head - dev_priv->oa_pmu.oa_buffer.gtt_offset,
-			 tail,
-			 oastatus1 & GEN7_OASTATUS1_COUNTER_OVERFLOW ? 1 : 0,
-			 oastatus1 & GEN7_OASTATUS1_OABUFFER_OVERFLOW ? 1 : 0,
-			 oastatus1 & GEN7_OASTATUS1_REPORT_LOST ? 1 : 0);
+		if (oastatus1 & GEN7_OASTATUS1_OABUFFER_OVERFLOW)
+			log_oa_status(dev_priv, I915_OA_RECORD_BUFFER_OVERFLOW);
+
+		if (oastatus1 & GEN7_OASTATUS1_REPORT_LOST)
+			log_oa_status(dev_priv, I915_OA_RECORD_REPORT_LOST);
 
 		I915_WRITE(GEN7_OASTATUS1, oastatus1 &
 			   ~(GEN7_OASTATUS1_OABUFFER_OVERFLOW |
