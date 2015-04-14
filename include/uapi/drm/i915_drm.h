@@ -89,6 +89,33 @@ typedef struct _drm_i915_oa_attr {
 	      __reserved_1 : 63;
 } drm_i915_oa_attr_t;
 
+/* Header for PERF_RECORD_DEVICE type events */
+typedef struct _drm_i915_oa_event_header {
+	__u32 type;
+	__u32 __reserved_1;
+} drm_i915_oa_event_header_t;
+
+enum drm_i915_oa_event_type {
+
+	/*
+	 * struct {
+	 *	struct perf_event_header	header;
+	 *	drm_i915_oa_event_header_t	i915_oa_header;
+	 * };
+	 */
+	I915_OA_RECORD_BUFFER_OVERFLOW		= 1,
+
+	/*
+	 * struct {
+	 *	struct perf_event_header	header;
+	 *	drm_i915_oa_event_header_t	i915_oa_header;
+	 * };
+	 */
+	I915_OA_RECORD_REPORT_LOST		= 2,
+
+	I915_OA_RECORD_MAX,			/* non-ABI */
+};
+
 /* Each region is a minimum of 16k, and there are at most 255 of them.
  */
 #define I915_NR_TEX_REGIONS 255	/* table size 2k - maximum due to use
