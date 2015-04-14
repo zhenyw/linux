@@ -49,6 +49,33 @@ static void forward_one_oa_snapshot_to_event(struct drm_i915_private *dev_priv,
 	perf_event_overflow(event, &data, &dev_priv->oa_pmu.dummy_regs);
 }
 
+static void log_oa_status(struct drm_i915_private *dev_priv,
+			  enum drm_i915_oa_event_type status)
+{
+	struct {
+		struct perf_event_header header;
+		drm_i915_oa_event_header_t i915_oa_header;
+	} oa_event;
+	struct perf_output_handle handle;
+	struct perf_sample_data sample_data;
+	struct perf_event *event = dev_priv->oa_pmu.exclusive_event;
+	int ret;
+
+	oa_event.header.size = sizeof(oa_event);
+	oa_event.header.type = PERF_RECORD_DEVICE;
+	oa_event.i915_oa_header.type = status;
+	oa_event.i915_oa_header.__reserved_1 = 0;
+
+	perf_event_header__init_id(&oa_event.header, &sample_data, event);
+
+	ret = perf_output_begin(&handle, event, oa_event.header.size);
+	if (ret)
+		return;
+
+	perf_output_put(&handle, oa_event);
+	perf_event__output_id_sample(event, &handle, &sample_data);
+	perf_output_end(&handle);
+}
 static u32 gen7_forward_oa_snapshots(struct drm_i915_private *dev_priv,
 				     u32 head,
 				     u32 tail)
@@ -116,6 +143,20 @@ static void gen7_flush_oa_snapshots(struct drm_i915_private *dev_priv,
 
 	head = oastatus2 & GEN7_OASTATUS2_HEAD_MASK;
 	tail = oastatus1 & GEN7_OASTATUS1_TAIL_MASK;
+
+	if (unlikely(oastatus1 & (GEN7_OASTATUS1_OABUFFER_OVERFLOW |
+				  GEN7_OASTATUS1_REPORT_LOST))) {
+
+		if (oastatus1 & GEN7_OASTATUS1_OABUFFER_OVERFLOW)
+			log_oa_status(dev_priv, I915_OA_RECORD_BUFFER_OVERFLOW);
+
+		if (oastatus1 & GEN7_OASTATUS1_REPORT_LOST)
+			log_oa_status(dev_priv, I915_OA_RECORD_REPORT_LOST);
+
+		I915_WRITE(GEN7_OASTATUS1, oastatus1 &
+			   ~(GEN7_OASTATUS1_OABUFFER_OVERFLOW |
+			     GEN7_OASTATUS1_REPORT_LOST));
+	}
 
 	head = gen7_forward_oa_snapshots(dev_priv, head, tail);
 
