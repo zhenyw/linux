@@ -44,6 +44,13 @@ static u32 i915_perf_stream_paranoid = true;
 
 #define OA_EXPONENT_MAX 0x3f
 
+#define GEN8_OAREPORT_REASON_TIMER          (1<<19)
+#define GEN8_OAREPORT_REASON_TRIGGER1       (1<<20)
+#define GEN8_OAREPORT_REASON_TRIGGER2       (1<<21)
+#define GEN8_OAREPORT_REASON_CTX_SWITCH     (1<<22)
+#define GEN8_OAREPORT_REASON_GO_TRANSITION  (1<<23)
+#define GEN9_OAREPORT_REASON_CLK_RATIO      (1<<24)
+
 /* for sysctl proc_dointvec_minmax of i915_oa_min_timer_exponent */
 static int zero;
 static int oa_exponent_max = OA_EXPONENT_MAX;
@@ -79,7 +86,8 @@ static struct i915_oa_format gen8_plus_oa_formats[I915_OA_FORMAT_MAX] = {
 	[I915_OA_FORMAT_C4_B8]		    = { 7, 64 },
 };
 
-#define SAMPLE_OA_REPORT      (1<<0)
+#define SAMPLE_OA_REPORT	(1<<0)
+#define SAMPLE_OA_SOURCE_INFO	(1<<1)
 
 struct perf_open_properties
 {
@@ -148,6 +156,26 @@ static bool append_oa_sample(struct i915_perf_stream *stream,
 
 	copy_to_user(read_state->buf, &header, sizeof(header));
 	read_state->buf += sizeof(header);
+
+	if (sample_flags & SAMPLE_OA_SOURCE_INFO) {
+		enum drm_i915_perf_oa_event_source source;
+
+		if (INTEL_INFO(dev_priv)->gen >= 8) {
+			u32 reason = *(u32 *)report;
+
+			if (reason & GEN8_OAREPORT_REASON_CTX_SWITCH)
+				source = I915_PERF_OA_EVENT_SOURCE_CONTEXT_SWITCH;
+			else if (reason & GEN8_OAREPORT_REASON_TIMER)
+			    source = I915_PERF_OA_EVENT_SOURCE_PERIODIC;
+			else
+			    source = I915_PERF_OA_EVENT_SOURCE_UNDEFINED;
+		} else
+			source = I915_PERF_OA_EVENT_SOURCE_PERIODIC;
+
+		if (copy_to_user(read_state->buf, &source, 4))
+			return false;
+		read_state->buf += 4;
+	}
 
 	if (sample_flags & SAMPLE_OA_REPORT) {
 		copy_to_user(read_state->buf, report, report_size);
@@ -1336,6 +1364,9 @@ int i915_perf_open_ioctl_locked(struct drm_device *dev,
 		stream->sample_size += report_size;
 	}
 
+	if (props->sample_flags & SAMPLE_OA_SOURCE_INFO)
+		stream->sample_size += 4;
+
 	stream->dev_priv = dev_priv;
 	stream->ctx = specific_ctx;
 
@@ -1476,6 +1507,9 @@ static int read_properties_unlocked(struct drm_i915_private *dev_priv,
 
 			props->oa_periodic = true;
 			props->oa_period_exponent = value;
+			break;
+		case DRM_I915_PERF_SAMPLE_OA_SOURCE_PROP:
+			props->sample_flags |= SAMPLE_OA_SOURCE_INFO;
 			break;
 		case DRM_I915_PERF_PROP_MAX:
 			BUG();
