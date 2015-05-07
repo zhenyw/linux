@@ -1710,6 +1710,7 @@ struct i915_perf_stream {
 
 	struct list_head link;
 
+	enum intel_ring_id ring_id;
 	u32 sample_flags;
 	int sample_size;
 
@@ -1767,7 +1768,8 @@ struct i915_perf_stream {
 	 * Routine to emit the commands in the command streamer associated
 	 * with the corresponding gpu engine.
 	 */
-	void (*emit_perf_data)(struct drm_i915_gem_request *req, u32 tag);
+	void (*emit_perf_data)(struct i915_perf_stream *stream,
+			       struct drm_i915_gem_request *req, u32 tag);
 };
 
 struct i915_oa_ops {
@@ -1792,7 +1794,13 @@ struct i915_oa_ops {
 struct i915_perf_cs_data_node {
 	struct list_head link;
 	struct drm_i915_gem_request *request;
-	u32 offset;
+
+	/* Offsets into the GEM obj holding the data */
+	u32 end_offset;
+	u32 oa_offset;
+	u32 ts_offset;
+
+	/* Other metadata */
 	u32 ctx_id;
 	u32 pid;
 	u32 tag;
@@ -2054,16 +2062,16 @@ struct drm_i915_private {
 
 		struct mutex lock;
 		struct list_head streams;
-		
+
+		struct hrtimer poll_check_timer;
+		struct i915_perf_stream *exclusive_stream[I915_NUM_RINGS];
+		wait_queue_head_t poll_wq[I915_NUM_RINGS];
+
 		spinlock_t hook_lock;
 
 		struct {
-			struct i915_perf_stream *exclusive_stream;
 
 			u32 specific_ctx_id;
-
-			struct hrtimer poll_check_timer;
-			wait_queue_head_t poll_wq;
 
 			bool periodic;
 			u32 period_exponent;
@@ -2100,10 +2108,10 @@ struct drm_i915_private {
 			struct drm_i915_gem_object *obj;
 			struct i915_vma *vma;
 			u8 *addr;
-		} command_stream_buf;
+		} command_stream_buf[I915_NUM_RINGS];
 
-		struct list_head node_list;
-		spinlock_t node_list_lock;
+		struct list_head node_list[I915_NUM_RINGS];
+		spinlock_t node_list_lock[I915_NUM_RINGS];
 	} perf;
 
 	/* Abstract the submission mechanism (legacy ringbuffer or execlists) away */
