@@ -1269,7 +1269,7 @@ i915_gem_ringbuffer_submission(struct i915_execbuffer_params *params,
 	exec_start = params->batch_obj_vm_offset +
 		     params->args_batch_start_offset;
 
-	i915_emit_perf_data(params->request);
+	i915_emit_perf_data(params->request, i915_execbuffer2_get_tag(*args));
 
 	ret = ring->dispatch_execbuffer(params->request,
 					exec_start, exec_len,
@@ -1277,7 +1277,7 @@ i915_gem_ringbuffer_submission(struct i915_execbuffer_params *params,
 	if (ret)
 		return ret;
 
-	i915_emit_perf_data(params->request);
+	i915_emit_perf_data(params->request, i915_execbuffer2_get_tag(*args));
 
 	trace_i915_gem_ring_dispatch(params->request, params->dispatch_flags);
 

@@ -936,14 +936,14 @@ int intel_execlists_submission(struct i915_execbuffer_params *params,
 	exec_start = params->batch_obj_vm_offset +
 		     args->batch_start_offset;
 
-	i915_emit_perf_data(params->request);
+	i915_emit_perf_data(params->request, i915_execbuffer2_get_tag(*args));
 
 	ret = ring->emit_bb_start(params->request, exec_start, params->dispatch_flags);
 	if (ret)
 		return ret;
 
 	/* XXX: what if emit_bb_start fails? */
-	i915_emit_perf_data(params->request);
+	i915_emit_perf_data(params->request, i915_execbuffer2_get_tag(*args));
 
 	trace_i915_gem_ring_dispatch(params->request, params->dispatch_flags);
 

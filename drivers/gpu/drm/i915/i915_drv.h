@@ -1767,7 +1767,7 @@ struct i915_perf_stream {
 	 * Routine to emit the commands in the command streamer associated
 	 * with the corresponding gpu engine.
 	 */
-	void (*emit_perf_data)(struct drm_i915_gem_request *req);
+	void (*emit_perf_data)(struct drm_i915_gem_request *req, u32 tag);
 };
 
 struct i915_oa_ops {
@@ -1795,6 +1795,7 @@ struct i915_perf_cs_data_node {
 	u32 offset;
 	u32 ctx_id;
 	u32 pid;
+	u32 tag;
 };
 
 struct drm_i915_private {
@@ -3391,7 +3392,7 @@ void i915_oa_context_pin_notify(struct drm_i915_private *dev_priv,
 				struct intel_context *context);
 void i915_oa_legacy_ctx_switch_notify(struct drm_i915_gem_request *req);
 void i915_oa_update_reg_state(struct intel_engine_cs *ring, uint32_t *reg_state);
-void i915_emit_perf_data(struct drm_i915_gem_request *req);
+void i915_emit_perf_data(struct drm_i915_gem_request *req, u32 tag);
 
 /* i915_gem_evict.c */
 int __must_check i915_gem_evict_something(struct drm_device *dev,
