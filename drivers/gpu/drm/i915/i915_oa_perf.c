@@ -166,12 +166,21 @@ static void i915_oa_event_destroy(struct perf_event *event)
 {
 	struct drm_i915_private *i915 =
 		container_of(event->pmu, typeof(*i915), oa_pmu.pmu);
+	unsigned long lock_flags;
 
 	WARN_ON(event->parent);
 
-	oa_buffer_destroy(i915);
-
+	/* Stop updating oacontrol via _oa_context_pin_[un]notify()... */
+	spin_lock_irqsave(&i915->oa_pmu.lock, lock_flags);
 	i915->oa_pmu.specific_ctx = NULL;
+	spin_unlock_irqrestore(&i915->oa_pmu.lock, lock_flags);
+
+	/* Don't let the compiler start resetting OA, PM and clock gating
+	 * state before we've stopped update_oacontrol()
+	 */
+	barrier();
+
+	oa_buffer_destroy(i915);
 
 	BUG_ON(i915->oa_pmu.exclusive_event != event);
 	i915->oa_pmu.exclusive_event = NULL;
@@ -513,6 +522,11 @@ static int i915_oa_event_init(struct perf_event *event)
 	return 0;
 }
 
+/* Note: Although pmu methods are called with the corresponding
+ * perf_event_context lock taken (so we don't need to worry about our pmu
+ * methods contending with each other) update_oacontrol() may be called
+ * asynchronously via the i915_oa_pmu_[un]register() hooks.
+ */
 static void update_oacontrol(struct drm_i915_private *dev_priv)
 {
 	BUG_ON(!spin_is_locked(&dev_priv->oa_pmu.lock));
