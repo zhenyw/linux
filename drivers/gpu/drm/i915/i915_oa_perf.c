@@ -99,6 +99,63 @@ static struct i915_oa_reg hsw_profile_3d_b_counter_config[] = {
 	{ 0x2710, 0x00000000 },
 };
 
+/* mux config for compute basic */
+static struct i915_oa_reg hsw_profile_compute_mux_config[] = {
+
+	{ 0x253A4, 0x00000000 },
+	{ 0x2681C, 0x01F00800 },
+	{ 0x26820, 0x00001000 },
+	{ 0x2781C, 0x01F00800 },
+	{ 0x26520, 0x00000007 },
+	{ 0x265A0, 0x00000007 },
+	{ 0x25380, 0x00000010 },
+	{ 0x2538C, 0x00300000 },
+	{ 0x25384, 0xAA8AAAAA },
+	{ 0x25404, 0xFFFFFFFF },
+	{ 0x26800, 0x00004202 },
+	{ 0x26808, 0x00605817 },
+	{ 0x2680C, 0x10001005 },
+	{ 0x26804, 0x00000000 },
+	{ 0x27800, 0x00000102 },
+	{ 0x27808, 0x0C0701E0 },
+	{ 0x2780C, 0x000200A0 },
+	{ 0x27804, 0x00000000 },
+	{ 0x26484, 0x44000000 },
+	{ 0x26704, 0x44000000 },
+	{ 0x26500, 0x00000006 },
+	{ 0x26510, 0x00000001 },
+	{ 0x26504, 0x88000000 },
+	{ 0x26580, 0x00000006 },
+	{ 0x26590, 0x00000020 },
+	{ 0x26584, 0x00000000 },
+	{ 0x26104, 0x55822222 },
+	{ 0x26184, 0xAA866666 },
+	{ 0x25420, 0x08320C83 },
+	{ 0x25424, 0x06820C83 },
+	{ 0x2541C, 0x00000000 },
+	{ 0x25428, 0x00000C03 },
+};
+
+static struct i915_oa_reg hsw_profile_compute_b_counter_config[] = {
+
+	{ 0x2710, 0x00000000 },
+	{ 0x2714, 0x00800000 },
+	{ 0x2718, 0xAAAAAAAA },
+	{ 0x271C, 0xAAAAAAAA },
+	{ 0x2720, 0x00000000 },
+	{ 0x2724, 0x00800000 },
+	{ 0x2728, 0xAAAAAAAA },
+	{ 0x272C, 0xAAAAAAAA },
+	{ 0x2740, 0x00000000 },
+	{ 0x2744, 0x00000000 },
+	{ 0x2748, 0x00000000 },
+	{ 0x274C, 0x00000000 },
+	{ 0x2750, 0x00000000 },
+	{ 0x2754, 0x00000000 },
+	{ 0x2758, 0x00000000 },
+	{ 0x275C, 0x00000000 },
+};
+
 static void forward_one_oa_snapshot_to_event(struct drm_i915_private *dev_priv,
 					     u8 *snapshot,
 					     struct perf_event *event)
@@ -533,7 +590,7 @@ static int i915_oa_event_init(struct perf_event *event)
 
 		dev_priv->oa_pmu.oa_buffer.format_size = snapshot_size;
 
-		if (oa_attr.metrics_set > I915_OA_METRICS_SET_3D)
+		if (oa_attr.metrics_set > I915_OA_METRICS_SET_MAX)
 			return -EINVAL;
 	} else {
 		BUG(); /* pmu shouldn't have been registered */
@@ -717,6 +774,11 @@ static void i915_oa_event_start(struct perf_event *event, int flags)
 			       ARRAY_SIZE(hsw_profile_3d_mux_config));
 		config_oa_regs(dev_priv, hsw_profile_3d_b_counter_config,
 			       ARRAY_SIZE(hsw_profile_3d_b_counter_config));
+	} else if (dev_priv->oa_pmu.metrics_set == I915_OA_METRICS_SET_COMPUTE) {
+                config_oa_regs(dev_priv, hsw_profile_compute_mux_config,
+                               ARRAY_SIZE(hsw_profile_compute_mux_config));
+                config_oa_regs(dev_priv, hsw_profile_compute_b_counter_config,
+                               ARRAY_SIZE(hsw_profile_compute_b_counter_config));
 	} else {
 		/* XXX: On Haswell, when threshold disable mode is desired,
 		 * instead of setting the threshold enable to '0', we need to
