@@ -306,6 +306,13 @@ struct pmu {
 	 * Filter events for PMU-specific reasons.
 	 */
 	int (*filter_match)		(struct perf_event *event); /* optional */
+
+	/*
+	 * Flush buffered samples (E.g. for pmu hardware that writes samples to
+	 * some intermediate buffer) userspace may need to explicitly ensure
+	 * such samples have been forwarded to perf.
+	 */
+	int (*flush)			(struct perf_event *event); /*optional */
 };
 
 /**

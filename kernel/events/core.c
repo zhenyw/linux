@@ -4758,6 +4758,28 @@ static int perf_fasync(int fd, struct file *filp, int on)
 	return 0;
 }
 
+static int perf_fsync(struct file *filp, loff_t start, loff_t end, int datasync)
+{
+	struct perf_event *event = filp->private_data;
+	struct perf_event_context *ctx;
+	int ret;
+
+	/* We don't have a use for synchonizing a specific range, or datasync
+	 * but lets not silently ignore them in case we think of uses later...
+	 */
+	if (start != 0 || end != LLONG_MAX || datasync != 0)
+		return -EINVAL;
+
+	if (!event->pmu->flush)
+		return 0;
+
+	ctx = perf_event_ctx_lock(event);
+	ret = event->pmu->flush(event);
+	perf_event_ctx_unlock(event, ctx);
+
+	return ret;
+}
+
 static const struct file_operations perf_fops = {
 	.llseek			= no_llseek,
 	.release		= perf_release,
@@ -4767,6 +4789,7 @@ static const struct file_operations perf_fops = {
 	.compat_ioctl		= perf_compat_ioctl,
 	.mmap			= perf_mmap,
 	.fasync			= perf_fasync,
+	.fsync			= perf_fsync,
 };
 
 /*
