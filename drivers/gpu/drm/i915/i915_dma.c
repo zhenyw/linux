@@ -654,6 +654,7 @@ static void cherryview_sseu_info_init(struct drm_device *dev)
 	info = (struct intel_device_info *)&dev_priv->info;
 	fuse = I915_READ(CHV_FUSE_GT);
 
+	info->slice_mask = 1;
 	info->slice_total = 1;
 
 	if (!(fuse & CHV_FGT_DISABLE_SS0)) {
@@ -704,6 +705,7 @@ static void gen9_sseu_info_init(struct drm_device *dev)
 	ss_disable = (fuse2 & GEN9_F2_SS_DIS_MASK) >>
 		     GEN9_F2_SS_DIS_SHIFT;
 
+	info->slice_mask = s_enable;
 	info->slice_total = hweight32(s_enable);
 	/*
 	 * The subslice disable field is global, i.e. it applies
@@ -791,6 +793,7 @@ static void broadwell_sseu_info_init(struct drm_device *dev)
 
 
 	info = (struct intel_device_info *)&dev_priv->info;
+	info->slice_mask = s_enable;
 	info->slice_total = hweight32(s_enable);
 
 	/*
