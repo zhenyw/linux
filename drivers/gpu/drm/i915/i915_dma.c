@@ -163,6 +163,11 @@ static int i915_getparam(struct drm_device *dev, void *data,
 		if (!value)
 			return -ENODEV;
 		break;
+	case I915_PARAM_SLICE_MASK:
+		value = INTEL_INFO(dev_priv)->slice_mask;
+		if (!value)
+			return -ENODEV;
+		break;
 	case I915_PARAM_HAS_GPU_RESET:
 		value = i915.enable_hangcheck &&
 			intel_has_gpu_reset(dev);
