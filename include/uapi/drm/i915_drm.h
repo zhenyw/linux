@@ -360,6 +360,7 @@ typedef struct drm_i915_irq_wait {
 #define I915_PARAM_HAS_RESOURCE_STREAMER 36
 #define I915_PARAM_HAS_EXEC_SOFTPIN	 37
 #define I915_PARAM_SLICE_MASK		 45 /* XXX: rebase before landing */
+#define I915_PARAM_SUBSLICE_MASK	 46
 
 typedef struct drm_i915_getparam {
 	__s32 param;
