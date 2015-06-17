@@ -4870,14 +4870,18 @@ static int i915_sseu_status(struct seq_file *m, void *unused)
 	struct drm_device *dev = node->minor->dev;
 	struct sseu_dev_status stat;
 
-	if ((INTEL_INFO(dev)->gen < 8) || IS_BROADWELL(dev))
+	if ((INTEL_INFO(dev)->gen < 8))
 		return -ENODEV;
 
 	seq_puts(m, "SSEU Device Info\n");
 	seq_printf(m, "  Available Slice Total: %u\n",
 		   INTEL_INFO(dev)->slice_total);
+	seq_printf(m, "  Available Slice Mask: 0x%x\n",
+		   INTEL_INFO(dev)->slice_mask);
 	seq_printf(m, "  Available Subslice Total: %u\n",
 		   INTEL_INFO(dev)->subslice_total);
+	seq_printf(m, "  Available Subslice Mask: 0x%x\n",
+		   INTEL_INFO(dev)->subslice_mask);
 	seq_printf(m, "  Available Subslice Per Slice: %u\n",
 		   INTEL_INFO(dev)->subslice_per_slice);
 	seq_printf(m, "  Available EU Total: %u\n",
@@ -4890,6 +4894,9 @@ static int i915_sseu_status(struct seq_file *m, void *unused)
 		   yesno(INTEL_INFO(dev)->has_subslice_pg));
 	seq_printf(m, "  Has EU Power Gating: %s\n",
 		   yesno(INTEL_INFO(dev)->has_eu_pg));
+
+	if (IS_BROADWELL(dev))
+		return 0;
 
 	seq_puts(m, "SSEU Device Status\n");
 	memset(&stat, 0, sizeof(stat));
