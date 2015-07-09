@@ -56,6 +56,7 @@ struct oa_sample_data
 {
 	u32 source;
 	u32 ctx_id;
+	u32 pid;
 	const u8 *report;
 };
 
@@ -97,6 +98,7 @@ static struct i915_oa_format gen8_plus_oa_formats[I915_OA_FORMAT_MAX] = {
 #define SAMPLE_OA_REPORT	(1<<0)
 #define SAMPLE_OA_SOURCE_INFO	(1<<1)
 #define SAMPLE_CTX_ID		(1<<2)
+#define SAMPLE_PID		(1<<3)
 
 struct perf_open_properties
 {
@@ -164,6 +166,7 @@ static void i915_oa_emit_report(struct drm_i915_gem_request *req)
 	}
 
 	entry->ctx_id = req->ctx->global_id;
+	entry->pid = current->pid;
 	i915_gem_request_assign(&entry->request, req);
 
 	spin_lock(&dev_priv->perf.node_list_lock);
@@ -328,6 +331,12 @@ static bool append_oa_sample(struct i915_perf_stream *stream,
 		read_state->buf += 4;
 	}
 
+	if (sample_flags & SAMPLE_PID) {
+		if (copy_to_user(read_state->buf, &data->pid, 4))
+			return false;
+		read_state->buf += 4;
+	}
+
 	if (sample_flags & SAMPLE_OA_REPORT) {
 		if (copy_to_user(read_state->buf, data->report, report_size))
 			return false;
@@ -367,6 +376,10 @@ static bool append_oa_buffer_sample(struct i915_perf_stream *stream,
 #warning "FIXME: append_oa_buffer_sample: read ctx ID from report and map that to an intel_context::global_id"
 	if (sample_flags & SAMPLE_CTX_ID)
 		data.ctx_id = 0;
+
+#warning "FIXME: append_oa_buffer_sample: deduce pid for periodic samples based on most recent RCS pid for ctx"
+	if (sample_flags & SAMPLE_PID)
+		data.pid = 0;
 
 	if (sample_flags & SAMPLE_OA_REPORT)
 		data.report = report;
@@ -602,6 +615,9 @@ static bool append_oa_rcs_sample(struct i915_perf_stream *stream,
 
 	if (sample_flags & SAMPLE_CTX_ID)
 		data.ctx_id = node->ctx_id;
+
+	if (sample_flags & SAMPLE_PID)
+		data.pid = node->pid;
 
 	if (sample_flags & SAMPLE_OA_REPORT)
 		data.report = report;
@@ -1736,6 +1752,9 @@ int i915_perf_open_ioctl_locked(struct drm_device *dev,
 	if (props->sample_flags & SAMPLE_CTX_ID)
 		stream->sample_size += 4;
 
+	if (props->sample_flags & SAMPLE_PID)
+		stream->sample_size += 4;
+
 	stream->dev_priv = dev_priv;
 	stream->ctx = specific_ctx;
 
@@ -1900,6 +1919,9 @@ static int read_properties_unlocked(struct drm_i915_private *dev_priv,
 			break;
 		case DRM_I915_PERF_SAMPLE_CTX_ID_PROP:
 			props->sample_flags |= SAMPLE_CTX_ID;
+			break;
+		case DRM_I915_PERF_SAMPLE_PID_PROP:
+			props->sample_flags |= SAMPLE_PID;
 			break;
 		case DRM_I915_PERF_PROP_MAX:
 			BUG();
