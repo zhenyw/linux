@@ -613,6 +613,8 @@ static void gen8_configure_metric_set(struct perf_event *event)
 
 	config_oa_regs(dev_priv, dev_priv->oa_pmu.mux_regs,
 		       dev_priv->oa_pmu.mux_regs_len);
+	config_oa_regs(dev_priv, dev_priv->oa_pmu.flex_regs,
+		       dev_priv->oa_pmu.flex_regs_len);
 	config_oa_regs(dev_priv, dev_priv->oa_pmu.b_counter_regs,
 		       dev_priv->oa_pmu.b_counter_regs_len);
 }
