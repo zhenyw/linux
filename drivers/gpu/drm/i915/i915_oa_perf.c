@@ -607,6 +607,7 @@ static void gen8_configure_metric_set(struct perf_event *event)
 
 		dev_priv->oa_pmu.flex_regs = i915_oa_3d_flex_eu_config_bdw;
 		dev_priv->oa_pmu.flex_regs_len = i915_oa_3d_flex_eu_config_bdw_len;
+		break;
 	default:
 		BUG(); /* should have been validated in _init */
 	}
