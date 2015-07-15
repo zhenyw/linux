@@ -17,6 +17,23 @@ static u32 i915_oa_event_paranoid = true;
 
 #define OA_EXPONENT_MAX 0x3f
 
+/* for sysctl proc_dointvec_minmax of i915_oa_event_min_timer_exponent */
+static int zero;
+static int oa_exponent_max OA_EXPONENT_MAX;
+
+/* Theoretically we can program the OA unit to sample every 160ns but don't
+ * allow that by default unless root...
+ *
+ * The period is derived from the exponent as:
+ *
+ *   period = 80ns * 2^(exponent + 1)
+ *
+ * With an exponent of 6 we get a period of 10.240 microseconds which is the
+ * minumum that can avoid the default kernel.perf_event_max_sample_rate
+ * threshold of 100000 samples/s
+ */
+static u32 i915_oa_event_min_timer_exponent = 6;
+
 static int hsw_perf_format_sizes[] = {
 	64,  /* A13_HSW */
 	128, /* A29_HSW */
@@ -504,20 +521,8 @@ static int i915_oa_event_init(struct perf_event *event)
 		if (period_exponent > OA_EXPONENT_MAX)
 			return -EINVAL;
 
-		/* Theoretically we can program the OA unit to sample
-		 * every 160ns but don't allow that by default unless
-		 * root...
-		 *
-		 * The period is derived from the exponent as:
-		 *
-		 *   period = 80ns * 2^(exponent + 1)
-		 *
-		 * With an exponent of 6 we get a period of 10.240
-		 * microseconds which is the minumum that can avoid
-		 * the default kernel.perf_event_max_sample_rate
-		 * threshold of 100000 samples/s
-		 */
-		if (period_exponent < 6 && !capable(CAP_SYS_ADMIN))
+		if (period_exponent < i915_oa_event_min_timer_exponent &&
+		    !capable(CAP_SYS_ADMIN))
 			return -EACCES;
 
 		dev_priv->oa_pmu.period_exponent = period_exponent;
@@ -810,6 +815,15 @@ static struct ctl_table oa_table[] = {
 	 .maxlen = sizeof(i915_oa_event_paranoid),
 	 .mode = 0644,
 	 .proc_handler = proc_dointvec,
+	 },
+	{
+	 .procname = "oa_event_min_timer_exponent",
+	 .data = &i915_oa_event_min_timer_exponent,
+	 .maxlen = sizeof(i915_oa_event_min_timer_exponent),
+	 .mode = 0644,
+	 .proc_handler = proc_dointvec_minmax,
+	 .extra1 = &zero,
+	 .extra2 = &oa_exponent_max,
 	 },
 	{}
 };
