@@ -71,6 +71,23 @@ static u32 i915_perf_stream_paranoid = true;
  */
 #define OA_EXPONENT_MAX 31
 
+/* for sysctl proc_dointvec_minmax of i915_oa_min_timer_exponent */
+static int zero;
+static int oa_exponent_max = OA_EXPONENT_MAX;
+
+/* Theoretically we can program the OA unit to sample every 160ns but don't
+ * allow that by default unless root...
+ *
+ * The period is derived from the exponent as:
+ *
+ *   period = 80ns * 2^(exponent + 1)
+ *
+ * Referring to perf's kernel.perf_event_max_sample_rate for a precedent
+ * (100000 by default); with an OA exponent of 6 we get a period of 10.240
+ * microseconds - just under 100000Hz
+ */
+static u32 i915_oa_min_timer_exponent = 6;
+
 /* XXX: beware if future OA HW adds new report formats that the current
  * code assumes all reports have a power-of-two size and ~(size - 1) can
  * be used as a mask to align the OA tail pointer.
@@ -1229,21 +1246,13 @@ static int read_properties_unlocked(struct drm_i915_private *dev_priv,
 				return -EINVAL;
 			}
 
-			/* NB: The exponent represents a period as follows:
-			 *
-			 *   80ns * 2^(period_exponent + 1)
-			 *
-			 * Theoretically we can program the OA unit to sample
+			/* Theoretically we can program the OA unit to sample
 			 * every 160ns but don't allow that by default unless
 			 * root.
-			 *
-			 * Referring to perf's
-			 * kernel.perf_event_max_sample_rate for a precedent
-			 * (100000 by default); with an OA exponent of 6 we get
-			 * a period of 10.240 microseconds -just under 100000Hz
 			 */
-			if (value < 6 && !capable(CAP_SYS_ADMIN)) {
-				DRM_ERROR("Sampling period too high without root privileges\n");
+			if (value < i915_oa_min_timer_exponent &&
+			    !capable(CAP_SYS_ADMIN)) {
+				DRM_ERROR("OA timer exponent too low without root privileges\n");
 				return -EACCES;
 			}
 
@@ -1304,6 +1313,15 @@ static struct ctl_table oa_table[] = {
 	 .maxlen = sizeof(i915_perf_stream_paranoid),
 	 .mode = 0644,
 	 .proc_handler = proc_dointvec,
+	 },
+	{
+	 .procname = "oa_min_timer_exponent",
+	 .data = &i915_oa_min_timer_exponent,
+	 .maxlen = sizeof(i915_oa_min_timer_exponent),
+	 .mode = 0644,
+	 .proc_handler = proc_dointvec_minmax,
+	 .extra1 = &zero,
+	 .extra2 = &oa_exponent_max,
 	 },
 	{}
 };
