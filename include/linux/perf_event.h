@@ -921,6 +921,13 @@ static inline bool perf_paranoid_kernel(void)
 	return sysctl_perf_event_paranoid > 1;
 }
 
+extern int perf_copy_attr(void __user *uattr,
+			  void *attr,
+			  u32 size_off,
+			  bool zero_size_ok,
+			  u32 v0_size,
+			  u32 real_size);
+
 extern void perf_event_init(void);
 extern void perf_tp_event(u64 addr, u64 count, void *record,
 			  int entry_size, struct pt_regs *regs,

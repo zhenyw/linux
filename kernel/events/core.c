@@ -7705,31 +7705,35 @@ err_ns:
 	return ERR_PTR(err);
 }
 
-static int perf_copy_attr(struct perf_event_attr __user *uattr,
-			  struct perf_event_attr *attr)
+int perf_copy_attr(void __user *uattr,
+		   void *attr,
+		   u32 size_off,
+		   bool zero_size_ok,
+		   u32 v0_size,
+		   u32 real_size)
 {
 	u32 size;
 	int ret;
 
-	if (!access_ok(VERIFY_WRITE, uattr, PERF_ATTR_SIZE_VER0))
+	if (!access_ok(VERIFY_WRITE, uattr, v0_size))
 		return -EFAULT;
 
 	/*
 	 * zero the full structure, so that a short copy will be nice.
 	 */
-	memset(attr, 0, sizeof(*attr));
+	memset(attr, 0, real_size);
 
-	ret = get_user(size, &uattr->size);
+	ret = get_user(size, (u32 __user *)(uattr + size_off));
 	if (ret)
 		return ret;
 
 	if (size > PAGE_SIZE)	/* silly large */
 		goto err_size;
 
-	if (!size)		/* abi compat */
-		size = PERF_ATTR_SIZE_VER0;
+	if (zero_size_ok && !size)  /* abi compat */
+		size = v0_size;
 
-	if (size < PERF_ATTR_SIZE_VER0)
+	if (size < v0_size)
 		goto err_size;
 
 	/*
@@ -7738,7 +7742,7 @@ static int perf_copy_attr(struct perf_event_attr __user *uattr,
 	 * user-space does not rely on any kernel feature
 	 * extensions we dont know about yet.
 	 */
-	if (size > sizeof(*attr)) {
+	if (size > real_size) {
 		unsigned char __user *addr;
 		unsigned char __user *end;
 		unsigned char val;
@@ -7764,11 +7768,11 @@ out:
 	return ret;
 
 err_size:
-	put_user(sizeof(*attr), &uattr->size);
+	put_user(real_size, (u32 __user *)(uattr + size_off));
 	ret = -E2BIG;
 	goto out;
-
 }
+EXPORT_SYMBOL_GPL(perf_copy_attr);
 
 static int perf_validate_attr(struct perf_event_attr *attr)
 {
@@ -7989,7 +7993,10 @@ SYSCALL_DEFINE5(perf_event_open,
 	if (flags & ~PERF_FLAG_ALL)
 		return -EINVAL;
 
-	err = perf_copy_attr(attr_uptr, &attr);
+	err = perf_copy_attr(attr_uptr, &attr,
+			     offsetof(struct perf_event_attr, size),
+			     true, /* abi compat: allow zero size */
+			     PERF_ATTR_SIZE_VER0, sizeof(attr));
 	if (err)
 		return err;
 
