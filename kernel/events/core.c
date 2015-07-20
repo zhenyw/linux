@@ -7841,6 +7841,14 @@ static int perf_validate_attr(struct perf_event_attr *attr)
 	if (attr->sample_type & PERF_SAMPLE_REGS_INTR)
 		ret = perf_reg_validate(attr->sample_regs_intr);
 
+	if (attr->freq) {
+		if (attr->sample_freq > sysctl_perf_event_sample_rate)
+			return -EINVAL;
+	} else {
+		if (attr->sample_period & (1ULL << 63))
+			return -EINVAL;
+	}
+
 	return ret;
 }
 
@@ -7988,14 +7996,6 @@ SYSCALL_DEFINE5(perf_event_open,
 	err = perf_validate_attr(&attr);
 	if (err)
 		return err;
-
-	if (attr.freq) {
-		if (attr.sample_freq > sysctl_perf_event_sample_rate)
-			return -EINVAL;
-	} else {
-		if (attr.sample_period & (1ULL << 63))
-			return -EINVAL;
-	}
 
 	/*
 	 * In cgroup mode, the pid argument is used to pass the fd
