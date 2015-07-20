@@ -7760,6 +7760,20 @@ static int perf_copy_attr(struct perf_event_attr __user *uattr,
 	if (ret)
 		return -EFAULT;
 
+out:
+	return ret;
+
+err_size:
+	put_user(sizeof(*attr), &uattr->size);
+	ret = -E2BIG;
+	goto out;
+
+}
+
+static int perf_validate_attr(struct perf_event_attr *attr)
+{
+	int ret = 0;
+
 	if (attr->__reserved_1)
 		return -EINVAL;
 
@@ -7826,13 +7840,8 @@ static int perf_copy_attr(struct perf_event_attr __user *uattr,
 
 	if (attr->sample_type & PERF_SAMPLE_REGS_INTR)
 		ret = perf_reg_validate(attr->sample_regs_intr);
-out:
-	return ret;
 
-err_size:
-	put_user(sizeof(*attr), &uattr->size);
-	ret = -E2BIG;
-	goto out;
+	return ret;
 }
 
 static int
@@ -7973,6 +7982,10 @@ SYSCALL_DEFINE5(perf_event_open,
 		return -EINVAL;
 
 	err = perf_copy_attr(attr_uptr, &attr);
+	if (err)
+		return err;
+
+	err = perf_validate_attr(&attr);
 	if (err)
 		return err;
 
