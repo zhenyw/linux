@@ -1085,7 +1085,7 @@ void i915_oa_context_pin_notify(struct drm_i915_private *dev_priv,
 		dev_priv->oa_pmu.specific_ctx_id = i915_gem_obj_ggtt_offset(obj);
 	}
 
-	dev_priv->oa_pmu.ops.context_unpin_notify(dev_priv, context);
+	dev_priv->oa_pmu.ops.context_pin_notify(dev_priv, context);
 
 	mmiowb();
 	spin_unlock_irqrestore(&dev_priv->oa_pmu.lock, flags);
