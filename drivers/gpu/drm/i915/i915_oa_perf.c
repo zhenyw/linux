@@ -5,6 +5,8 @@
 #include "intel_ringbuffer.h"
 #include "i915_oa_hsw.h"
 #include "i915_oa_bdw.h"
+#include "i915_oa_chv.h"
+#include "i915_oa_skl.h"
 
 /* Must be a power of two */
 #define OA_BUFFER_SIZE	     SZ_16M
@@ -20,7 +22,7 @@ static u32 i915_oa_event_paranoid = true;
 
 /* for sysctl proc_dointvec_minmax of i915_oa_event_min_timer_exponent */
 static int zero;
-static int oa_exponent_max OA_EXPONENT_MAX;
+static int oa_exponent_max = OA_EXPONENT_MAX;
 
 /* Theoretically we can program the OA unit to sample every 160ns but don't
  * allow that by default unless root...
@@ -47,7 +49,7 @@ static int hsw_perf_format_sizes[] = {
 	64   /* C4_B8_HSW */
 };
 
-static int bdw_perf_format_sizes[] = {
+static int gen8_perf_format_sizes[] = {
        64,  /* A12_BDW */
        -1,  /* invalid */
        128, /* A12_B8_C8_BDW */
@@ -576,7 +578,7 @@ static void gen7_configure_metric_set(struct perf_event *event)
 	}
 }
 
-static void gen8_configure_metric_set(struct perf_event *event)
+static void bdw_configure_metric_set(struct perf_event *event)
 {
 	struct drm_i915_private *dev_priv =
 		container_of(event->pmu, typeof(*dev_priv), oa_pmu.pmu);
@@ -609,6 +611,51 @@ static void gen8_configure_metric_set(struct perf_event *event)
 
 		dev_priv->oa_pmu.flex_regs = i915_oa_3d_flex_eu_config_bdw;
 		dev_priv->oa_pmu.flex_regs_len = i915_oa_3d_flex_eu_config_bdw_len;
+		break;
+	default:
+		BUG(); /* should have been validated in _init */
+		return;
+	}
+
+	config_oa_regs(dev_priv, dev_priv->oa_pmu.mux_regs,
+		       dev_priv->oa_pmu.mux_regs_len);
+	config_oa_regs(dev_priv, dev_priv->oa_pmu.b_counter_regs,
+		       dev_priv->oa_pmu.b_counter_regs_len);
+}
+
+static void skl_configure_metric_set(struct perf_event *event)
+{
+	struct drm_i915_private *dev_priv =
+		container_of(event->pmu, typeof(*dev_priv), oa_pmu.pmu);
+
+	dev_priv->oa_pmu.mux_regs = NULL;
+	dev_priv->oa_pmu.mux_regs_len = 0;
+	dev_priv->oa_pmu.b_counter_regs = NULL;
+	dev_priv->oa_pmu.b_counter_regs_len = 0;
+	dev_priv->oa_pmu.flex_regs = NULL;
+	dev_priv->oa_pmu.flex_regs_len = 0;
+
+	switch (dev_priv->oa_pmu.metrics_set) {
+	case I915_OA_METRICS_SET_3D:
+		if (dev_priv->dev->pdev->revision < 2) {
+			dev_priv->oa_pmu.mux_regs =
+				i915_oa_3d_mux_config_1_1_sku_0x02_ult_skl;
+			dev_priv->oa_pmu.mux_regs_len =
+				i915_oa_3d_mux_config_1_1_sku_0x02_ult_skl_len;
+		} else {
+			dev_priv->oa_pmu.mux_regs =
+				i915_oa_3d_mux_config_1_1_sku_0x02_ugte_skl;
+			dev_priv->oa_pmu.mux_regs_len =
+				i915_oa_3d_mux_config_1_1_sku_0x02_ugte_skl_len;
+		}
+
+		dev_priv->oa_pmu.b_counter_regs =
+			i915_oa_3d_b_counter_config_skl;
+		dev_priv->oa_pmu.b_counter_regs_len =
+			i915_oa_3d_b_counter_config_skl_len;
+
+		dev_priv->oa_pmu.flex_regs = i915_oa_3d_flex_eu_config_skl;
+		dev_priv->oa_pmu.flex_regs_len = i915_oa_3d_flex_eu_config_skl_len;
 		break;
 	default:
 		BUG(); /* should have been validated in _init */
@@ -691,15 +738,15 @@ static int i915_oa_event_init(struct perf_event *event)
 		dev_priv->oa_pmu.oa_buffer.format_size = snapshot_size;
 
 		if (oa_attr.metrics_set <= 0 ||
-		    oa_attr.metric_set > I915_OA_METRICS_SET_MAX)
+		    oa_attr.metrics_set > I915_OA_METRICS_SET_MAX)
 			return -EINVAL;
-	} else if (IS_BROADWELL(dev_priv->dev)) {
+	} else if (IS_BROADWELL(dev_priv->dev) || IS_SKYLAKE(dev_priv->dev)) {
 		int snapshot_size;
 
-		if (report_format >= ARRAY_SIZE(bdw_perf_format_sizes))
+		if (report_format >= ARRAY_SIZE(gen8_perf_format_sizes))
 			return -EINVAL;
 
-		snapshot_size = bdw_perf_format_sizes[report_format];
+		snapshot_size = gen8_perf_format_sizes[report_format];
 		if (snapshot_size < 0)
 			return -EINVAL;
 
@@ -1197,7 +1244,7 @@ void i915_oa_pmu_register(struct drm_device *dev)
 {
 	struct drm_i915_private *dev_priv = to_i915(dev);
 
-	if (!(IS_HASWELL(dev) || IS_BROADWELL(dev)))
+	if (!(IS_HASWELL(dev) || IS_BROADWELL(dev) || IS_SKYLAKE(dev)))
 		return;
 
 	dev_priv->oa_pmu.sysctl_header = register_sysctl_table(dev_root);
@@ -1240,7 +1287,6 @@ void i915_oa_pmu_register(struct drm_device *dev)
 		dev_priv->oa_pmu.ops.flush_oa_snapshots = gen7_flush_oa_snapshots;
 	} else {
 		dev_priv->oa_pmu.ops.init_oa_buffer = gen8_init_oa_buffer;
-		dev_priv->oa_pmu.ops.configure_metric_set = gen8_configure_metric_set;
 		dev_priv->oa_pmu.ops.event_start = gen8_event_start;
 		dev_priv->oa_pmu.ops.event_stop = gen8_event_stop;
 		dev_priv->oa_pmu.ops.context_unpin_notify = gen8_context_unpin_notify;
@@ -1249,6 +1295,12 @@ void i915_oa_pmu_register(struct drm_device *dev)
 		if (!i915.enable_execlists) {
 			dev_priv->oa_pmu.ops.context_switch_notify =
 				gen8_context_switch_notify;
+		}
+
+		if (IS_BROADWELL(dev)) {
+		    dev_priv->oa_pmu.ops.configure_metric_set = bdw_configure_metric_set;
+		} else if (IS_SKYLAKE(dev)) {
+		    dev_priv->oa_pmu.ops.configure_metric_set = skl_configure_metric_set;
 		}
 	}
 
