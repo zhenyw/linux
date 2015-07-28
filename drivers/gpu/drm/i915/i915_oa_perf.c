@@ -524,7 +524,7 @@ static void config_oa_regs(struct drm_i915_private *dev_priv,
 	}
 }
 
-static void gen7_configure_metric_set(struct perf_event *event)
+static void hsw_configure_metric_set(struct perf_event *event)
 {
 	struct drm_i915_private *dev_priv =
 		container_of(event->pmu, typeof(*dev_priv), oa_pmu.pmu);
@@ -622,6 +622,43 @@ static void bdw_configure_metric_set(struct perf_event *event)
 	config_oa_regs(dev_priv, dev_priv->oa_pmu.b_counter_regs,
 		       dev_priv->oa_pmu.b_counter_regs_len);
 }
+
+static void chv_configure_metric_set(struct perf_event *event)
+{
+	struct drm_i915_private *dev_priv =
+		container_of(event->pmu, typeof(*dev_priv), oa_pmu.pmu);
+
+	dev_priv->oa_pmu.mux_regs = NULL;
+	dev_priv->oa_pmu.mux_regs_len = 0;
+	dev_priv->oa_pmu.flex_regs = NULL;
+	dev_priv->oa_pmu.flex_regs_len = 0;
+	dev_priv->oa_pmu.b_counter_regs = NULL;
+	dev_priv->oa_pmu.b_counter_regs_len = 0;
+
+	switch (dev_priv->oa_pmu.metrics_set) {
+	case I915_OA_METRICS_SET_3D:
+		dev_priv->oa_pmu.mux_regs = i915_oa_3d_mux_config_chv;
+		dev_priv->oa_pmu.mux_regs_len = i915_oa_3d_mux_config_chv_len;
+
+		dev_priv->oa_pmu.b_counter_regs =
+			i915_oa_3d_b_counter_config_chv;
+		dev_priv->oa_pmu.b_counter_regs_len =
+			i915_oa_3d_b_counter_config_chv_len;
+
+		dev_priv->oa_pmu.flex_regs = i915_oa_3d_flex_eu_config_chv;
+		dev_priv->oa_pmu.flex_regs_len = i915_oa_3d_flex_eu_config_chv_len;
+		break;
+	default:
+		BUG(); /* should have been validated in _init */
+		return;
+	}
+
+	config_oa_regs(dev_priv, dev_priv->oa_pmu.mux_regs,
+		       dev_priv->oa_pmu.mux_regs_len);
+	config_oa_regs(dev_priv, dev_priv->oa_pmu.b_counter_regs,
+		       dev_priv->oa_pmu.b_counter_regs_len);
+}
+
 
 static void skl_configure_metric_set(struct perf_event *event)
 {
@@ -740,7 +777,9 @@ static int i915_oa_event_init(struct perf_event *event)
 		if (oa_attr.metrics_set <= 0 ||
 		    oa_attr.metrics_set > I915_OA_METRICS_SET_MAX)
 			return -EINVAL;
-	} else if (IS_BROADWELL(dev_priv->dev) || IS_SKYLAKE(dev_priv->dev)) {
+	} else if (IS_BROADWELL(dev_priv->dev) || IS_CHERRYVIEW(dev_priv->dev) ||
+		   IS_SKYLAKE(dev_priv->dev))
+	{
 		int snapshot_size;
 
 		if (report_format >= ARRAY_SIZE(gen8_perf_format_sizes))
@@ -1244,7 +1283,9 @@ void i915_oa_pmu_register(struct drm_device *dev)
 {
 	struct drm_i915_private *dev_priv = to_i915(dev);
 
-	if (!(IS_HASWELL(dev) || IS_BROADWELL(dev) || IS_SKYLAKE(dev)))
+	if (!(IS_HASWELL(dev) ||
+	      IS_BROADWELL(dev) || IS_CHERRYVIEW(dev) ||
+	      IS_SKYLAKE(dev)))
 		return;
 
 	dev_priv->oa_pmu.sysctl_header = register_sysctl_table(dev_root);
@@ -1279,7 +1320,7 @@ void i915_oa_pmu_register(struct drm_device *dev)
 
 	if (IS_HASWELL(dev)) {
 		dev_priv->oa_pmu.ops.init_oa_buffer = gen7_init_oa_buffer;
-		dev_priv->oa_pmu.ops.configure_metric_set = gen7_configure_metric_set;
+		dev_priv->oa_pmu.ops.configure_metric_set = hsw_configure_metric_set;
 		dev_priv->oa_pmu.ops.event_start = gen7_event_start;
 		dev_priv->oa_pmu.ops.event_stop = gen7_event_stop;
 		dev_priv->oa_pmu.ops.context_pin_notify = gen7_context_pin_notify;
@@ -1298,9 +1339,14 @@ void i915_oa_pmu_register(struct drm_device *dev)
 		}
 
 		if (IS_BROADWELL(dev)) {
-		    dev_priv->oa_pmu.ops.configure_metric_set = bdw_configure_metric_set;
+			dev_priv->oa_pmu.ops.configure_metric_set =
+				bdw_configure_metric_set;
+		} else if (IS_CHERRYVIEW(dev)) {
+			dev_priv->oa_pmu.ops.configure_metric_set =
+				chv_configure_metric_set;
 		} else if (IS_SKYLAKE(dev)) {
-		    dev_priv->oa_pmu.ops.configure_metric_set = skl_configure_metric_set;
+			dev_priv->oa_pmu.ops.configure_metric_set =
+				skl_configure_metric_set;
 		}
 	}
 
