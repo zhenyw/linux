@@ -711,7 +711,7 @@ struct intel_uncore {
 
 	struct intel_uncore_funcs funcs;
 
-	unsigned hold_rcs_busy_count;
+	atomic_t hold_rcs_busy_count;
 	unsigned fifo_count;
 	enum forcewake_domains fw_domains;
 

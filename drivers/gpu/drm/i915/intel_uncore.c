@@ -1568,38 +1568,24 @@ void intel_uncore_check_errors(struct drm_device *dev)
 
 static int hold_rcs_busy(struct drm_i915_private *dev_priv)
 {
-	unsigned long irqflags;
 	int ret = 0;
 
-	spin_lock_irqsave(&dev_priv->uncore.lock, irqflags);
-
-	if (dev_priv->uncore.hold_rcs_busy_count++ == 0) {
+	if (atomic_inc_and_test(&dev_priv->uncore.hold_rcs_busy_count)) {
 		I915_WRITE(GEN6_RC_SLEEP_PSMI_CONTROL,
 			   _MASKED_BIT_ENABLE(GEN6_PSMI_SLEEP_MSG_DISABLE));
 
 		ret = dev_priv->uncore.funcs.wait_for_rcs_busy(dev_priv);
 	}
 
-	spin_unlock_irqrestore(&dev_priv->uncore.lock, irqflags);
-
 	return ret;
 }
 
 static void release_rcs_busy(struct drm_i915_private *dev_priv)
 {
-	unsigned long irqflags;
-
-	spin_lock_irqsave(&dev_priv->uncore.lock, irqflags);
-
-	if (WARN_ON(dev_priv->uncore.hold_rcs_busy_count == 0))
-		dev_priv->uncore.hold_rcs_busy_count++;
-
-	if (--dev_priv->uncore.hold_rcs_busy_count == 0) {
+	if (!atomic_dec_and_test(&dev_priv->uncore.hold_rcs_busy_count)) {
 		I915_WRITE(GEN6_RC_SLEEP_PSMI_CONTROL,
 			   _MASKED_BIT_DISABLE(GEN6_PSMI_SLEEP_MSG_DISABLE));
 	}
-
-	spin_unlock_irqrestore(&dev_priv->uncore.lock, irqflags);
 }
 
 /*
