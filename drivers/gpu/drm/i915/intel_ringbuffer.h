@@ -346,6 +346,8 @@ struct  intel_engine_cs {
 	 * to encode the command length in the header).
 	 */
 	u32 (*get_cmd_length_mask)(u32 cmd_header);
+
+	atomic_t oa_state_dirty;
 };
 
 bool intel_ring_initialized(struct intel_engine_cs *ring);

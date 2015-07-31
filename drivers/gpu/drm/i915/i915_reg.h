@@ -607,6 +607,8 @@
 
 #define OA_MEM_SELECT_GGTT  (1<<0)
 
+#define EU_PERF_CNTL0	    0xe458
+
 #define GDT_CHICKEN_BITS    0x9840
 #define GT_NOA_ENABLE	    0x00000080
 
@@ -2177,6 +2179,9 @@ enum skl_disp_power_wells {
 #define   GEN6_PSMI_SLEEP_MSG_DISABLE	(1 << 0)
 #define   GEN8_RC_SEMA_IDLE_MSG_DISABLE	(1 << 12)
 #define   GEN8_FF_DOP_CLOCK_GATE_DISABLE	(1<<10)
+
+#define GEN6_RCS_PWR_FSM 0x22ac
+#define GEN9_RCS_FE_FSM2 0x22a4
 
 /* Fuse readout registers for GT */
 #define CHV_FUSE_GT			(VLV_DISPLAY_BASE + 0x2168)
