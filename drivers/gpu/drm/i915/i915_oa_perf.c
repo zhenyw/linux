@@ -777,6 +777,18 @@ static void chv_enable_metric_set(struct perf_event *event)
 		dev_priv->oa_pmu.flex_regs = i915_oa_3d_flex_eu_config_chv;
 		dev_priv->oa_pmu.flex_regs_len = i915_oa_3d_flex_eu_config_chv_len;
 		break;
+	case I915_OA_METRICS_SET_COMPUTE:
+		dev_priv->oa_pmu.mux_regs = i915_oa_compute_mux_config_chv;
+		dev_priv->oa_pmu.mux_regs_len = i915_oa_compute_mux_config_chv_len;
+
+		dev_priv->oa_pmu.b_counter_regs =
+			i915_oa_compute_b_counter_config_chv;
+		dev_priv->oa_pmu.b_counter_regs_len =
+			i915_oa_compute_b_counter_config_chv_len;
+
+		dev_priv->oa_pmu.flex_regs = i915_oa_compute_flex_eu_config_chv;
+		dev_priv->oa_pmu.flex_regs_len = i915_oa_compute_flex_eu_config_chv_len;
+		break;
 	default:
 		BUG(); /* should have been validated in _init */
 		return;

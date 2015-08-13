@@ -35,4 +35,12 @@ extern const int i915_oa_3d_flex_eu_config_chv_len;
 extern const struct i915_oa_reg i915_oa_3d_mux_config_chv[];
 extern const int i915_oa_3d_mux_config_chv_len;
 
+/* CHV Compute Metrics Basic Gen8LP */
+extern const struct i915_oa_reg i915_oa_compute_b_counter_config_chv[];
+extern const int i915_oa_compute_b_counter_config_chv_len;
+extern const struct i915_oa_reg i915_oa_compute_flex_eu_config_chv[];
+extern const int i915_oa_compute_flex_eu_config_chv_len;
+extern const struct i915_oa_reg i915_oa_compute_mux_config_chv[];
+extern const int i915_oa_compute_mux_config_chv_len;
+
 #endif
