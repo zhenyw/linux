@@ -1150,9 +1150,9 @@ void i915_oa_context_pin_notify(struct drm_i915_private *dev_priv,
 
 	spin_lock_irqsave(&dev_priv->oa_pmu.lock, flags);
 
+#warning "FIXME: on gen8 with execlists enabled, I don't think the ctx_id is the pinned rcs_state"
 	if (dev_priv->oa_pmu.specific_ctx == context) {
-		struct intel_context *ctx = dev_priv->oa_pmu.specific_ctx;
-		struct drm_i915_gem_object *obj = ctx->legacy_hw_ctx.rcs_state;
+		struct drm_i915_gem_object *obj = context->legacy_hw_ctx.rcs_state;
 
 		dev_priv->oa_pmu.specific_ctx_id = i915_gem_obj_ggtt_offset(obj);
 	}
