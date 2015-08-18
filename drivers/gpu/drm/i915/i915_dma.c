@@ -611,7 +611,15 @@ static void broadwell_sseu_info_init(struct drm_device *dev)
         eu_disable[1] |= (eu_dis1 & GEN8_EU_DIS1_S1_MASK);
 
 	info->slice_mask = s_enable;
+	info->slice_total = hweight32(s_enable);
+	/*
+	 * The subslice disable field is global, i.e. it applies
+	 * to each of the enabled slices.
+	*/
 	info->subslice_mask = ss_disable ^ ((1 << ss_max) - 1);
+	info->subslice_per_slice = ss_max - hweight32(ss_disable);
+	info->subslice_total = info->slice_total *
+			       info->subslice_per_slice;
 
 	/*
 	 * Iterate through enabled slices and subslices to
@@ -633,9 +641,36 @@ static void broadwell_sseu_info_init(struct drm_device *dev)
 			n_disabled = hweight8(eu_disable[s] >> (ss * eu_max));
 			eu_per_ss = eu_max - n_disabled;
 
+			/*
+			 * Record which subslice(s) has(have) 7 EUs. we
+			 * can tune the hash used to spread work among
+			 * subslices if they are unbalanced.
+			 */
+			if (eu_per_ss == 7)
+				info->subslice_7eu[s] |= 1 << ss;
+
 			info->eu_total += eu_per_ss;
 		}
 	}
+
+	/*
+	 * BDW is expected to always have a uniform distribution
+	 * of EU across subslices with the exception that any one
+	 * EU in any one subslice may be fused off for die
+	 * recovery. BXT is expected to be perfectly uniform in EU
+	 * distribution.
+	*/
+	info->eu_per_subslice = info->subslice_total ?
+				DIV_ROUND_UP(info->eu_total,
+					     info->subslice_total) : 0;
+	/*
+	 * BDW supports slice power gating on devices with more than
+	 * one slice, and supports EU power gating on devices with
+	 * more than one EU pair per subslice.
+	*/
+	info->has_slice_pg = (info->slice_total > 1);
+	info->has_subslice_pg = 0;
+	info->has_eu_pg = (info->eu_per_subslice > 2);
 }
 
 static void cherryview_sseu_info_init(struct drm_device *dev)
@@ -647,9 +682,12 @@ static void cherryview_sseu_info_init(struct drm_device *dev)
 	info = (struct intel_device_info *)&dev_priv->info;
 	fuse = I915_READ(CHV_FUSE_GT);
 
+	info->slice_mask = 1;
 	info->slice_total = 1;
+	info->subslice_mask = 0;
 
 	if (!(fuse & CHV_FGT_DISABLE_SS0)) {
+		info->subslice_mask |= 0x1;
 		info->subslice_per_slice++;
 		eu_dis = fuse & (CHV_FGT_EU_DIS_SS0_R0_MASK |
 				 CHV_FGT_EU_DIS_SS0_R1_MASK);
@@ -657,6 +695,7 @@ static void cherryview_sseu_info_init(struct drm_device *dev)
 	}
 
 	if (!(fuse & CHV_FGT_DISABLE_SS1)) {
+		info->subslice_mask |= 0x2;
 		info->subslice_per_slice++;
 		eu_dis = fuse & (CHV_FGT_EU_DIS_SS1_R0_MASK |
 				 CHV_FGT_EU_DIS_SS1_R1_MASK);
@@ -708,11 +747,13 @@ static void gen9_sseu_info_init(struct drm_device *dev)
 	ss_disable = (fuse2 & GEN9_F2_SS_DIS_MASK) >>
 		     GEN9_F2_SS_DIS_SHIFT;
 
+	info->slice_mask = s_enable;
 	info->slice_total = hweight32(s_enable);
 	/*
 	 * The subslice disable field is global, i.e. it applies
 	 * to each of the enabled slices.
 	*/
+	info->subslice_mask = ss_disable ^ ((1 << ss_max) - 1);
 	info->subslice_per_slice = ss_max - hweight32(ss_disable);
 	info->subslice_total = info->slice_total *
 			       info->subslice_per_slice;
