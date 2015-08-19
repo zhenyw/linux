@@ -354,13 +354,7 @@ static void i915_oa_event_destroy(struct perf_event *event)
 	 */
 	barrier();
 
-	I915_WRITE(GEN6_UCGCTL1, (I915_READ(GEN6_UCGCTL1) &
-				  ~GEN6_CSUNIT_CLOCK_GATE_DISABLE));
-	I915_WRITE(GEN7_MISCCPCTL, (I915_READ(GEN7_MISCCPCTL) |
-				    GEN7_DOP_CLOCK_GATE_ENABLE));
-
-	I915_WRITE(GDT_CHICKEN_BITS, (I915_READ(GDT_CHICKEN_BITS) &
-				      ~GT_NOA_ENABLE));
+	dev_priv->oa_pmu.ops.disable_metric_set(event);
 
 	oa_buffer_destroy(dev_priv);
 
@@ -525,7 +519,7 @@ static void config_oa_regs(struct drm_i915_private *dev_priv,
 	}
 }
 
-static void hsw_configure_metric_set(struct perf_event *event)
+static void hsw_enable_metric_set(struct perf_event *event)
 {
 	struct drm_i915_private *dev_priv =
 		container_of(event->pmu, typeof(*dev_priv), oa_pmu.pmu);
@@ -536,6 +530,22 @@ static void hsw_configure_metric_set(struct perf_event *event)
 	dev_priv->oa_pmu.flex_regs_len = 0;
 	dev_priv->oa_pmu.b_counter_regs = NULL;
 	dev_priv->oa_pmu.b_counter_regs_len = 0;
+
+	I915_WRITE(GDT_CHICKEN_BITS, GT_NOA_ENABLE);
+
+	/* PRM:
+	 *
+	 * OA unit is using “crclk” for its functionality. When trunk
+	 * level clock gating takes place, OA clock would be gated,
+	 * unable to count the events from non-render clock domain.
+	 * Render clock gating must be disabled when OA is enabled to
+	 * count the events from non-render domain. Unit level clock
+	 * gating for RCS should also be disabled.
+	 */
+	I915_WRITE(GEN7_MISCCPCTL, (I915_READ(GEN7_MISCCPCTL) &
+				    ~GEN7_DOP_CLOCK_GATE_ENABLE));
+	I915_WRITE(GEN6_UCGCTL1, (I915_READ(GEN6_UCGCTL1) |
+				  GEN6_CSUNIT_CLOCK_GATE_DISABLE));
 
 	switch (dev_priv->oa_pmu.metrics_set) {
 	case I915_OA_METRICS_SET_3D:
@@ -577,6 +587,20 @@ static void hsw_configure_metric_set(struct perf_event *event)
 	default:
 		BUG();
 	}
+}
+
+static void hsw_disable_metric_set(struct perf_event *event)
+{
+	struct drm_i915_private *dev_priv =
+		container_of(event->pmu, typeof(*dev_priv), oa_pmu.pmu);
+
+	I915_WRITE(GEN6_UCGCTL1, (I915_READ(GEN6_UCGCTL1) &
+				  ~GEN6_CSUNIT_CLOCK_GATE_DISABLE));
+	I915_WRITE(GEN7_MISCCPCTL, (I915_READ(GEN7_MISCCPCTL) |
+				    GEN7_DOP_CLOCK_GATE_ENABLE));
+
+	I915_WRITE(GDT_CHICKEN_BITS, (I915_READ(GDT_CHICKEN_BITS) &
+				      ~GT_NOA_ENABLE));
 }
 
 /* Manages updating the per-context aspects of the OA event
@@ -646,7 +670,7 @@ static int configure_all_contexts(struct drm_i915_private *dev_priv)
 	return 0;
 }
 
-static void bdw_configure_metric_set(struct perf_event *event)
+static void bdw_enable_metric_set(struct perf_event *event)
 {
 	struct drm_i915_private *dev_priv =
 		container_of(event->pmu, typeof(*dev_priv), oa_pmu.pmu);
@@ -685,15 +709,29 @@ static void bdw_configure_metric_set(struct perf_event *event)
 		return;
 	}
 
+	I915_WRITE(GDT_CHICKEN_BITS, 0xA0);
 	config_oa_regs(dev_priv, dev_priv->oa_pmu.mux_regs,
 		       dev_priv->oa_pmu.mux_regs_len);
+	I915_WRITE(GDT_CHICKEN_BITS, 0x80);
 	config_oa_regs(dev_priv, dev_priv->oa_pmu.b_counter_regs,
 		       dev_priv->oa_pmu.b_counter_regs_len);
 
 	configure_all_contexts(dev_priv);
 }
 
-static void chv_configure_metric_set(struct perf_event *event)
+static void bdw_disable_metric_set(struct perf_event *event)
+{
+	struct drm_i915_private *dev_priv =
+		container_of(event->pmu, typeof(*dev_priv), oa_pmu.pmu);
+
+	I915_WRITE(GEN6_UCGCTL1, (I915_READ(GEN6_UCGCTL1) &
+				  ~GEN6_CSUNIT_CLOCK_GATE_DISABLE));
+	I915_WRITE(GEN7_MISCCPCTL, (I915_READ(GEN7_MISCCPCTL) |
+				    GEN7_DOP_CLOCK_GATE_ENABLE));
+#warning "BDW: Do we need to write to CHICKEN2 to disable DOP clock gating when idle? (vpg does this)"
+}
+
+static void chv_enable_metric_set(struct perf_event *event)
 {
 	struct drm_i915_private *dev_priv =
 		container_of(event->pmu, typeof(*dev_priv), oa_pmu.pmu);
@@ -723,15 +761,29 @@ static void chv_configure_metric_set(struct perf_event *event)
 		return;
 	}
 
+	I915_WRITE(GDT_CHICKEN_BITS, 0xA0);
 	config_oa_regs(dev_priv, dev_priv->oa_pmu.mux_regs,
 		       dev_priv->oa_pmu.mux_regs_len);
+	I915_WRITE(GDT_CHICKEN_BITS, 0x80);
 	config_oa_regs(dev_priv, dev_priv->oa_pmu.b_counter_regs,
 		       dev_priv->oa_pmu.b_counter_regs_len);
 
 	configure_all_contexts(dev_priv);
 }
 
-static void skl_configure_metric_set(struct perf_event *event)
+static void chv_disable_metric_set(struct perf_event *event)
+{
+	struct drm_i915_private *dev_priv =
+		container_of(event->pmu, typeof(*dev_priv), oa_pmu.pmu);
+
+	I915_WRITE(GEN6_UCGCTL1, (I915_READ(GEN6_UCGCTL1) &
+				  ~GEN6_CSUNIT_CLOCK_GATE_DISABLE));
+	I915_WRITE(GEN7_MISCCPCTL, (I915_READ(GEN7_MISCCPCTL) |
+				    GEN7_DOP_CLOCK_GATE_ENABLE));
+#warning "CHV: Do we need to write to CHICKEN2 to disable DOP clock gating when idle? (vpg does this)"
+}
+
+static void skl_enable_metric_set(struct perf_event *event)
 {
 	struct drm_i915_private *dev_priv =
 		container_of(event->pmu, typeof(*dev_priv), oa_pmu.pmu);
@@ -770,12 +822,26 @@ static void skl_configure_metric_set(struct perf_event *event)
 		return;
 	}
 
+	I915_WRITE(GDT_CHICKEN_BITS, 0xA0);
 	config_oa_regs(dev_priv, dev_priv->oa_pmu.mux_regs,
 		       dev_priv->oa_pmu.mux_regs_len);
+	I915_WRITE(GDT_CHICKEN_BITS, 0x80);
 	config_oa_regs(dev_priv, dev_priv->oa_pmu.b_counter_regs,
 		       dev_priv->oa_pmu.b_counter_regs_len);
 
 	configure_all_contexts(dev_priv);
+}
+
+static void skl_disable_metric_set(struct perf_event *event)
+{
+	struct drm_i915_private *dev_priv =
+		container_of(event->pmu, typeof(*dev_priv), oa_pmu.pmu);
+
+	I915_WRITE(GEN6_UCGCTL1, (I915_READ(GEN6_UCGCTL1) &
+				  ~GEN6_CSUNIT_CLOCK_GATE_DISABLE));
+	I915_WRITE(GEN7_MISCCPCTL, (I915_READ(GEN7_MISCCPCTL) |
+				    GEN7_DOP_CLOCK_GATE_ENABLE));
+#warning "SKL: Do we need to write to CHICKEN2 to disable DOP clock gating when idle? (vpg does this)"
 }
 
 static struct intel_context *
@@ -923,27 +989,6 @@ static int i915_oa_event_init(struct perf_event *event)
 	BUG_ON(dev_priv->oa_pmu.exclusive_event);
 	dev_priv->oa_pmu.exclusive_event = event;
 
-
-	I915_WRITE(GDT_CHICKEN_BITS, GT_NOA_ENABLE);
-
-	/* PRM:
-	 *
-	 * OA unit is using “crclk” for its functionality. When trunk
-	 * level clock gating takes place, OA clock would be gated,
-	 * unable to count the events from non-render clock domain.
-	 * Render clock gating must be disabled when OA is enabled to
-	 * count the events from non-render domain. Unit level clock
-	 * gating for RCS should also be disabled.
-	 */
-	I915_WRITE(GEN7_MISCCPCTL, (I915_READ(GEN7_MISCCPCTL) &
-				    ~GEN7_DOP_CLOCK_GATE_ENABLE));
-	I915_WRITE(GEN6_UCGCTL1, (I915_READ(GEN6_UCGCTL1) |
-				  GEN6_CSUNIT_CLOCK_GATE_DISABLE));
-
-	dev_priv->oa_pmu.ops.configure_metric_set(event);
-
-	event->destroy = i915_oa_event_destroy;
-
 	/* PRM - observability performance counters:
 	 *
 	 *   OACONTROL, performance counter enable, note:
@@ -958,6 +1003,10 @@ static int i915_oa_event_init(struct perf_event *event)
 	 */
 	intel_runtime_pm_get(dev_priv);
 	intel_uncore_forcewake_get(dev_priv, FORCEWAKE_ALL);
+
+	dev_priv->oa_pmu.ops.enable_metric_set(event);
+
+	event->destroy = i915_oa_event_destroy;
 
 	return 0;
 }
@@ -1394,7 +1443,8 @@ void i915_oa_pmu_register(struct drm_device *dev)
 
 	if (IS_HASWELL(dev)) {
 		dev_priv->oa_pmu.ops.init_oa_buffer = gen7_init_oa_buffer;
-		dev_priv->oa_pmu.ops.configure_metric_set = hsw_configure_metric_set;
+		dev_priv->oa_pmu.ops.enable_metric_set = hsw_enable_metric_set;
+		dev_priv->oa_pmu.ops.disable_metric_set = hsw_disable_metric_set;
 		dev_priv->oa_pmu.ops.event_start = gen7_event_start;
 		dev_priv->oa_pmu.ops.event_stop = gen7_event_stop;
 		dev_priv->oa_pmu.ops.context_pin_notify = gen7_context_pin_notify;
@@ -1417,18 +1467,24 @@ void i915_oa_pmu_register(struct drm_device *dev)
 		}
 
 		if (IS_BROADWELL(dev)) {
-			dev_priv->oa_pmu.ops.configure_metric_set =
-				bdw_configure_metric_set;
+			dev_priv->oa_pmu.ops.enable_metric_set =
+				bdw_enable_metric_set;
+			dev_priv->oa_pmu.ops.disable_metric_set =
+				bdw_disable_metric_set;
 			dev_priv->oa_pmu.ctx_oactxctrl_off = 0x120;
 			dev_priv->oa_pmu.ctx_flexeu0_off = 0x2ce;
 		} else if (IS_CHERRYVIEW(dev)) {
-			dev_priv->oa_pmu.ops.configure_metric_set =
-				chv_configure_metric_set;
+			dev_priv->oa_pmu.ops.enable_metric_set =
+				chv_enable_metric_set;
+			dev_priv->oa_pmu.ops.disable_metric_set =
+				chv_disable_metric_set;
 			dev_priv->oa_pmu.ctx_oactxctrl_off = 0x120;
 			dev_priv->oa_pmu.ctx_flexeu0_off = 0x2ce;
 		} else if (IS_SKYLAKE(dev)) {
-			dev_priv->oa_pmu.ops.configure_metric_set =
-				skl_configure_metric_set;
+			dev_priv->oa_pmu.ops.enable_metric_set =
+				skl_enable_metric_set;
+			dev_priv->oa_pmu.ops.disable_metric_set =
+				skl_disable_metric_set;
 			dev_priv->oa_pmu.ctx_oactxctrl_off = 0x128;
 			dev_priv->oa_pmu.ctx_flexeu0_off = 0x3de;
 		}

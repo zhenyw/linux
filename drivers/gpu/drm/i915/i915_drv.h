@@ -1712,7 +1712,8 @@ struct i915_oa_reg {
 
 struct i915_oa_ops {
        void (*init_oa_buffer)(struct perf_event *event);
-       void (*configure_metric_set)(struct perf_event *event);
+       void (*enable_metric_set)(struct perf_event *event);
+       void (*disable_metric_set)(struct perf_event *event);
        void (*event_start)(struct perf_event *event, int flags);
        void (*event_stop)(struct perf_event *event, int flags);
        void (*update_oacontrol)(struct drm_i915_private *dev_priv);
