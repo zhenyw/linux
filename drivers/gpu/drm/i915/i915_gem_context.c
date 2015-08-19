@@ -791,7 +791,7 @@ done:
 		}
 	}
 
-	i915_oa_legacy_ctx_switch_notify(ring);
+	i915_oa_legacy_ctx_switch_notify(req);
 
 	return 0;
 

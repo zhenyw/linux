@@ -3,6 +3,7 @@
 
 #include "i915_drv.h"
 #include "intel_ringbuffer.h"
+#include "intel_lrc.h"
 #include "i915_oa_hsw.h"
 #include "i915_oa_bdw.h"
 #include "i915_oa_chv.h"
@@ -140,6 +141,11 @@ static u32 gen8_forward_oa_snapshots(struct drm_i915_private *dev_priv,
 		snapshot = oa_buf_base + (head & mask);
 
 		ctx_id = *(u32 *)(snapshot + 12);
+		if (i915.enable_execlists) {
+		    /* XXX: Just keep the lower 20 bits for now since I'm not
+		     * entirely sure if the HW touches any of the higher bits */
+		    ctx_id &= 0xfffff;
+		}
 
 		if (dev_priv->oa_pmu.event_active) {
 
@@ -1047,9 +1053,8 @@ static void i915_oa_event_start(struct perf_event *event, int flags)
 	spin_unlock_irqrestore(&dev_priv->oa_pmu.lock, lock_flags);
 
 	if (event->attr.sample_period)
-		__hrtimer_start_range_ns(&dev_priv->oa_pmu.timer,
-					 ns_to_ktime(FWD_PERIOD), 0,
-					 HRTIMER_MODE_REL_PINNED, 0);
+		hrtimer_start(&dev_priv->oa_pmu.timer, ns_to_ktime(FWD_PERIOD),
+			      HRTIMER_MODE_REL_PINNED);
 
 	event->hw.state = 0;
 }
@@ -1150,11 +1155,20 @@ void i915_oa_context_pin_notify(struct drm_i915_private *dev_priv,
 
 	spin_lock_irqsave(&dev_priv->oa_pmu.lock, flags);
 
-#warning "FIXME: on gen8 with execlists enabled, I don't think the ctx_id is the pinned rcs_state"
 	if (dev_priv->oa_pmu.specific_ctx == context) {
-		struct drm_i915_gem_object *obj = context->legacy_hw_ctx.rcs_state;
+		struct drm_i915_gem_object *obj;
 
-		dev_priv->oa_pmu.specific_ctx_id = i915_gem_obj_ggtt_offset(obj);
+		if (i915.enable_execlists) {
+		    obj = context->engine[RCS].state;
+
+		    dev_priv->oa_pmu.specific_ctx_id =
+			intel_execlists_ctx_id(obj);
+		} else {
+		    obj = context->legacy_hw_ctx.rcs_state;
+
+		    dev_priv->oa_pmu.specific_ctx_id =
+			i915_gem_obj_ggtt_offset(obj);
+		}
 	}
 
 	dev_priv->oa_pmu.ops.context_pin_notify(dev_priv, context);
@@ -1202,8 +1216,9 @@ void i915_oa_context_unpin_notify(struct drm_i915_private *dev_priv,
 	spin_unlock_irqrestore(&dev_priv->oa_pmu.lock, flags);
 }
 
-static void gen8_legacy_ctx_switch_notify(struct intel_engine_cs *ring)
+static void gen8_legacy_ctx_switch_notify(struct drm_i915_gem_request *req)
 {
+	struct intel_engine_cs *ring = req->ring;
 	struct drm_i915_private *dev_priv = ring->dev->dev_private;
 	const struct i915_oa_reg *flex_regs = dev_priv->oa_pmu.flex_regs;
 	int n_flex_regs = dev_priv->oa_pmu.flex_regs_len;
@@ -1213,7 +1228,7 @@ static void gen8_legacy_ctx_switch_notify(struct intel_engine_cs *ring)
 	if (!atomic_read(&ring->oa_state_dirty))
 		return;
 
-	ret = intel_ring_begin(ring, n_flex_regs * 2 + 4);
+	ret = intel_ring_begin(req, n_flex_regs * 2 + 4);
 	if (ret)
 		return;
 
@@ -1237,8 +1252,9 @@ static void gen8_legacy_ctx_switch_notify(struct intel_engine_cs *ring)
 	atomic_set(&ring->oa_state_dirty, false);
 }
 
-void i915_oa_legacy_ctx_switch_notify(struct intel_engine_cs *ring)
+void i915_oa_legacy_ctx_switch_notify(struct drm_i915_gem_request *req)
 {
+	struct intel_engine_cs *ring = req->ring;
 	struct drm_i915_private *dev_priv = ring->dev->dev_private;
 	unsigned long flags;
 
@@ -1249,7 +1265,7 @@ void i915_oa_legacy_ctx_switch_notify(struct intel_engine_cs *ring)
 	spin_lock_irqsave(&dev_priv->oa_pmu.lock, flags);
 
 	if (dev_priv->oa_pmu.event_active)
-		dev_priv->oa_pmu.ops.legacy_ctx_switch_notify(ring);
+		dev_priv->oa_pmu.ops.legacy_ctx_switch_notify(req);
 
 	mmiowb();
 	spin_unlock_irqrestore(&dev_priv->oa_pmu.lock, flags);

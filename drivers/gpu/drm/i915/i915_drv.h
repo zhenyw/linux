@@ -1720,7 +1720,7 @@ struct i915_oa_ops {
                                   struct intel_context *context);
        void (*context_unpin_notify)(struct drm_i915_private *dev_priv,
                                     struct intel_context *context);
-       void (*legacy_ctx_switch_notify)(struct intel_engine_cs *ring);
+       void (*legacy_ctx_switch_notify)(struct drm_i915_gem_request *req);
        void (*flush_oa_snapshots)(struct drm_i915_private *dev_priv,
                                   bool skip_if_flushing);
 };
@@ -3215,7 +3215,7 @@ void i915_oa_context_pin_notify(struct drm_i915_private *dev_priv,
 				struct intel_context *context);
 void i915_oa_context_unpin_notify(struct drm_i915_private *dev_priv,
 				  struct intel_context *context);
-void i915_oa_legacy_ctx_switch_notify(struct intel_engine_cs *ring);
+void i915_oa_legacy_ctx_switch_notify(struct drm_i915_gem_request *req);
 void i915_oa_update_reg_state(struct intel_engine_cs *ring, uint32_t *reg_state);
 #else
 static inline void
