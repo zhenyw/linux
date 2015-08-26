@@ -153,10 +153,7 @@ static int i915_gem_context_pin_state(struct drm_device *dev,
 static void i915_gem_context_unpin_state(struct drm_device *dev,
 					 struct intel_context *ctx)
 {
-	/* Ensure that we stop the OA unit referencing the context *before*
-	 * actually unpinning the ctx */
-	i915_oa_context_unpin_notify(dev->dev_private, ctx);
-
+#warning "todo: remove unused i915_gem_context_unpin_state() wrapper"
 	i915_gem_object_ggtt_unpin(ctx->legacy_hw_ctx.rcs_state);
 }
 

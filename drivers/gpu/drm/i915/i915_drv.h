@@ -1717,10 +1717,8 @@ struct i915_oa_ops {
        void (*event_start)(struct perf_event *event, int flags);
        void (*event_stop)(struct perf_event *event, int flags);
        void (*update_oacontrol)(struct drm_i915_private *dev_priv);
-       void (*context_pin_notify)(struct drm_i915_private *dev_priv,
-                                  struct intel_context *context);
-       void (*context_unpin_notify)(struct drm_i915_private *dev_priv,
-                                    struct intel_context *context);
+       void (*update_specific_hw_ctx_id)(struct drm_i915_private *dev_priv,
+					 u32 ctx_id);
        void (*legacy_ctx_switch_notify)(struct drm_i915_gem_request *req);
        void (*flush_oa_snapshots)(struct drm_i915_private *dev_priv,
                                   bool skip_if_flushing);
@@ -3214,17 +3212,12 @@ int i915_gem_context_setparam_ioctl(struct drm_device *dev, void *data,
 #ifdef CONFIG_PERF_EVENTS
 void i915_oa_context_pin_notify(struct drm_i915_private *dev_priv,
 				struct intel_context *context);
-void i915_oa_context_unpin_notify(struct drm_i915_private *dev_priv,
-				  struct intel_context *context);
 void i915_oa_legacy_ctx_switch_notify(struct drm_i915_gem_request *req);
 void i915_oa_update_reg_state(struct intel_engine_cs *ring, uint32_t *reg_state);
 #else
 static inline void
 i915_oa_context_pin_notify(struct drm_i915_private *dev_priv,
 			   struct intel_context *context) {}
-static inline void
-i915_oa_context_unpin_notify(struct drm_i915_private *dev_priv,
-			     struct intel_context *context) {}
 static inline void
 i915_oa_legacy_ctx_switch_notify(struct intel_engine_cs *ring) {}
 static inline void

@@ -1185,12 +1185,25 @@ static int i915_oa_event_event_idx(struct perf_event *event)
 	return 0;
 }
 
-
-static void gen7_context_pin_notify(struct drm_i915_private *dev_priv,
-                                    struct intel_context *context)
+static void gen7_update_specific_hw_ctx_id(struct drm_i915_private *dev_priv,
+					   u32 ctx_id)
 {
-	if (dev_priv->oa_pmu.specific_ctx == context)
-		gen7_update_oacontrol(dev_priv);
+	dev_priv->oa_pmu.specific_ctx_id = ctx_id;
+	gen7_update_oacontrol(dev_priv);
+}
+
+static void gen8_update_specific_hw_ctx_id(struct drm_i915_private *dev_priv, u32 ctx_id)
+{
+	if (dev_priv->oa_pmu.specific_ctx_id &&
+	    dev_priv->oa_pmu.specific_ctx_id != ctx_id)
+	{
+	       /* XXX: Since we filter Gen8 OA reports on the cpu we need to
+		* flush any outstanding reports before we update
+		* ->specific_ctx_id otherwise we'll loose their association
+		* with ->specific_ctx */
+	       gen8_flush_oa_snapshots_locked(dev_priv);
+	       dev_priv->oa_pmu.specific_ctx_id = ctx_id;
+	}
 }
 
 void i915_oa_context_pin_notify(struct drm_i915_private *dev_priv,
@@ -1199,67 +1212,27 @@ void i915_oa_context_pin_notify(struct drm_i915_private *dev_priv,
 	unsigned long flags;
 
 	if (dev_priv->oa_pmu.pmu.event_init == NULL ||
-	    dev_priv->oa_pmu.ops.context_pin_notify == NULL)
+	    dev_priv->oa_pmu.ops.update_specific_hw_ctx_id == NULL)
 		return;
 
 	spin_lock_irqsave(&dev_priv->oa_pmu.lock, flags);
 
 	if (dev_priv->oa_pmu.specific_ctx == context) {
 		struct drm_i915_gem_object *obj;
+		u32 ctx_id;
 
 		if (i915.enable_execlists) {
 		    obj = context->engine[RCS].state;
 
-		    dev_priv->oa_pmu.specific_ctx_id =
-			intel_execlists_ctx_id(obj);
+		    ctx_id = intel_execlists_ctx_id(obj);
 		} else {
 		    obj = context->legacy_hw_ctx.rcs_state;
 
-		    dev_priv->oa_pmu.specific_ctx_id =
-			i915_gem_obj_ggtt_offset(obj);
+		    ctx_id = i915_gem_obj_ggtt_offset(obj);
 		}
+
+		dev_priv->oa_pmu.ops.update_specific_hw_ctx_id(dev_priv, ctx_id);
 	}
-
-	dev_priv->oa_pmu.ops.context_pin_notify(dev_priv, context);
-
-	mmiowb();
-	spin_unlock_irqrestore(&dev_priv->oa_pmu.lock, flags);
-}
-
-static void gen7_context_unpin_notify(struct drm_i915_private *dev_priv,
-                                      struct intel_context *context)
-{
-       if (dev_priv->oa_pmu.specific_ctx == context) {
-	       dev_priv->oa_pmu.specific_ctx_id = 0;
-               gen7_update_oacontrol(dev_priv);
-       }
-}
-
-static void gen8_context_unpin_notify(struct drm_i915_private *dev_priv,
-                                      struct intel_context *context)
-{
-       if (dev_priv->oa_pmu.specific_ctx == context) {
-	       /* XXX: Since we filter Gen8 OA reports on the cpu we need to
-		* flush any outstanding reports before we reset
-		* ->specific_ctx_id otherwise we'll loose their association
-		* with ->specific_ctx */
-	       gen8_flush_oa_snapshots_locked(dev_priv);
-	       dev_priv->oa_pmu.specific_ctx_id = 0;
-       }
-}
-
-void i915_oa_context_unpin_notify(struct drm_i915_private *dev_priv,
-				  struct intel_context *context)
-{
-	unsigned long flags;
-
-	if (dev_priv->oa_pmu.pmu.event_init == NULL ||
-	    dev_priv->oa_pmu.ops.context_unpin_notify == NULL)
-		return;
-
-	spin_lock_irqsave(&dev_priv->oa_pmu.lock, flags);
-
-	dev_priv->oa_pmu.ops.context_unpin_notify(dev_priv, context);
 
 	mmiowb();
 	spin_unlock_irqrestore(&dev_priv->oa_pmu.lock, flags);
@@ -1447,8 +1420,7 @@ void i915_oa_pmu_register(struct drm_device *dev)
 		dev_priv->oa_pmu.ops.disable_metric_set = hsw_disable_metric_set;
 		dev_priv->oa_pmu.ops.event_start = gen7_event_start;
 		dev_priv->oa_pmu.ops.event_stop = gen7_event_stop;
-		dev_priv->oa_pmu.ops.context_pin_notify = gen7_context_pin_notify;
-		dev_priv->oa_pmu.ops.context_unpin_notify = gen7_context_unpin_notify;
+		dev_priv->oa_pmu.ops.update_specific_hw_ctx_id = gen7_update_specific_hw_ctx_id;
 		dev_priv->oa_pmu.ops.flush_oa_snapshots = gen7_flush_oa_snapshots;
 
 		dev_priv->oa_pmu.oa_formats = hsw_oa_formats;
@@ -1456,7 +1428,7 @@ void i915_oa_pmu_register(struct drm_device *dev)
 		dev_priv->oa_pmu.ops.init_oa_buffer = gen8_init_oa_buffer;
 		dev_priv->oa_pmu.ops.event_start = gen8_event_start;
 		dev_priv->oa_pmu.ops.event_stop = gen8_event_stop;
-		dev_priv->oa_pmu.ops.context_unpin_notify = gen8_context_unpin_notify;
+		dev_priv->oa_pmu.ops.update_specific_hw_ctx_id = gen8_update_specific_hw_ctx_id;
 		dev_priv->oa_pmu.ops.flush_oa_snapshots = gen8_flush_oa_snapshots;
 
 		dev_priv->oa_pmu.oa_formats = gen8_plus_oa_formats;
