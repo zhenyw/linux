@@ -44,16 +44,16 @@ static struct i915_oa_format hsw_oa_formats[I915_OA_FORMAT_MAX] = {
 	[I915_OA_FORMAT_A13_B8_C8]  = { 2, 128 },
 	/* A29_B8_C8 Disallowed as 192 bytes doesn't factor into buffer size */
 	[I915_OA_FORMAT_B4_C8]	    = { 4, 64 },
-	[I915_OA_FORMAT_A45_B8_C8]  = { 5, 64 },
-	[I915_OA_FORMAT_B4_C8_A16]  = { 6, 256 },
-	[I915_OA_FORMAT_C4_B8]	    = { 7, 128 },
+	[I915_OA_FORMAT_A45_B8_C8]  = { 5, 256 },
+	[I915_OA_FORMAT_B4_C8_A16]  = { 6, 128 },
+	[I915_OA_FORMAT_C4_B8]	    = { 7, 64 },
 };
 
 static struct i915_oa_format gen8_plus_oa_formats[I915_OA_FORMAT_MAX] = {
 	[I915_OA_FORMAT_A12]		    = { 0, 64 },
 	[I915_OA_FORMAT_A12_B8_C8]	    = { 2, 128 },
 	[I915_OA_FORMAT_A32u40_A4u32_B8_C8] = { 5, 256 },
-	[I915_OA_FORMAT_C4_B8]		    = { 7, 128 },
+	[I915_OA_FORMAT_C4_B8]		    = { 7, 64 },
 };
 
 static void forward_one_oa_snapshot_to_event(struct drm_i915_private *dev_priv,
