@@ -251,7 +251,7 @@ int intel_sanitize_enable_execlists(struct drm_device *dev, int enable_execlists
 
 /**
  * intel_execlists_ctx_id() - get the Execlists Context ID
- * @ctx_obj: Logical Ring Context backing object.
+ * @ctx: LR context
  *
  * Do not confuse with ctx->id! Unfortunately we have a name overload
  * here: the old context ID we pass to userspace as a handler so that
@@ -260,15 +260,15 @@ int intel_sanitize_enable_execlists(struct drm_device *dev, int enable_execlists
  * interrupts.
  *
  * Return: 20-bits globally unique context ID.
+ *
+ * Further the ID given to HW can now be relied on to be constant for
+ * the lifetime of the context, unlike previously when we used an
+ * associated logical ring context address (which could be repinned at
+ * a different address).
  */
-u32 intel_execlists_ctx_id(struct drm_i915_gem_object *ctx_obj)
+u32 intel_execlists_ctx_id(struct intel_context *ctx)
 {
-	u32 lrca = i915_gem_obj_ggtt_offset(ctx_obj) +
-			LRC_PPHWSP_PN * PAGE_SIZE;
-
-	/* LRCA is required to be 4K aligned so the more significant 20 bits
-	 * are globally unique */
-	return lrca >> 12;
+	return ctx->global_id;
 }
 
 uint64_t intel_lr_context_descriptor(struct intel_context *ctx,
@@ -288,7 +288,7 @@ uint64_t intel_lr_context_descriptor(struct intel_context *ctx,
 		desc |= GEN8_CTX_L3LLC_COHERENT;
 	desc |= GEN8_CTX_PRIVILEGE;
 	desc |= lrca;
-	desc |= (u64)intel_execlists_ctx_id(ctx_obj) << GEN8_CTX_ID_SHIFT;
+	desc |= (u64)intel_execlists_ctx_id(ctx) << GEN8_CTX_ID_SHIFT;
 
 	/* TODO: WaDisableLiteRestore when we start using semaphore
 	 * signalling between Command Streamers */
@@ -458,9 +458,7 @@ static bool execlists_check_remove_request(struct intel_engine_cs *ring,
 					    execlist_link);
 
 	if (head_req != NULL) {
-		struct drm_i915_gem_object *ctx_obj =
-				head_req->ctx->engine[ring->id].state;
-		if (intel_execlists_ctx_id(ctx_obj) == request_id) {
+		if (intel_execlists_ctx_id(head_req->ctx) == request_id) {
 			WARN(head_req->elsp_submitted == 0,
 			     "Never submitted head request\n");
 

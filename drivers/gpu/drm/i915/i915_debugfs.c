@@ -1968,6 +1968,7 @@ static int i915_context_status(struct seq_file *m, void *unused)
 }
 
 static void i915_dump_lrc_obj(struct seq_file *m,
+			      struct intel_context *ctx,
 			      struct intel_engine_cs *ring,
 			      struct drm_i915_gem_object *ctx_obj)
 {
@@ -1983,7 +1984,7 @@ static void i915_dump_lrc_obj(struct seq_file *m,
 	}
 
 	seq_printf(m, "CONTEXT: %s %u\n", ring->name,
-		   intel_execlists_ctx_id(ctx_obj));
+		   intel_execlists_ctx_id(ctx));
 
 	if (!i915_gem_obj_ggtt_bound(ctx_obj))
 		seq_puts(m, "\tNot bound in GGTT\n");
@@ -2032,7 +2033,7 @@ static int i915_dump_lrc(struct seq_file *m, void *unused)
 	list_for_each_entry(ctx, &dev_priv->context_list, link) {
 		for_each_ring(ring, dev_priv, i) {
 			if (ring->default_context != ctx)
-				i915_dump_lrc_obj(m, ring,
+				i915_dump_lrc_obj(m, ctx, ring,
 						  ctx->engine[i].state);
 		}
 	}
@@ -2111,7 +2112,7 @@ static int i915_execlists(struct seq_file *m, void *data)
 
 			ctx_obj = head_req->ctx->engine[ring_id].state;
 			seq_printf(m, "\tHead request id: %u\n",
-				   intel_execlists_ctx_id(ctx_obj));
+				   intel_execlists_ctx_id(head_req->ctx));
 			seq_printf(m, "\tHead request tail: %u\n",
 				   head_req->tail);
 		}
