@@ -90,6 +90,10 @@
 #include "i915_drv.h"
 #include "i915_trace.h"
 
+/* With execlist scheduling we can program our own HW context ID but we we
+ * are limited to 20bits */
+#define I915_MAX_HW_CTX_ID ((1<<20)-1)
+
 /* This is a HW constraint. The value below is the largest known requirement
  * I've seen in a spec to date, and that was a workaround for a non-shipping
  * part. It should be safe to decrease this, but it's more future proof as is.
@@ -235,13 +239,8 @@ __create_hw_context(struct drm_device *dev,
 	ctx->file_priv = file_priv;
 	ctx->user_handle = ret;
 
-	/* TODO: If required, this global id can be used for programming the hw
-	 * fields too. In that case, we'll have take care of hw restrictions
-	 * while allocating idr. e.g. for some hw, we may not have full 32 bits
-	 * available.
-	 */
 	ret = idr_alloc_cyclic(&dev_priv->global_ctx_idr,
-				ctx, 0, 0, GFP_KERNEL);
+				ctx, 0, I915_MAX_HW_CTX_ID, GFP_KERNEL);
 	if (ret < 0)
 		goto err_out;
 
