@@ -1145,6 +1145,19 @@ struct drm_i915_gem_context_param {
 	__u64 value;
 };
 
+
+enum drm_i915_oa_format {
+	I915_OA_FORMAT_A13	    = 0,
+	I915_OA_FORMAT_A29	    = 1,
+	I915_OA_FORMAT_A13_B8_C8    = 2,
+	I915_OA_FORMAT_B4_C8	    = 4,
+	I915_OA_FORMAT_A45_B8_C8    = 5,
+	I915_OA_FORMAT_B4_C8_A16    = 6,
+	I915_OA_FORMAT_C4_B8	    = 7,
+
+	I915_OA_FORMAT_MAX	    /* non-ABI */
+};
+
 enum drm_i915_oa_set {
 	I915_OA_METRICS_SET_3D                  = 1,
 
@@ -1162,6 +1175,32 @@ enum drm_i915_perf_property_id {
 	 * won't typically require root privileges.
 	 */
 	DRM_I915_PERF_CTX_HANDLE_PROP = 1,
+
+	/**
+	 * A value of 1 requests the inclusion of raw OA unit reports as
+	 * part of stream samples.
+	 */
+	DRM_I915_PERF_SAMPLE_OA_PROP,
+
+	/**
+	 * The value specifies which set of OA unit metrics should be
+	 * be configured, defining the contents of any OA unit reports.
+	 */
+	DRM_I915_PERF_OA_METRICS_SET_PROP,
+
+	/**
+	 * The value specifies the size and layout of OA unit reports.
+	 */
+	DRM_I915_PERF_OA_FORMAT_PROP,
+
+	/**
+	 * Specifying this property implicitly requests periodic OA unit
+	 * sampling and (at least on Haswell) the sampling frequency is derived
+	 * from this exponent as follows:
+	 *
+	 *   80ns * 2^(period_exponent + 1)
+	 */
+	DRM_I915_PERF_OA_EXPONENT_PROP,
 
 	DRM_I915_PERF_PROP_MAX /* non-ABI */
 };
@@ -1207,16 +1246,30 @@ enum drm_i915_perf_record_type {
 	 * every sample.
 	 *
 	 * The order of these sample properties given by userspace has no
-	 * affect on the ordering of data within a sample. The order will be
+	 * affect on the ordering of data within a sample. The order is
 	 * documented here.
 	 *
 	 * struct {
 	 *     struct drm_i915_perf_record_header header;
 	 *
-	 *     TODO: itemize extensible sample data here
+	 *     { u32 oa_report[]; } && DRM_I915_PERF_SAMPLE_OA_PROP
 	 * };
 	 */
 	DRM_I915_PERF_RECORD_SAMPLE = 1,
+
+	/*
+	 * Indicates that one or more OA reports was not written
+	 * by the hardware.
+	 */
+	DRM_I915_PERF_RECORD_OA_REPORT_LOST = 2,
+
+	/*
+	 * Indicates that the internal circular buffer that Gen
+	 * graphics writes OA reports into has filled, which may
+	 * either mean that old reports could be overwritten or
+	 * subsequent reports lost until the buffer is cleared.
+	 */
+	DRM_I915_PERF_RECORD_OA_BUFFER_OVERFLOW = 3,
 
 	DRM_I915_PERF_RECORD_MAX /* non-ABI */
 };
