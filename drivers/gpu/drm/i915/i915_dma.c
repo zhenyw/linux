@@ -664,6 +664,7 @@ static void cherryview_sseu_info_init(struct drm_device *dev)
 	info = (struct intel_device_info *)&dev_priv->info;
 	fuse = I915_READ(CHV_FUSE_GT);
 
+	info->slice_mask = 1;
 	info->slice_total = 1;
 
 	if (!(fuse & CHV_FGT_DISABLE_SS0)) {
