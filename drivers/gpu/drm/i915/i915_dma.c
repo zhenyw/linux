@@ -695,6 +695,7 @@ static void broadwell_sseu_info_init(struct drm_device *dev)
 
 
 	info = (struct intel_device_info *)&dev_priv->info;
+	info->slice_mask = s_enable;
 	info->slice_total = hweight32(s_enable);
 
 	/*
