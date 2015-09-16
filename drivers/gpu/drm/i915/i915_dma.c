@@ -692,7 +692,7 @@ static void gen9_sseu_info_init(struct drm_device *dev)
 	struct intel_device_info *info;
 	int s_max = 3, ss_max = 4, eu_max = 8;
 	int s, ss;
-	u32 fuse2, s_enable, ss_disable, eu_disable;
+	u32 fuse2, s_enable, ss_disable, eu_disable, ss_mask;
 	u8 eu_mask = 0xff;
 
 	info = (struct intel_device_info *)&dev_priv->info;
@@ -704,10 +704,18 @@ static void gen9_sseu_info_init(struct drm_device *dev)
 
 	info->slice_mask = s_enable;
 	info->slice_total = hweight32(s_enable);
+
 	/*
 	 * The subslice disable field is global, i.e. it applies
-	 * to each of the enabled slices.
-	*/
+	 * to each of the enabled slices. We generalise this into
+	 * a mask covering all slices...
+	 */
+	ss_mask = ss_disable ^ ((1 << ss_max) - 1);
+	for (s = 0; s < s_max; s++) {
+	    if (s_enable & (0x1 << s))
+		info->subslice_mask |= ss_mask << (ss_max * s);
+	}
+
 	info->subslice_per_slice = ss_max - hweight32(ss_disable);
 	info->subslice_total = info->slice_total *
 			       info->subslice_per_slice;
