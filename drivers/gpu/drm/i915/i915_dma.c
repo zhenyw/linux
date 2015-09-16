@@ -600,6 +600,7 @@ static void broadwell_sseu_info_init(struct drm_device *dev)
 	eu_disable[1] = (eu_dis0 & GEN8_EU_DIS0_S1_MASK) >> 8;
 	eu_disable[1] |= (eu_dis1 & GEN8_EU_DIS1_S1_MASK);
 
+	info->slice_mask = s_enable;
 	info->slice_total = hweight32(s_enable);
 	/*
 	 * The subslice disable field is global, i.e. it applies
