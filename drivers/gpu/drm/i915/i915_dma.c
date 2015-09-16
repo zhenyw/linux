@@ -741,6 +741,7 @@ static void gen9_sseu_info_init(struct drm_device *dev)
 	 * The subslice disable field is global, i.e. it applies
 	 * to each of the enabled slices.
 	*/
+	info->subslice_mask = ss_disable ^ ((1 << ss_max) - 1);
 	info->subslice_per_slice = ss_max - hweight32(ss_disable);
 	info->subslice_total = info->slice_total *
 			       info->subslice_per_slice;
