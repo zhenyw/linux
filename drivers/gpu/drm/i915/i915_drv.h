@@ -1694,6 +1694,11 @@ struct i915_execbuffer_params {
 	struct drm_i915_gem_request     *request;
 };
 
+struct i915_oa_format {
+	u32 format;
+	int size;
+};
+
 struct i915_oa_reg {
 	u32 addr;
 	u32 value;
@@ -1758,6 +1763,20 @@ struct i915_perf_event {
 	 *
 	 * The event will always be disabled before this is called */
 	void (*destroy)(struct i915_perf_event *event);
+};
+
+struct i915_oa_ops {
+	void (*init_oa_buffer)(struct drm_i915_private *dev_priv);
+	void (*enable_metric_set)(struct drm_i915_private *dev_priv);
+	void (*disable_metric_set)(struct drm_i915_private *dev_priv);
+	void (*oa_enable)(struct drm_i915_private *dev_priv);
+	void (*oa_disable)(struct drm_i915_private *dev_priv);
+	void (*update_oacontrol)(struct drm_i915_private *dev_priv);
+	void (*update_specific_hw_ctx_id)(struct drm_i915_private *dev_priv,
+					  u32 ctx_id);
+	void (*read)(struct i915_perf_event *event,
+		     struct i915_perf_read_state *read_state);
+	bool (*oa_buffer_is_empty)(struct drm_i915_private *dev_priv);
 };
 
 struct drm_i915_private {
@@ -1996,7 +2015,43 @@ struct drm_i915_private {
 
 	struct {
 		bool initialized;
+
 		struct mutex lock;
+
+		struct ctl_table_header *sysctl_header;
+
+		struct {
+			struct i915_perf_event *exclusive_event;
+
+			u32 specific_ctx_id;
+
+			struct hrtimer poll_check_timer;
+			wait_queue_head_t poll_wq;
+
+			bool periodic;
+			u32 period_exponent;
+
+			u32 metrics_set;
+
+			const struct i915_oa_reg *mux_regs;
+			int mux_regs_len;
+			const struct i915_oa_reg *b_counter_regs;
+			int b_counter_regs_len;
+
+			struct {
+				struct drm_i915_gem_object *obj;
+				u32 gtt_offset;
+				u8 *addr;
+				u32 head;
+				u32 tail;
+				int format;
+				int format_size;
+			} oa_buffer;
+
+			struct i915_oa_ops ops;
+			const struct i915_oa_format *oa_formats;
+		} oa;
+
 		struct list_head events;
 	} perf;
 
@@ -3204,6 +3259,8 @@ int i915_gem_context_setparam_ioctl(struct drm_device *dev, void *data,
 
 int i915_perf_open_ioctl(struct drm_device *dev, void *data,
 			 struct drm_file *file);
+void i915_oa_context_pin_notify(struct drm_i915_private *dev_priv,
+				struct intel_context *context);
 
 /* i915_gem_evict.c */
 int __must_check i915_gem_evict_something(struct drm_device *dev,

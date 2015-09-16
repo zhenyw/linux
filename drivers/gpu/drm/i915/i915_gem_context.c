@@ -133,6 +133,23 @@ static int get_context_size(struct drm_device *dev)
 	return ret;
 }
 
+static int i915_gem_context_pin_state(struct drm_device *dev,
+				      struct intel_context *ctx)
+{
+	int ret;
+
+	BUG_ON(!mutex_is_locked(&dev->struct_mutex));
+
+	ret = i915_gem_obj_ggtt_pin(ctx->legacy_hw_ctx.rcs_state,
+				    get_context_alignment(dev), 0);
+	if (ret)
+		return ret;
+
+	i915_oa_context_pin_notify(dev->dev_private, ctx);
+
+	return 0;
+}
+
 void i915_gem_context_free(struct kref *ctx_ref)
 {
 	struct intel_context *ctx = container_of(ctx_ref, typeof(*ctx), ref);
@@ -258,8 +275,7 @@ i915_gem_create_context(struct drm_device *dev,
 		 * be available. To avoid this we always pin the default
 		 * context.
 		 */
-		ret = i915_gem_obj_ggtt_pin(ctx->legacy_hw_ctx.rcs_state,
-					    get_context_alignment(dev), 0);
+		ret = i915_gem_context_pin_state(dev, ctx);
 		if (ret) {
 			DRM_DEBUG_DRIVER("Couldn't pin %d\n", ret);
 			goto err_destroy;
@@ -634,8 +650,7 @@ static int do_switch(struct drm_i915_gem_request *req)
 
 	/* Trying to pin first makes error handling easier. */
 	if (ring == &dev_priv->ring[RCS]) {
-		ret = i915_gem_obj_ggtt_pin(to->legacy_hw_ctx.rcs_state,
-					    get_context_alignment(ring->dev), 0);
+		ret = i915_gem_context_pin_state(ring->dev, to);
 		if (ret)
 			return ret;
 	}

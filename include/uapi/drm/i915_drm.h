@@ -58,6 +58,29 @@
 #define I915_ERROR_UEVENT		"ERROR"
 #define I915_RESET_UEVENT		"RESET"
 
+/*
+ * perf events configuration exposed by i915 through
+ * /sys/bus/event_sources/drivers/i915_oa
+ */
+
+enum drm_i915_oa_format {
+	I915_OA_FORMAT_A13	    = 0,
+	I915_OA_FORMAT_A29	    = 1,
+	I915_OA_FORMAT_A13_B8_C8    = 2,
+	I915_OA_FORMAT_B4_C8	    = 4,
+	I915_OA_FORMAT_A45_B8_C8    = 5,
+	I915_OA_FORMAT_B4_C8_A16    = 6,
+	I915_OA_FORMAT_C4_B8	    = 7,
+
+	I915_OA_FORMAT_MAX	    /* non-ABI */
+};
+
+enum drm_i915_oa_set {
+	I915_OA_METRICS_SET_3D			= 1,
+
+	I915_OA_METRICS_SET_MAX			/* non-ABI */
+};
+
 /* Each region is a minimum of 16k, and there are at most 255 of them.
  */
 #define I915_NR_TEX_REGIONS 255	/* table size 2k - maximum due to use
@@ -1132,8 +1155,34 @@ struct drm_i915_gem_context_param {
 };
 
 enum drm_i915_perf_event_type {
+	I915_PERF_OA_EVENT = 1,
+
 	I915_PERF_EVENT_TYPE_MAX	/* non-ABI */
 };
+
+
+#define I915_OA_FLAG_PERIODIC		(1<<0)
+
+struct drm_i915_perf_oa_attr {
+	__u32 size;
+
+	__u32 flags;
+
+	__u32 metrics_set;
+	__u32 oa_format;
+	__u32 oa_timer_exponent;
+};
+
+/* Note: same versioning scheme as struct perf_event_attr
+ *
+ * Userspace specified size defines ABI version and kernel
+ * zero extends to size of latest version. If userspace
+ * gives a larger structure than the kernel expects then
+ * kernel asserts that all unknown fields are zero.
+ */
+#define I915_OA_ATTR_SIZE_VER0		20 /* sizeof first published struct */
+
+
 
 #define I915_PERF_FLAG_FD_CLOEXEC	(1<<0)
 #define I915_PERF_FLAG_FD_NONBLOCK	(1<<1)
@@ -1187,6 +1236,20 @@ enum drm_i915_perf_record_type {
 	 * };
 	 */
 	DRM_I915_PERF_RECORD_SAMPLE = 1,
+
+	/*
+	 * Indicates that one or more OA reports was not written
+	 * by the hardware.
+	 */
+	DRM_I915_PERF_RECORD_OA_REPORT_LOST = 2,
+
+	/*
+	 * Indicates that the internal circular buffer that Gen
+	 * graphics writes OA reports into has filled, which may
+	 * either mean that old reports could be overwritten or
+	 * subsequent reports lost until the buffer is cleared.
+	 */
+	DRM_I915_PERF_RECORD_OA_BUFFER_OVERFLOW = 3,
 
 	DRM_I915_PERF_RECORD_MAX /* non-ABI */
 };
