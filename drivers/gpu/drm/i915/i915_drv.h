@@ -684,6 +684,7 @@ enum forcewake_domains {
 };
 
 struct intel_uncore_funcs {
+	int (*wait_for_rcs_busy)(struct drm_i915_private *dev_priv);
 	void (*force_wake_get)(struct drm_i915_private *dev_priv,
 							enum forcewake_domains domains);
 	void (*force_wake_put)(struct drm_i915_private *dev_priv,
@@ -709,6 +710,7 @@ struct intel_uncore {
 
 	struct intel_uncore_funcs funcs;
 
+	atomic_t hold_rcs_busy_count;
 	unsigned fifo_count;
 	enum forcewake_domains fw_domains;
 
@@ -2839,6 +2841,8 @@ static inline bool intel_vgpu_active(struct drm_device *dev)
 {
 	return to_i915(dev)->vgpu.active;
 }
+int intel_uncore_begin_ctx_mmio(struct drm_i915_private *dev_priv);
+void intel_uncore_end_ctx_mmio(struct drm_i915_private *dev_priv);
 
 void
 i915_enable_pipestat(struct drm_i915_private *dev_priv, enum pipe pipe,

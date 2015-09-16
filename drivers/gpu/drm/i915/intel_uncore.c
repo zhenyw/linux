@@ -1186,6 +1186,16 @@ static void intel_uncore_fw_domains_init(struct drm_device *dev)
 	WARN_ON(dev_priv->uncore.fw_domains == 0);
 }
 
+static int gen8_wait_for_rcs_busy(struct drm_i915_private *dev_priv)
+{
+	return wait_for((I915_READ(GEN6_RCS_PWR_FSM) & 0x3f) == 0x30, 50);
+}
+
+static int gen9_wait_for_rcs_busy(struct drm_i915_private *dev_priv)
+{
+	return wait_for((I915_READ(GEN9_RCS_FE_FSM2) & 0x3f) == 0x30, 50);
+}
+
 void intel_uncore_init(struct drm_device *dev)
 {
 	struct drm_i915_private *dev_priv = dev->dev_private;
@@ -1203,6 +1213,7 @@ void intel_uncore_init(struct drm_device *dev)
 	case 9:
 		ASSIGN_WRITE_MMIO_VFUNCS(gen9);
 		ASSIGN_READ_MMIO_VFUNCS(gen9);
+		dev_priv->uncore.funcs.wait_for_rcs_busy = gen9_wait_for_rcs_busy;
 		break;
 	case 8:
 		if (IS_CHERRYVIEW(dev)) {
@@ -1213,6 +1224,7 @@ void intel_uncore_init(struct drm_device *dev)
 			ASSIGN_WRITE_MMIO_VFUNCS(gen8);
 			ASSIGN_READ_MMIO_VFUNCS(gen6);
 		}
+		dev_priv->uncore.funcs.wait_for_rcs_busy = gen8_wait_for_rcs_busy;
 		break;
 	case 7:
 	case 6:
@@ -1552,4 +1564,62 @@ void intel_uncore_check_errors(struct drm_device *dev)
 		DRM_ERROR("Unclaimed register before interrupt\n");
 		__raw_i915_write32(dev_priv, FPGA_DBG, FPGA_DBG_RM_NOCLAIM);
 	}
+}
+
+static int hold_rcs_busy(struct drm_i915_private *dev_priv)
+{
+	int ret = 0;
+
+	if (atomic_inc_and_test(&dev_priv->uncore.hold_rcs_busy_count)) {
+		I915_WRITE(GEN6_RC_SLEEP_PSMI_CONTROL,
+			   _MASKED_BIT_ENABLE(GEN6_PSMI_SLEEP_MSG_DISABLE));
+
+		ret = dev_priv->uncore.funcs.wait_for_rcs_busy(dev_priv);
+	}
+
+	return ret;
+}
+
+static void release_rcs_busy(struct drm_i915_private *dev_priv)
+{
+	if (!atomic_dec_and_test(&dev_priv->uncore.hold_rcs_busy_count)) {
+		I915_WRITE(GEN6_RC_SLEEP_PSMI_CONTROL,
+			   _MASKED_BIT_DISABLE(GEN6_PSMI_SLEEP_MSG_DISABLE));
+	}
+}
+
+/*
+ * From Broadwell PRM, 3D-Media-GPGPU -> Register State Context
+ *
+ * MMIO reads or writes to any of the registers listed in the
+ * “Register State Context image” subsections through HOST/IA
+ * MMIO interface for debug purposes must follow the steps below:
+ *
+ * - SW should set the Force Wakeup bit to prevent GT from entering C6.
+ * - Write 0x2050[31:0] = 0x00010001 (disable sequence).
+ * - Disable IDLE messaging in CS (Write 0x2050[31:0] = 0x00010001).
+ * - Poll/Wait for register bits of 0x22AC[6:0] turn to 0x30 value.
+ * - Read/Write to desired MMIO registers.
+ * - Enable IDLE messaging in CS (Write 0x2050[31:0] = 0x00010000).
+ * - Force Wakeup bit should be reset to enable C6 entry.
+ */
+int intel_uncore_begin_ctx_mmio(struct drm_i915_private *dev_priv)
+{
+	int ret = 0;
+
+	BUG_ON(dev_priv->info.gen < 8);
+
+	intel_uncore_forcewake_get(dev_priv, FORCEWAKE_RENDER);
+
+	ret = hold_rcs_busy(dev_priv);
+	if (ret)
+	    intel_uncore_forcewake_put(dev_priv, FORCEWAKE_RENDER);
+
+	return ret;
+}
+
+void intel_uncore_end_ctx_mmio(struct drm_i915_private *dev_priv)
+{
+	release_rcs_busy(dev_priv);
+	intel_uncore_forcewake_put(dev_priv, FORCEWAKE_RENDER);
 }

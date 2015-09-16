@@ -2180,6 +2180,9 @@ enum skl_disp_power_wells {
 #define   GEN8_RC_SEMA_IDLE_MSG_DISABLE	(1 << 12)
 #define   GEN8_FF_DOP_CLOCK_GATE_DISABLE	(1<<10)
 
+#define GEN6_RCS_PWR_FSM 0x22ac
+#define GEN9_RCS_FE_FSM2 0x22a4
+
 /* Fuse readout registers for GT */
 #define CHV_FUSE_GT			(VLV_DISPLAY_BASE + 0x2168)
 #define   CHV_FGT_DISABLE_SS0		(1 << 10)
