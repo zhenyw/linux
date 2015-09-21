@@ -1145,6 +1145,12 @@ struct drm_i915_gem_context_param {
 	__u64 value;
 };
 
+enum drm_i915_oa_set {
+	I915_OA_METRICS_SET_3D                  = 1,
+
+	I915_OA_METRICS_SET_MAX                 /* non-ABI */
+};
+
 #define I915_PERF_FLAG_FD_CLOEXEC	(1<<0)
 #define I915_PERF_FLAG_FD_NONBLOCK	(1<<1)
 #define I915_PERF_FLAG_DISABLED		(1<<2)
