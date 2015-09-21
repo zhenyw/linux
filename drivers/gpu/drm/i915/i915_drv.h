@@ -1699,6 +1699,11 @@ struct intel_wm_config {
 	bool sprites_scaled;
 };
 
+struct i915_oa_reg {
+	u32 addr;
+	u32 value;
+};
+
 struct i915_perf_read_state {
 	int count;
 	ssize_t read;
