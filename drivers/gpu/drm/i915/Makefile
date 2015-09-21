@@ -97,7 +97,8 @@ i915-y += i915_vgpu.o
 i915-y += i915_perf.o \
 	  i915_oa_hsw.o \
 	  i915_oa_bdw.o \
-	  i915_oa_chv.o
+	  i915_oa_chv.o \
+	  i915_oa_skl.o
 
 # legacy horrors
 i915-y += i915_dma.o
