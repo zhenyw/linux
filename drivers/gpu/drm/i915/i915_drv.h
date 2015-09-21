@@ -2147,6 +2147,8 @@ struct drm_i915_private {
 			int mux_regs_len;
 			const struct i915_oa_reg *b_counter_regs;
 			int b_counter_regs_len;
+			const struct i915_oa_reg *flex_regs;
+			int flex_regs_len;
 
 			struct {
 				struct drm_i915_gem_object *obj;
