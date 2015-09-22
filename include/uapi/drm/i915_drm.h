@@ -64,13 +64,18 @@
  */
 
 enum drm_i915_oa_format {
-	I915_OA_FORMAT_A13	    = 0,
-	I915_OA_FORMAT_A29	    = 1,
-	I915_OA_FORMAT_A13_B8_C8    = 2,
-	I915_OA_FORMAT_B4_C8	    = 4,
-	I915_OA_FORMAT_A45_B8_C8    = 5,
-	I915_OA_FORMAT_B4_C8_A16    = 6,
-	I915_OA_FORMAT_C4_B8	    = 7,
+	I915_OA_FORMAT_A13	    = 0, /* HSW only */
+	I915_OA_FORMAT_A29	    = 1, /* HSW only */
+	I915_OA_FORMAT_A13_B8_C8    = 2, /* HSW only */
+	I915_OA_FORMAT_B4_C8	    = 4, /* HSW only */
+	I915_OA_FORMAT_A45_B8_C8    = 5, /* HSW only */
+	I915_OA_FORMAT_B4_C8_A16    = 6, /* HSW only */
+	I915_OA_FORMAT_C4_B8	    = 7, /* HSW+ */
+
+	/* Gen8+ */
+	I915_OA_FORMAT_A12		    = 8,
+	I915_OA_FORMAT_A12_B8_C8	    = 9,
+	I915_OA_FORMAT_A32u40_A4u32_B8_C8   = 10,
 
 	I915_OA_FORMAT_MAX	    /* non-ABI */
 };
