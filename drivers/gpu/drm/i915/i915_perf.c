@@ -521,6 +521,36 @@ static void hsw_enable_metric_set(struct drm_i915_private *dev_priv)
 		config_oa_regs(dev_priv, i915_oa_3d_b_counter_config_hsw,
 			       i915_oa_3d_b_counter_config_hsw_len);
 		break;
+	case I915_OA_METRICS_SET_COMPUTE:
+		config_oa_regs(dev_priv, i915_oa_compute_mux_config_hsw,
+			       i915_oa_compute_mux_config_hsw_len);
+		config_oa_regs(dev_priv, i915_oa_compute_b_counter_config_hsw,
+			       i915_oa_compute_b_counter_config_hsw_len);
+		break;
+	case I915_OA_METRICS_SET_COMPUTE_EXTENDED:
+		config_oa_regs(dev_priv, i915_oa_compute_extended_mux_config_hsw,
+			       i915_oa_compute_extended_mux_config_hsw_len);
+		config_oa_regs(dev_priv, i915_oa_compute_extended_b_counter_config_hsw,
+			       i915_oa_compute_extended_b_counter_config_hsw_len);
+		break;
+	case I915_OA_METRICS_SET_MEMORY_READS:
+		config_oa_regs(dev_priv, i915_oa_memory_reads_mux_config_hsw,
+			       i915_oa_memory_reads_mux_config_hsw_len);
+		config_oa_regs(dev_priv, i915_oa_memory_reads_b_counter_config_hsw,
+			       i915_oa_memory_reads_b_counter_config_hsw_len);
+		break;
+	case I915_OA_METRICS_SET_MEMORY_WRITES:
+		config_oa_regs(dev_priv, i915_oa_memory_writes_mux_config_hsw,
+			       i915_oa_memory_writes_mux_config_hsw_len);
+		config_oa_regs(dev_priv, i915_oa_memory_writes_b_counter_config_hsw,
+			       i915_oa_memory_writes_b_counter_config_hsw_len);
+		break;
+	case I915_OA_METRICS_SET_SAMPLER_BALANCE:
+		config_oa_regs(dev_priv, i915_oa_sampler_balance_mux_config_hsw,
+			       i915_oa_sampler_balance_mux_config_hsw_len);
+		config_oa_regs(dev_priv, i915_oa_sampler_balance_b_counter_config_hsw,
+			       i915_oa_sampler_balance_b_counter_config_hsw_len);
+		break;
 	default:
 		BUG();
 	}
