@@ -30,9 +30,14 @@
 
 enum metric_set_id {
 	METRIC_SET_ID_RENDER_BASIC = 1,
+	METRIC_SET_ID_COMPUTE_BASIC,
+	METRIC_SET_ID_COMPUTE_EXTENDED,
+	METRIC_SET_ID_MEMORY_READS,
+	METRIC_SET_ID_MEMORY_WRITES,
+	METRIC_SET_ID_SAMPLER_BALANCE,
 };
 
-int i915_oa_n_builtin_metric_sets_hsw = 1;
+int i915_oa_n_builtin_metric_sets_hsw = 6;
 
 static const struct i915_oa_reg b_counter_config_render_basic[] = {
 	{ _MMIO(0x2724), 0x00800000 },
@@ -118,6 +123,332 @@ static int select_render_basic_config(struct drm_i915_private *dev_priv)
 	return 0;
 }
 
+static const struct i915_oa_reg b_counter_config_compute_basic[] = {
+	{ _MMIO(0x2710), 0x00000000 },
+	{ _MMIO(0x2714), 0x00800000 },
+	{ _MMIO(0x2718), 0xAAAAAAAA },
+	{ _MMIO(0x271C), 0xAAAAAAAA },
+	{ _MMIO(0x2720), 0x00000000 },
+	{ _MMIO(0x2724), 0x00800000 },
+	{ _MMIO(0x2728), 0xAAAAAAAA },
+	{ _MMIO(0x272C), 0xAAAAAAAA },
+	{ _MMIO(0x2740), 0x00000000 },
+	{ _MMIO(0x2744), 0x00000000 },
+	{ _MMIO(0x2748), 0x00000000 },
+	{ _MMIO(0x274C), 0x00000000 },
+	{ _MMIO(0x2750), 0x00000000 },
+	{ _MMIO(0x2754), 0x00000000 },
+	{ _MMIO(0x2758), 0x00000000 },
+	{ _MMIO(0x275C), 0x00000000 },
+};
+
+static const struct i915_oa_reg mux_config_compute_basic[] = {
+	{ _MMIO(0x253A4), 0x00000000 },
+	{ _MMIO(0x2681C), 0x01F00800 },
+	{ _MMIO(0x26820), 0x00001000 },
+	{ _MMIO(0x2781C), 0x01F00800 },
+	{ _MMIO(0x26520), 0x00000007 },
+	{ _MMIO(0x265A0), 0x00000007 },
+	{ _MMIO(0x25380), 0x00000010 },
+	{ _MMIO(0x2538C), 0x00300000 },
+	{ _MMIO(0x25384), 0xAA8AAAAA },
+	{ _MMIO(0x25404), 0xFFFFFFFF },
+	{ _MMIO(0x26800), 0x00004202 },
+	{ _MMIO(0x26808), 0x00605817 },
+	{ _MMIO(0x2680C), 0x10001005 },
+	{ _MMIO(0x26804), 0x00000000 },
+	{ _MMIO(0x27800), 0x00000102 },
+	{ _MMIO(0x27808), 0x0C0701E0 },
+	{ _MMIO(0x2780C), 0x000200A0 },
+	{ _MMIO(0x27804), 0x00000000 },
+	{ _MMIO(0x26484), 0x44000000 },
+	{ _MMIO(0x26704), 0x44000000 },
+	{ _MMIO(0x26500), 0x00000006 },
+	{ _MMIO(0x26510), 0x00000001 },
+	{ _MMIO(0x26504), 0x88000000 },
+	{ _MMIO(0x26580), 0x00000006 },
+	{ _MMIO(0x26590), 0x00000020 },
+	{ _MMIO(0x26584), 0x00000000 },
+	{ _MMIO(0x26104), 0x55822222 },
+	{ _MMIO(0x26184), 0xAA866666 },
+	{ _MMIO(0x25420), 0x08320C83 },
+	{ _MMIO(0x25424), 0x06820C83 },
+	{ _MMIO(0x2541C), 0x00000000 },
+	{ _MMIO(0x25428), 0x00000C03 },
+};
+
+static int select_compute_basic_config(struct drm_i915_private *dev_priv)
+{
+	dev_priv->perf.oa.mux_regs =
+		mux_config_compute_basic;
+	dev_priv->perf.oa.mux_regs_len =
+		ARRAY_SIZE(mux_config_compute_basic);
+
+	dev_priv->perf.oa.b_counter_regs =
+		b_counter_config_compute_basic;
+	dev_priv->perf.oa.b_counter_regs_len =
+		ARRAY_SIZE(b_counter_config_compute_basic);
+
+	return 0;
+}
+
+static const struct i915_oa_reg b_counter_config_compute_extended[] = {
+	{ _MMIO(0x2724), 0xf0800000 },
+	{ _MMIO(0x2720), 0x00000000 },
+	{ _MMIO(0x2714), 0xf0800000 },
+	{ _MMIO(0x2710), 0x00000000 },
+	{ _MMIO(0x2770), 0x0007fe2a },
+	{ _MMIO(0x2774), 0x0000ff00 },
+	{ _MMIO(0x2778), 0x0007fe6a },
+	{ _MMIO(0x277c), 0x0000ff00 },
+	{ _MMIO(0x2780), 0x0007fe92 },
+	{ _MMIO(0x2784), 0x0000ff00 },
+	{ _MMIO(0x2788), 0x0007fea2 },
+	{ _MMIO(0x278c), 0x0000ff00 },
+	{ _MMIO(0x2790), 0x0007fe32 },
+	{ _MMIO(0x2794), 0x0000ff00 },
+	{ _MMIO(0x2798), 0x0007fe9a },
+	{ _MMIO(0x279c), 0x0000ff00 },
+	{ _MMIO(0x27a0), 0x0007ff23 },
+	{ _MMIO(0x27a4), 0x0000ff00 },
+	{ _MMIO(0x27a8), 0x0007fff3 },
+	{ _MMIO(0x27ac), 0x0000fffe },
+};
+
+static const struct i915_oa_reg mux_config_compute_extended[] = {
+	{ _MMIO(0x2681C), 0x3EB00800 },
+	{ _MMIO(0x26820), 0x00900000 },
+	{ _MMIO(0x25384), 0x02AAAAAA },
+	{ _MMIO(0x25404), 0x03FFFFFF },
+	{ _MMIO(0x26800), 0x00142284 },
+	{ _MMIO(0x26808), 0x0E629062 },
+	{ _MMIO(0x2680C), 0x3F6F55CB },
+	{ _MMIO(0x26810), 0x00000014 },
+	{ _MMIO(0x26804), 0x00000000 },
+	{ _MMIO(0x26104), 0x02AAAAAA },
+	{ _MMIO(0x26184), 0x02AAAAAA },
+	{ _MMIO(0x25420), 0x00000000 },
+	{ _MMIO(0x25424), 0x00000000 },
+	{ _MMIO(0x2541C), 0x00000000 },
+	{ _MMIO(0x25428), 0x00000000 },
+};
+
+static int select_compute_extended_config(struct drm_i915_private *dev_priv)
+{
+	dev_priv->perf.oa.mux_regs =
+		mux_config_compute_extended;
+	dev_priv->perf.oa.mux_regs_len =
+		ARRAY_SIZE(mux_config_compute_extended);
+
+	dev_priv->perf.oa.b_counter_regs =
+		b_counter_config_compute_extended;
+	dev_priv->perf.oa.b_counter_regs_len =
+		ARRAY_SIZE(b_counter_config_compute_extended);
+
+	return 0;
+}
+
+static const struct i915_oa_reg b_counter_config_memory_reads[] = {
+	{ _MMIO(0x2724), 0xf0800000 },
+	{ _MMIO(0x2720), 0x00000000 },
+	{ _MMIO(0x2714), 0xf0800000 },
+	{ _MMIO(0x2710), 0x00000000 },
+	{ _MMIO(0x274c), 0x76543298 },
+	{ _MMIO(0x2748), 0x98989898 },
+	{ _MMIO(0x2744), 0x000000e4 },
+	{ _MMIO(0x2740), 0x00000000 },
+	{ _MMIO(0x275c), 0x98a98a98 },
+	{ _MMIO(0x2758), 0x88888888 },
+	{ _MMIO(0x2754), 0x000c5500 },
+	{ _MMIO(0x2750), 0x00000000 },
+	{ _MMIO(0x2770), 0x0007f81a },
+	{ _MMIO(0x2774), 0x0000fc00 },
+	{ _MMIO(0x2778), 0x0007f82a },
+	{ _MMIO(0x277c), 0x0000fc00 },
+	{ _MMIO(0x2780), 0x0007f872 },
+	{ _MMIO(0x2784), 0x0000fc00 },
+	{ _MMIO(0x2788), 0x0007f8ba },
+	{ _MMIO(0x278c), 0x0000fc00 },
+	{ _MMIO(0x2790), 0x0007f87a },
+	{ _MMIO(0x2794), 0x0000fc00 },
+	{ _MMIO(0x2798), 0x0007f8ea },
+	{ _MMIO(0x279c), 0x0000fc00 },
+	{ _MMIO(0x27a0), 0x0007f8e2 },
+	{ _MMIO(0x27a4), 0x0000fc00 },
+	{ _MMIO(0x27a8), 0x0007f8f2 },
+	{ _MMIO(0x27ac), 0x0000fc00 },
+};
+
+static const struct i915_oa_reg mux_config_memory_reads[] = {
+	{ _MMIO(0x253A4), 0x34300000 },
+	{ _MMIO(0x25440), 0x2D800000 },
+	{ _MMIO(0x25444), 0x00000008 },
+	{ _MMIO(0x25128), 0x0E600000 },
+	{ _MMIO(0x25380), 0x00000450 },
+	{ _MMIO(0x25390), 0x00052C43 },
+	{ _MMIO(0x25384), 0x00000000 },
+	{ _MMIO(0x25400), 0x00006144 },
+	{ _MMIO(0x25408), 0x0A418820 },
+	{ _MMIO(0x2540C), 0x000820E6 },
+	{ _MMIO(0x25404), 0xFF500000 },
+	{ _MMIO(0x25100), 0x000005D6 },
+	{ _MMIO(0x2510C), 0x0EF00000 },
+	{ _MMIO(0x25104), 0x00000000 },
+	{ _MMIO(0x25420), 0x02108421 },
+	{ _MMIO(0x25424), 0x00008421 },
+	{ _MMIO(0x2541C), 0x00000000 },
+	{ _MMIO(0x25428), 0x00000000 },
+};
+
+static int select_memory_reads_config(struct drm_i915_private *dev_priv)
+{
+	dev_priv->perf.oa.mux_regs =
+		mux_config_memory_reads;
+	dev_priv->perf.oa.mux_regs_len =
+		ARRAY_SIZE(mux_config_memory_reads);
+
+	dev_priv->perf.oa.b_counter_regs =
+		b_counter_config_memory_reads;
+	dev_priv->perf.oa.b_counter_regs_len =
+		ARRAY_SIZE(b_counter_config_memory_reads);
+
+	return 0;
+}
+
+static const struct i915_oa_reg b_counter_config_memory_writes[] = {
+	{ _MMIO(0x2724), 0xf0800000 },
+	{ _MMIO(0x2720), 0x00000000 },
+	{ _MMIO(0x2714), 0xf0800000 },
+	{ _MMIO(0x2710), 0x00000000 },
+	{ _MMIO(0x274c), 0x76543298 },
+	{ _MMIO(0x2748), 0x98989898 },
+	{ _MMIO(0x2744), 0x000000e4 },
+	{ _MMIO(0x2740), 0x00000000 },
+	{ _MMIO(0x275c), 0xbabababa },
+	{ _MMIO(0x2758), 0x88888888 },
+	{ _MMIO(0x2754), 0x000c5500 },
+	{ _MMIO(0x2750), 0x00000000 },
+	{ _MMIO(0x2770), 0x0007f81a },
+	{ _MMIO(0x2774), 0x0000fc00 },
+	{ _MMIO(0x2778), 0x0007f82a },
+	{ _MMIO(0x277c), 0x0000fc00 },
+	{ _MMIO(0x2780), 0x0007f822 },
+	{ _MMIO(0x2784), 0x0000fc00 },
+	{ _MMIO(0x2788), 0x0007f8ba },
+	{ _MMIO(0x278c), 0x0000fc00 },
+	{ _MMIO(0x2790), 0x0007f87a },
+	{ _MMIO(0x2794), 0x0000fc00 },
+	{ _MMIO(0x2798), 0x0007f8ea },
+	{ _MMIO(0x279c), 0x0000fc00 },
+	{ _MMIO(0x27a0), 0x0007f8e2 },
+	{ _MMIO(0x27a4), 0x0000fc00 },
+	{ _MMIO(0x27a8), 0x0007f8f2 },
+	{ _MMIO(0x27ac), 0x0000fc00 },
+};
+
+static const struct i915_oa_reg mux_config_memory_writes[] = {
+	{ _MMIO(0x253A4), 0x34300000 },
+	{ _MMIO(0x25440), 0x01500000 },
+	{ _MMIO(0x25444), 0x00000120 },
+	{ _MMIO(0x25128), 0x0C200000 },
+	{ _MMIO(0x25380), 0x00000450 },
+	{ _MMIO(0x25390), 0x00052C43 },
+	{ _MMIO(0x25384), 0x00000000 },
+	{ _MMIO(0x25400), 0x00007184 },
+	{ _MMIO(0x25408), 0x0A418820 },
+	{ _MMIO(0x2540C), 0x000820E6 },
+	{ _MMIO(0x25404), 0xFF500000 },
+	{ _MMIO(0x25100), 0x000005D6 },
+	{ _MMIO(0x2510C), 0x1E700000 },
+	{ _MMIO(0x25104), 0x00000000 },
+	{ _MMIO(0x25420), 0x02108421 },
+	{ _MMIO(0x25424), 0x00008421 },
+	{ _MMIO(0x2541C), 0x00000000 },
+	{ _MMIO(0x25428), 0x00000000 },
+};
+
+static int select_memory_writes_config(struct drm_i915_private *dev_priv)
+{
+	dev_priv->perf.oa.mux_regs =
+		mux_config_memory_writes;
+	dev_priv->perf.oa.mux_regs_len =
+		ARRAY_SIZE(mux_config_memory_writes);
+
+	dev_priv->perf.oa.b_counter_regs =
+		b_counter_config_memory_writes;
+	dev_priv->perf.oa.b_counter_regs_len =
+		ARRAY_SIZE(b_counter_config_memory_writes);
+
+	return 0;
+}
+
+static const struct i915_oa_reg b_counter_config_sampler_balance[] = {
+	{ _MMIO(0x2740), 0x00000000 },
+	{ _MMIO(0x2744), 0x00800000 },
+	{ _MMIO(0x2710), 0x00000000 },
+	{ _MMIO(0x2714), 0x00800000 },
+	{ _MMIO(0x2720), 0x00000000 },
+	{ _MMIO(0x2724), 0x00800000 },
+};
+
+static const struct i915_oa_reg mux_config_sampler_balance[] = {
+	{ _MMIO(0x2eb9c), 0x01906400 },
+	{ _MMIO(0x2fb9c), 0x01906400 },
+	{ _MMIO(0x253a4), 0x00000000 },
+	{ _MMIO(0x26b9c), 0x01906400 },
+	{ _MMIO(0x27b9c), 0x01906400 },
+	{ _MMIO(0x27104), 0x00a00000 },
+	{ _MMIO(0x27184), 0x00a50000 },
+	{ _MMIO(0x2e804), 0x00500000 },
+	{ _MMIO(0x2e984), 0x00500000 },
+	{ _MMIO(0x2eb04), 0x00500000 },
+	{ _MMIO(0x2eb80), 0x00000084 },
+	{ _MMIO(0x2eb8c), 0x14200000 },
+	{ _MMIO(0x2eb84), 0x00000000 },
+	{ _MMIO(0x2f804), 0x00050000 },
+	{ _MMIO(0x2f984), 0x00050000 },
+	{ _MMIO(0x2fb04), 0x00050000 },
+	{ _MMIO(0x2fb80), 0x00000084 },
+	{ _MMIO(0x2fb8c), 0x00050800 },
+	{ _MMIO(0x2fb84), 0x00000000 },
+	{ _MMIO(0x25380), 0x00000010 },
+	{ _MMIO(0x2538c), 0x000000c0 },
+	{ _MMIO(0x25384), 0xaa550000 },
+	{ _MMIO(0x25404), 0xffffc000 },
+	{ _MMIO(0x26804), 0x50000000 },
+	{ _MMIO(0x26984), 0x50000000 },
+	{ _MMIO(0x26b04), 0x50000000 },
+	{ _MMIO(0x26b80), 0x00000084 },
+	{ _MMIO(0x26b90), 0x00050800 },
+	{ _MMIO(0x26b84), 0x00000000 },
+	{ _MMIO(0x27804), 0x05000000 },
+	{ _MMIO(0x27984), 0x05000000 },
+	{ _MMIO(0x27b04), 0x05000000 },
+	{ _MMIO(0x27b80), 0x00000084 },
+	{ _MMIO(0x27b90), 0x00000142 },
+	{ _MMIO(0x27b84), 0x00000000 },
+	{ _MMIO(0x26104), 0xa0000000 },
+	{ _MMIO(0x26184), 0xa5000000 },
+	{ _MMIO(0x25424), 0x00008620 },
+	{ _MMIO(0x2541c), 0x00000000 },
+	{ _MMIO(0x25428), 0x0004a54a },
+};
+
+static int select_sampler_balance_config(struct drm_i915_private *dev_priv)
+{
+	dev_priv->perf.oa.mux_regs =
+		mux_config_sampler_balance;
+	dev_priv->perf.oa.mux_regs_len =
+		ARRAY_SIZE(mux_config_sampler_balance);
+
+	dev_priv->perf.oa.b_counter_regs =
+		b_counter_config_sampler_balance;
+	dev_priv->perf.oa.b_counter_regs_len =
+		ARRAY_SIZE(b_counter_config_sampler_balance);
+
+	return 0;
+}
+
 int i915_oa_select_metric_set_hsw(struct drm_i915_private *dev_priv)
 {
 	dev_priv->perf.oa.mux_regs = NULL;
@@ -128,6 +459,16 @@ int i915_oa_select_metric_set_hsw(struct drm_i915_private *dev_priv)
 	switch (dev_priv->perf.oa.metrics_set) {
 	case METRIC_SET_ID_RENDER_BASIC:
 		return select_render_basic_config(dev_priv);
+	case METRIC_SET_ID_COMPUTE_BASIC:
+		return select_compute_basic_config(dev_priv);
+	case METRIC_SET_ID_COMPUTE_EXTENDED:
+		return select_compute_extended_config(dev_priv);
+	case METRIC_SET_ID_MEMORY_READS:
+		return select_memory_reads_config(dev_priv);
+	case METRIC_SET_ID_MEMORY_WRITES:
+		return select_memory_writes_config(dev_priv);
+	case METRIC_SET_ID_SAMPLER_BALANCE:
+		return select_sampler_balance_config(dev_priv);
 	default:
 		return -ENODEV;
 	}
@@ -155,6 +496,116 @@ static struct attribute_group group_render_basic = {
 	.attrs =  attrs_render_basic,
 };
 
+static ssize_t
+show_compute_basic_id(struct device *kdev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%d\n", METRIC_SET_ID_COMPUTE_BASIC);
+}
+
+static struct device_attribute dev_attr_compute_basic_id = {
+	.attr = { .name = "id", .mode = S_IRUGO },
+	.show = show_compute_basic_id,
+	.store = NULL,
+};
+
+static struct attribute *attrs_compute_basic[] = {
+	&dev_attr_compute_basic_id.attr,
+	NULL,
+};
+
+static struct attribute_group group_compute_basic = {
+	.name = "39ad14bc-2380-45c4-91eb-fbcb3aa7ae7b",
+	.attrs =  attrs_compute_basic,
+};
+
+static ssize_t
+show_compute_extended_id(struct device *kdev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%d\n", METRIC_SET_ID_COMPUTE_EXTENDED);
+}
+
+static struct device_attribute dev_attr_compute_extended_id = {
+	.attr = { .name = "id", .mode = S_IRUGO },
+	.show = show_compute_extended_id,
+	.store = NULL,
+};
+
+static struct attribute *attrs_compute_extended[] = {
+	&dev_attr_compute_extended_id.attr,
+	NULL,
+};
+
+static struct attribute_group group_compute_extended = {
+	.name = "3865be28-6982-49fe-9494-e4d1b4795413",
+	.attrs =  attrs_compute_extended,
+};
+
+static ssize_t
+show_memory_reads_id(struct device *kdev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%d\n", METRIC_SET_ID_MEMORY_READS);
+}
+
+static struct device_attribute dev_attr_memory_reads_id = {
+	.attr = { .name = "id", .mode = S_IRUGO },
+	.show = show_memory_reads_id,
+	.store = NULL,
+};
+
+static struct attribute *attrs_memory_reads[] = {
+	&dev_attr_memory_reads_id.attr,
+	NULL,
+};
+
+static struct attribute_group group_memory_reads = {
+	.name = "bb5ed49b-2497-4095-94f6-26ba294db88a",
+	.attrs =  attrs_memory_reads,
+};
+
+static ssize_t
+show_memory_writes_id(struct device *kdev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%d\n", METRIC_SET_ID_MEMORY_WRITES);
+}
+
+static struct device_attribute dev_attr_memory_writes_id = {
+	.attr = { .name = "id", .mode = S_IRUGO },
+	.show = show_memory_writes_id,
+	.store = NULL,
+};
+
+static struct attribute *attrs_memory_writes[] = {
+	&dev_attr_memory_writes_id.attr,
+	NULL,
+};
+
+static struct attribute_group group_memory_writes = {
+	.name = "3358d639-9b5f-45ab-976d-9b08cbfc6240",
+	.attrs =  attrs_memory_writes,
+};
+
+static ssize_t
+show_sampler_balance_id(struct device *kdev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%d\n", METRIC_SET_ID_SAMPLER_BALANCE);
+}
+
+static struct device_attribute dev_attr_sampler_balance_id = {
+	.attr = { .name = "id", .mode = S_IRUGO },
+	.show = show_sampler_balance_id,
+	.store = NULL,
+};
+
+static struct attribute *attrs_sampler_balance[] = {
+	&dev_attr_sampler_balance_id.attr,
+	NULL,
+};
+
+static struct attribute_group group_sampler_balance = {
+	.name = "bc274488-b4b6-40c7-90da-b77d7ad16189",
+	.attrs =  attrs_sampler_balance,
+};
+
 int
 i915_perf_init_sysfs_hsw(struct drm_i915_private *dev_priv)
 {
@@ -163,9 +614,34 @@ i915_perf_init_sysfs_hsw(struct drm_i915_private *dev_priv)
 	ret = sysfs_create_group(dev_priv->perf.metrics_kobj, &group_render_basic);
 	if (ret)
 		goto error_render_basic;
+	ret = sysfs_create_group(dev_priv->perf.metrics_kobj, &group_compute_basic);
+	if (ret)
+		goto error_compute_basic;
+	ret = sysfs_create_group(dev_priv->perf.metrics_kobj, &group_compute_extended);
+	if (ret)
+		goto error_compute_extended;
+	ret = sysfs_create_group(dev_priv->perf.metrics_kobj, &group_memory_reads);
+	if (ret)
+		goto error_memory_reads;
+	ret = sysfs_create_group(dev_priv->perf.metrics_kobj, &group_memory_writes);
+	if (ret)
+		goto error_memory_writes;
+	ret = sysfs_create_group(dev_priv->perf.metrics_kobj, &group_sampler_balance);
+	if (ret)
+		goto error_sampler_balance;
 
 	return 0;
 
+error_sampler_balance:
+	sysfs_remove_group(dev_priv->perf.metrics_kobj, &group_memory_writes);
+error_memory_writes:
+	sysfs_remove_group(dev_priv->perf.metrics_kobj, &group_memory_reads);
+error_memory_reads:
+	sysfs_remove_group(dev_priv->perf.metrics_kobj, &group_compute_extended);
+error_compute_extended:
+	sysfs_remove_group(dev_priv->perf.metrics_kobj, &group_compute_basic);
+error_compute_basic:
+	sysfs_remove_group(dev_priv->perf.metrics_kobj, &group_render_basic);
 error_render_basic:
 	return ret;
 }
@@ -174,4 +650,9 @@ void
 i915_perf_deinit_sysfs_hsw(struct drm_i915_private *dev_priv)
 {
 	sysfs_remove_group(dev_priv->perf.metrics_kobj, &group_render_basic);
+	sysfs_remove_group(dev_priv->perf.metrics_kobj, &group_compute_basic);
+	sysfs_remove_group(dev_priv->perf.metrics_kobj, &group_compute_extended);
+	sysfs_remove_group(dev_priv->perf.metrics_kobj, &group_memory_reads);
+	sysfs_remove_group(dev_priv->perf.metrics_kobj, &group_memory_writes);
+	sysfs_remove_group(dev_priv->perf.metrics_kobj, &group_sampler_balance);
 }
