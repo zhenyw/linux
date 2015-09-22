@@ -826,6 +826,8 @@ done:
 		}
 	}
 
+	i915_oa_legacy_ctx_switch_notify(ring);
+
 	return 0;
 
 unpin_out:
