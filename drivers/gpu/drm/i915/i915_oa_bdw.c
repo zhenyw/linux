@@ -30,9 +30,27 @@
 
 enum metric_set_id {
 	METRIC_SET_ID_RENDER_BASIC = 1,
+	METRIC_SET_ID_COMPUTE_BASIC,
+	METRIC_SET_ID_RENDER_PIPE_PROFILE,
+	METRIC_SET_ID_MEMORY_READS,
+	METRIC_SET_ID_MEMORY_WRITES,
+	METRIC_SET_ID_COMPUTE_EXTENDED,
+	METRIC_SET_ID_COMPUTE_L3_CACHE,
+	METRIC_SET_ID_DATA_PORT_READS_COALESCING,
+	METRIC_SET_ID_DATA_PORT_WRITES_COALESCING,
+	METRIC_SET_ID_HDC_AND_SF,
+	METRIC_SET_ID_L3_1,
+	METRIC_SET_ID_L3_2,
+	METRIC_SET_ID_L3_3,
+	METRIC_SET_ID_L3_4,
+	METRIC_SET_ID_RASTERIZER_AND_PIXEL_BACKEND,
+	METRIC_SET_ID_SAMPLER_1,
+	METRIC_SET_ID_SAMPLER_2,
+	METRIC_SET_ID_TDL_1,
+	METRIC_SET_ID_TDL_2,
 };
 
-int i915_oa_n_builtin_metric_sets_bdw = 1;
+int i915_oa_n_builtin_metric_sets_bdw = 19;
 
 static const struct i915_oa_reg b_counter_config_render_basic[] = {
 	{ _MMIO(0x2710), 0x00000000 },
@@ -294,6 +312,3295 @@ static int select_render_basic_config(struct drm_i915_private *dev_priv)
 	return 0;
 }
 
+static const struct i915_oa_reg b_counter_config_compute_basic[] = {
+	{ _MMIO(0x2710), 0x00000000 },
+	{ _MMIO(0x2714), 0x00800000 },
+	{ _MMIO(0x2720), 0x00000000 },
+	{ _MMIO(0x2724), 0x00800000 },
+};
+
+static const struct i915_oa_reg flex_eu_config_compute_basic[] = {
+	{ _MMIO(0xE458), 0x00005004 },
+	{ _MMIO(0xE558), 0x00000003 },
+	{ _MMIO(0xE658), 0x00002001 },
+	{ _MMIO(0xE758), 0x00778008 },
+	{ _MMIO(0xE45c), 0x00088078 },
+	{ _MMIO(0xE55c), 0x00808708 },
+	{ _MMIO(0xE65c), 0x00a08908 },
+};
+
+static const struct i915_oa_reg mux_config_compute_basic_1_0_slices_0x01[] = {
+	{ _MMIO(0x9888), 0x105C00E0 },
+	{ _MMIO(0x9888), 0x105800E0 },
+	{ _MMIO(0x9888), 0x103800E0 },
+	{ _MMIO(0x9888), 0x3580001A },
+	{ _MMIO(0x9888), 0x3B800060 },
+	{ _MMIO(0x9888), 0x3D800005 },
+	{ _MMIO(0x9888), 0x065C2100 },
+	{ _MMIO(0x9888), 0x0A5C0041 },
+	{ _MMIO(0x9888), 0x0C5C6600 },
+	{ _MMIO(0x9888), 0x005C6580 },
+	{ _MMIO(0x9888), 0x085C8000 },
+	{ _MMIO(0x9888), 0x0E5C8000 },
+	{ _MMIO(0x9888), 0x00580042 },
+	{ _MMIO(0x9888), 0x08582080 },
+	{ _MMIO(0x9888), 0x0C58004C },
+	{ _MMIO(0x9888), 0x0E582580 },
+	{ _MMIO(0x9888), 0x005B4000 },
+	{ _MMIO(0x9888), 0x185B1000 },
+	{ _MMIO(0x9888), 0x1A5B0104 },
+	{ _MMIO(0x9888), 0x0C1FA800 },
+	{ _MMIO(0x9888), 0x0E1FAA00 },
+	{ _MMIO(0x9888), 0x101F02AA },
+	{ _MMIO(0x9888), 0x08380042 },
+	{ _MMIO(0x9888), 0x0A382080 },
+	{ _MMIO(0x9888), 0x0E38404C },
+	{ _MMIO(0x9888), 0x0238404B },
+	{ _MMIO(0x9888), 0x00384000 },
+	{ _MMIO(0x9888), 0x16380000 },
+	{ _MMIO(0x9888), 0x18381145 },
+	{ _MMIO(0x9888), 0x04380000 },
+	{ _MMIO(0x9888), 0x0039A000 },
+	{ _MMIO(0x9888), 0x06398000 },
+	{ _MMIO(0x9888), 0x0839A000 },
+	{ _MMIO(0x9888), 0x0A39A000 },
+	{ _MMIO(0x9888), 0x0C39A000 },
+	{ _MMIO(0x9888), 0x0E39A000 },
+	{ _MMIO(0x9888), 0x02392000 },
+	{ _MMIO(0x9888), 0x018A8000 },
+	{ _MMIO(0x9888), 0x0F8A8000 },
+	{ _MMIO(0x9888), 0x198A8000 },
+	{ _MMIO(0x9888), 0x1B8AAAA0 },
+	{ _MMIO(0x9888), 0x1D8A0002 },
+	{ _MMIO(0x9888), 0x038A8000 },
+	{ _MMIO(0x9888), 0x058A8000 },
+	{ _MMIO(0x9888), 0x238B02A0 },
+	{ _MMIO(0x9888), 0x258B5550 },
+	{ _MMIO(0x9888), 0x278B0015 },
+	{ _MMIO(0x9888), 0x1F850A80 },
+	{ _MMIO(0x9888), 0x2185AAA0 },
+	{ _MMIO(0x9888), 0x2385002A },
+	{ _MMIO(0x9888), 0x01834000 },
+	{ _MMIO(0x9888), 0x0F834000 },
+	{ _MMIO(0x9888), 0x19835400 },
+	{ _MMIO(0x9888), 0x1B830155 },
+	{ _MMIO(0x9888), 0x03834000 },
+	{ _MMIO(0x9888), 0x05834000 },
+	{ _MMIO(0x9888), 0x0184C000 },
+	{ _MMIO(0x9888), 0x07848000 },
+	{ _MMIO(0x9888), 0x0984C000 },
+	{ _MMIO(0x9888), 0x0B84C000 },
+	{ _MMIO(0x9888), 0x0D84C000 },
+	{ _MMIO(0x9888), 0x0F84C000 },
+	{ _MMIO(0x9888), 0x03844000 },
+	{ _MMIO(0x9888), 0x17808137 },
+	{ _MMIO(0x9888), 0x1980C147 },
+	{ _MMIO(0x9888), 0x1B80C0E5 },
+	{ _MMIO(0x9888), 0x1D80C0E3 },
+	{ _MMIO(0x9888), 0x21800000 },
+	{ _MMIO(0x9888), 0x1180C000 },
+	{ _MMIO(0x9888), 0x1F80C000 },
+	{ _MMIO(0x9888), 0x13804000 },
+	{ _MMIO(0x9888), 0x15800000 },
+	{ _MMIO(0x0D24), 0x00000000 },
+	{ _MMIO(0x9888), 0x4D801000 },
+	{ _MMIO(0x9888), 0x4F800111 },
+	{ _MMIO(0x9888), 0x43800062 },
+	{ _MMIO(0x9888), 0x51800000 },
+	{ _MMIO(0x9888), 0x45800062 },
+	{ _MMIO(0x9888), 0x53800000 },
+	{ _MMIO(0x9888), 0x47800062 },
+	{ _MMIO(0x9888), 0x31800000 },
+	{ _MMIO(0x9888), 0x3F801062 },
+	{ _MMIO(0x9888), 0x41801084 },
+};
+
+static const struct i915_oa_reg mux_config_compute_basic_1_2_slices_0x02[] = {
+	{ _MMIO(0x9888), 0x10DC00E0 },
+	{ _MMIO(0x9888), 0x10D800E0 },
+	{ _MMIO(0x9888), 0x10B800E0 },
+	{ _MMIO(0x9888), 0x3580001A },
+	{ _MMIO(0x9888), 0x3B800060 },
+	{ _MMIO(0x9888), 0x3D800005 },
+	{ _MMIO(0x9888), 0x06DC2100 },
+	{ _MMIO(0x9888), 0x0ADC0041 },
+	{ _MMIO(0x9888), 0x0CDC6600 },
+	{ _MMIO(0x9888), 0x00DC6580 },
+	{ _MMIO(0x9888), 0x08DC8000 },
+	{ _MMIO(0x9888), 0x0EDC8000 },
+	{ _MMIO(0x9888), 0x00D80042 },
+	{ _MMIO(0x9888), 0x08D82080 },
+	{ _MMIO(0x9888), 0x0CD8004C },
+	{ _MMIO(0x9888), 0x0ED82580 },
+	{ _MMIO(0x9888), 0x00DB4000 },
+	{ _MMIO(0x9888), 0x18DB1000 },
+	{ _MMIO(0x9888), 0x1ADB0104 },
+	{ _MMIO(0x9888), 0x0C9FA800 },
+	{ _MMIO(0x9888), 0x0E9FAA00 },
+	{ _MMIO(0x9888), 0x109F02AA },
+	{ _MMIO(0x9888), 0x08B80042 },
+	{ _MMIO(0x9888), 0x0AB82080 },
+	{ _MMIO(0x9888), 0x0EB8404C },
+	{ _MMIO(0x9888), 0x02B8404B },
+	{ _MMIO(0x9888), 0x00B84000 },
+	{ _MMIO(0x9888), 0x16B80000 },
+	{ _MMIO(0x9888), 0x18B81145 },
+	{ _MMIO(0x9888), 0x04B80000 },
+	{ _MMIO(0x9888), 0x00B9A000 },
+	{ _MMIO(0x9888), 0x06B98000 },
+	{ _MMIO(0x9888), 0x08B9A000 },
+	{ _MMIO(0x9888), 0x0AB9A000 },
+	{ _MMIO(0x9888), 0x0CB9A000 },
+	{ _MMIO(0x9888), 0x0EB9A000 },
+	{ _MMIO(0x9888), 0x02B92000 },
+	{ _MMIO(0x9888), 0x01888000 },
+	{ _MMIO(0x9888), 0x0D88F800 },
+	{ _MMIO(0x9888), 0x0F88000F },
+	{ _MMIO(0x9888), 0x03888000 },
+	{ _MMIO(0x9888), 0x05888000 },
+	{ _MMIO(0x9888), 0x238B0540 },
+	{ _MMIO(0x9888), 0x258BAAA0 },
+	{ _MMIO(0x9888), 0x278B002A },
+	{ _MMIO(0x9888), 0x018C4000 },
+	{ _MMIO(0x9888), 0x0F8C4000 },
+	{ _MMIO(0x9888), 0x178C2000 },
+	{ _MMIO(0x9888), 0x198C5500 },
+	{ _MMIO(0x9888), 0x1B8C0015 },
+	{ _MMIO(0x9888), 0x038C4000 },
+	{ _MMIO(0x9888), 0x058C4000 },
+	{ _MMIO(0x9888), 0x018DA000 },
+	{ _MMIO(0x9888), 0x078D8000 },
+	{ _MMIO(0x9888), 0x098DA000 },
+	{ _MMIO(0x9888), 0x0B8DA000 },
+	{ _MMIO(0x9888), 0x0D8DA000 },
+	{ _MMIO(0x9888), 0x0F8DA000 },
+	{ _MMIO(0x9888), 0x038D2000 },
+	{ _MMIO(0x9888), 0x1F850A80 },
+	{ _MMIO(0x9888), 0x2185AAA0 },
+	{ _MMIO(0x9888), 0x2385002A },
+	{ _MMIO(0x9888), 0x01834000 },
+	{ _MMIO(0x9888), 0x0F834000 },
+	{ _MMIO(0x9888), 0x19835400 },
+	{ _MMIO(0x9888), 0x1B830155 },
+	{ _MMIO(0x9888), 0x03834000 },
+	{ _MMIO(0x9888), 0x05834000 },
+	{ _MMIO(0x9888), 0x0184C000 },
+	{ _MMIO(0x9888), 0x07848000 },
+	{ _MMIO(0x9888), 0x0984C000 },
+	{ _MMIO(0x9888), 0x0B84C000 },
+	{ _MMIO(0x9888), 0x0D84C000 },
+	{ _MMIO(0x9888), 0x0F84C000 },
+	{ _MMIO(0x9888), 0x03844000 },
+	{ _MMIO(0x9888), 0x17808137 },
+	{ _MMIO(0x9888), 0x1980C147 },
+	{ _MMIO(0x9888), 0x1B80C0E5 },
+	{ _MMIO(0x9888), 0x1D80C0E3 },
+	{ _MMIO(0x9888), 0x21800000 },
+	{ _MMIO(0x9888), 0x1180C000 },
+	{ _MMIO(0x9888), 0x1F80C000 },
+	{ _MMIO(0x9888), 0x13804000 },
+	{ _MMIO(0x9888), 0x15800000 },
+	{ _MMIO(0x0D24), 0x00000000 },
+	{ _MMIO(0x9888), 0x4D805000 },
+	{ _MMIO(0x9888), 0x4F800555 },
+	{ _MMIO(0x9888), 0x43800062 },
+	{ _MMIO(0x9888), 0x51800000 },
+	{ _MMIO(0x9888), 0x45800062 },
+	{ _MMIO(0x9888), 0x53800000 },
+	{ _MMIO(0x9888), 0x47800062 },
+	{ _MMIO(0x9888), 0x31800000 },
+	{ _MMIO(0x9888), 0x3F800062 },
+	{ _MMIO(0x9888), 0x41800000 },
+};
+
+static int select_compute_basic_config(struct drm_i915_private *dev_priv)
+{
+	if (INTEL_INFO(dev_priv)->slice_mask & 0x01) {
+		dev_priv->perf.oa.mux_regs =
+			mux_config_compute_basic_1_0_slices_0x01;
+		dev_priv->perf.oa.mux_regs_len =
+			ARRAY_SIZE(mux_config_compute_basic_1_0_slices_0x01);
+	} else if (INTEL_INFO(dev_priv)->slice_mask & 0x02) {
+		dev_priv->perf.oa.mux_regs =
+			mux_config_compute_basic_1_2_slices_0x02;
+		dev_priv->perf.oa.mux_regs_len =
+			ARRAY_SIZE(mux_config_compute_basic_1_2_slices_0x02);
+	} else {
+		DRM_DEBUG_DRIVER("No suitable MUX config for \"COMPUTE_BASIC\" metric set");
+		return -EINVAL;
+	}
+
+	dev_priv->perf.oa.b_counter_regs =
+		b_counter_config_compute_basic;
+	dev_priv->perf.oa.b_counter_regs_len =
+		ARRAY_SIZE(b_counter_config_compute_basic);
+
+	dev_priv->perf.oa.flex_regs =
+		flex_eu_config_compute_basic;
+	dev_priv->perf.oa.flex_regs_len =
+		ARRAY_SIZE(flex_eu_config_compute_basic);
+
+	return 0;
+}
+
+static const struct i915_oa_reg b_counter_config_render_pipe_profile[] = {
+	{ _MMIO(0x2724), 0xf0800000 },
+	{ _MMIO(0x2720), 0x00000000 },
+	{ _MMIO(0x2714), 0xf0800000 },
+	{ _MMIO(0x2710), 0x00000000 },
+	{ _MMIO(0x2770), 0x0007ffea },
+	{ _MMIO(0x2774), 0x00007ffc },
+	{ _MMIO(0x2778), 0x0007affa },
+	{ _MMIO(0x277c), 0x0000f5fd },
+	{ _MMIO(0x2780), 0x00079ffa },
+	{ _MMIO(0x2784), 0x0000f3fb },
+	{ _MMIO(0x2788), 0x0007bf7a },
+	{ _MMIO(0x278c), 0x0000f7e7 },
+	{ _MMIO(0x2790), 0x0007fefa },
+	{ _MMIO(0x2794), 0x0000f7cf },
+	{ _MMIO(0x2798), 0x00077ffa },
+	{ _MMIO(0x279c), 0x0000efdf },
+	{ _MMIO(0x27a0), 0x0006fffa },
+	{ _MMIO(0x27a4), 0x0000cfbf },
+	{ _MMIO(0x27a8), 0x0003fffa },
+	{ _MMIO(0x27ac), 0x00005f7f },
+};
+
+static const struct i915_oa_reg flex_eu_config_render_pipe_profile[] = {
+	{ _MMIO(0xE458), 0x00005004 },
+	{ _MMIO(0xE558), 0x00015014 },
+	{ _MMIO(0xE658), 0x00025024 },
+	{ _MMIO(0xE758), 0x00035034 },
+	{ _MMIO(0xE45c), 0x00045044 },
+	{ _MMIO(0xE55c), 0x00055054 },
+	{ _MMIO(0xE65c), 0x00065064 },
+};
+
+static const struct i915_oa_reg mux_config_render_pipe_profile[] = {
+	{ _MMIO(0x9888), 0x0A1E0000 },
+	{ _MMIO(0x9888), 0x0C1F000F },
+	{ _MMIO(0x9888), 0x10176800 },
+	{ _MMIO(0x9888), 0x1191001F },
+	{ _MMIO(0x9888), 0x0B880320 },
+	{ _MMIO(0x9888), 0x01890C40 },
+	{ _MMIO(0x9888), 0x118A1C00 },
+	{ _MMIO(0x9888), 0x118D7C00 },
+	{ _MMIO(0x9888), 0x118E0020 },
+	{ _MMIO(0x9888), 0x118F4C00 },
+	{ _MMIO(0x9888), 0x11900000 },
+	{ _MMIO(0x9888), 0x13900001 },
+	{ _MMIO(0x9888), 0x065C4000 },
+	{ _MMIO(0x9888), 0x0C3D8000 },
+	{ _MMIO(0x9888), 0x06584000 },
+	{ _MMIO(0x9888), 0x0C5B4000 },
+	{ _MMIO(0x9888), 0x081E0040 },
+	{ _MMIO(0x9888), 0x0E1E0000 },
+	{ _MMIO(0x9888), 0x021F5400 },
+	{ _MMIO(0x9888), 0x001F0000 },
+	{ _MMIO(0x9888), 0x101F0010 },
+	{ _MMIO(0x9888), 0x0E1F0080 },
+	{ _MMIO(0x9888), 0x0C384000 },
+	{ _MMIO(0x9888), 0x06392000 },
+	{ _MMIO(0x9888), 0x0C13C000 },
+	{ _MMIO(0x9888), 0x06164000 },
+	{ _MMIO(0x9888), 0x06170012 },
+	{ _MMIO(0x9888), 0x00170000 },
+	{ _MMIO(0x9888), 0x01910005 },
+	{ _MMIO(0x9888), 0x07880002 },
+	{ _MMIO(0x9888), 0x01880C00 },
+	{ _MMIO(0x9888), 0x0F880000 },
+	{ _MMIO(0x9888), 0x0D880000 },
+	{ _MMIO(0x9888), 0x05880000 },
+	{ _MMIO(0x9888), 0x09890032 },
+	{ _MMIO(0x9888), 0x078A0800 },
+	{ _MMIO(0x9888), 0x0F8A0A00 },
+	{ _MMIO(0x9888), 0x198A4000 },
+	{ _MMIO(0x9888), 0x1B8A2000 },
+	{ _MMIO(0x9888), 0x1D8A0000 },
+	{ _MMIO(0x9888), 0x038A4000 },
+	{ _MMIO(0x9888), 0x0B8A8000 },
+	{ _MMIO(0x9888), 0x0D8A8000 },
+	{ _MMIO(0x9888), 0x238B54C0 },
+	{ _MMIO(0x9888), 0x258BAA55 },
+	{ _MMIO(0x9888), 0x278B0019 },
+	{ _MMIO(0x9888), 0x198C0100 },
+	{ _MMIO(0x9888), 0x058C4000 },
+	{ _MMIO(0x9888), 0x0F8D0015 },
+	{ _MMIO(0x9888), 0x018D1000 },
+	{ _MMIO(0x9888), 0x098D8000 },
+	{ _MMIO(0x9888), 0x0B8DF000 },
+	{ _MMIO(0x9888), 0x0D8D3000 },
+	{ _MMIO(0x9888), 0x038DE000 },
+	{ _MMIO(0x9888), 0x058D3000 },
+	{ _MMIO(0x9888), 0x0D8E0004 },
+	{ _MMIO(0x9888), 0x058E000C },
+	{ _MMIO(0x9888), 0x098E0000 },
+	{ _MMIO(0x9888), 0x078E0000 },
+	{ _MMIO(0x9888), 0x038E0000 },
+	{ _MMIO(0x9888), 0x0B8F0020 },
+	{ _MMIO(0x9888), 0x198F0C00 },
+	{ _MMIO(0x9888), 0x078F8000 },
+	{ _MMIO(0x9888), 0x098F4000 },
+	{ _MMIO(0x9888), 0x0B900980 },
+	{ _MMIO(0x9888), 0x03900D80 },
+	{ _MMIO(0x9888), 0x01900000 },
+	{ _MMIO(0x9888), 0x1F85AA80 },
+	{ _MMIO(0x9888), 0x2185AAAA },
+	{ _MMIO(0x9888), 0x2385002A },
+	{ _MMIO(0x9888), 0x01834000 },
+	{ _MMIO(0x9888), 0x0F834000 },
+	{ _MMIO(0x9888), 0x19835400 },
+	{ _MMIO(0x9888), 0x1B830155 },
+	{ _MMIO(0x9888), 0x03834000 },
+	{ _MMIO(0x9888), 0x05834000 },
+	{ _MMIO(0x9888), 0x07834000 },
+	{ _MMIO(0x9888), 0x09834000 },
+	{ _MMIO(0x9888), 0x0B834000 },
+	{ _MMIO(0x9888), 0x0D834000 },
+	{ _MMIO(0x9888), 0x0184C000 },
+	{ _MMIO(0x9888), 0x0784C000 },
+	{ _MMIO(0x9888), 0x0984C000 },
+	{ _MMIO(0x9888), 0x0B84C000 },
+	{ _MMIO(0x9888), 0x0D84C000 },
+	{ _MMIO(0x9888), 0x0F84C000 },
+	{ _MMIO(0x9888), 0x0384C000 },
+	{ _MMIO(0x9888), 0x0584C000 },
+	{ _MMIO(0x9888), 0x1180C000 },
+	{ _MMIO(0x9888), 0x1780C000 },
+	{ _MMIO(0x9888), 0x1980C000 },
+	{ _MMIO(0x9888), 0x1B80C000 },
+	{ _MMIO(0x9888), 0x1D80C000 },
+	{ _MMIO(0x9888), 0x1F80C000 },
+	{ _MMIO(0x9888), 0x1380C000 },
+	{ _MMIO(0x9888), 0x1580C000 },
+	{ _MMIO(0x0D24), 0x00000000 },
+	{ _MMIO(0x9888), 0x4D801111 },
+	{ _MMIO(0x9888), 0x3D800800 },
+	{ _MMIO(0x9888), 0x4F801011 },
+	{ _MMIO(0x9888), 0x43800443 },
+	{ _MMIO(0x9888), 0x51801111 },
+	{ _MMIO(0x9888), 0x45800422 },
+	{ _MMIO(0x9888), 0x53801111 },
+	{ _MMIO(0x9888), 0x47800C60 },
+	{ _MMIO(0x9888), 0x21800000 },
+	{ _MMIO(0x9888), 0x31800000 },
+	{ _MMIO(0x9888), 0x3F800422 },
+	{ _MMIO(0x9888), 0x41800021 },
+};
+
+static int select_render_pipe_profile_config(struct drm_i915_private *dev_priv)
+{
+	dev_priv->perf.oa.mux_regs =
+		mux_config_render_pipe_profile;
+	dev_priv->perf.oa.mux_regs_len =
+		ARRAY_SIZE(mux_config_render_pipe_profile);
+
+	dev_priv->perf.oa.b_counter_regs =
+		b_counter_config_render_pipe_profile;
+	dev_priv->perf.oa.b_counter_regs_len =
+		ARRAY_SIZE(b_counter_config_render_pipe_profile);
+
+	dev_priv->perf.oa.flex_regs =
+		flex_eu_config_render_pipe_profile;
+	dev_priv->perf.oa.flex_regs_len =
+		ARRAY_SIZE(flex_eu_config_render_pipe_profile);
+
+	return 0;
+}
+
+static const struct i915_oa_reg b_counter_config_memory_reads[] = {
+	{ _MMIO(0x2724), 0xf0800000 },
+	{ _MMIO(0x2720), 0x00000000 },
+	{ _MMIO(0x2714), 0xf0800000 },
+	{ _MMIO(0x2710), 0x00000000 },
+	{ _MMIO(0x274c), 0x86543210 },
+	{ _MMIO(0x2748), 0x86543210 },
+	{ _MMIO(0x2744), 0x00006667 },
+	{ _MMIO(0x2740), 0x00000000 },
+	{ _MMIO(0x275c), 0x86543210 },
+	{ _MMIO(0x2758), 0x86543210 },
+	{ _MMIO(0x2754), 0x00006465 },
+	{ _MMIO(0x2750), 0x00000000 },
+	{ _MMIO(0x2770), 0x0007f81a },
+	{ _MMIO(0x2774), 0x0000fe00 },
+	{ _MMIO(0x2778), 0x0007f82a },
+	{ _MMIO(0x277c), 0x0000fe00 },
+	{ _MMIO(0x2780), 0x0007f872 },
+	{ _MMIO(0x2784), 0x0000fe00 },
+	{ _MMIO(0x2788), 0x0007f8ba },
+	{ _MMIO(0x278c), 0x0000fe00 },
+	{ _MMIO(0x2790), 0x0007f87a },
+	{ _MMIO(0x2794), 0x0000fe00 },
+	{ _MMIO(0x2798), 0x0007f8ea },
+	{ _MMIO(0x279c), 0x0000fe00 },
+	{ _MMIO(0x27a0), 0x0007f8e2 },
+	{ _MMIO(0x27a4), 0x0000fe00 },
+	{ _MMIO(0x27a8), 0x0007f8f2 },
+	{ _MMIO(0x27ac), 0x0000fe00 },
+};
+
+static const struct i915_oa_reg flex_eu_config_memory_reads[] = {
+	{ _MMIO(0xE458), 0x00005004 },
+	{ _MMIO(0xE558), 0x00015014 },
+	{ _MMIO(0xE658), 0x00025024 },
+	{ _MMIO(0xE758), 0x00035034 },
+	{ _MMIO(0xE45c), 0x00045044 },
+	{ _MMIO(0xE55c), 0x00055054 },
+	{ _MMIO(0xE65c), 0x00065064 },
+};
+
+static const struct i915_oa_reg mux_config_memory_reads[] = {
+	{ _MMIO(0x9888), 0x198B0343 },
+	{ _MMIO(0x9888), 0x13845800 },
+	{ _MMIO(0x9888), 0x15840018 },
+	{ _MMIO(0x9888), 0x3580001A },
+	{ _MMIO(0x9888), 0x038B6300 },
+	{ _MMIO(0x9888), 0x058B6B62 },
+	{ _MMIO(0x9888), 0x078B006A },
+	{ _MMIO(0x9888), 0x118B0000 },
+	{ _MMIO(0x9888), 0x238B0000 },
+	{ _MMIO(0x9888), 0x258B0000 },
+	{ _MMIO(0x9888), 0x1F85A080 },
+	{ _MMIO(0x9888), 0x2185AAAA },
+	{ _MMIO(0x9888), 0x2385000A },
+	{ _MMIO(0x9888), 0x07834000 },
+	{ _MMIO(0x9888), 0x09834000 },
+	{ _MMIO(0x9888), 0x0B834000 },
+	{ _MMIO(0x9888), 0x0D834000 },
+	{ _MMIO(0x9888), 0x01840018 },
+	{ _MMIO(0x9888), 0x07844C80 },
+	{ _MMIO(0x9888), 0x09840D9A },
+	{ _MMIO(0x9888), 0x0B840E9C },
+	{ _MMIO(0x9888), 0x0D840F9E },
+	{ _MMIO(0x9888), 0x0F840010 },
+	{ _MMIO(0x9888), 0x11840000 },
+	{ _MMIO(0x9888), 0x03848000 },
+	{ _MMIO(0x9888), 0x0584C000 },
+	{ _MMIO(0x9888), 0x2F8000E5 },
+	{ _MMIO(0x9888), 0x138080E3 },
+	{ _MMIO(0x9888), 0x1580C0E1 },
+	{ _MMIO(0x9888), 0x21800000 },
+	{ _MMIO(0x9888), 0x11804000 },
+	{ _MMIO(0x9888), 0x1780C000 },
+	{ _MMIO(0x9888), 0x1980C000 },
+	{ _MMIO(0x9888), 0x1B80C000 },
+	{ _MMIO(0x9888), 0x1D80C000 },
+	{ _MMIO(0x9888), 0x1F804000 },
+	{ _MMIO(0x0D24), 0x00000000 },
+	{ _MMIO(0x9888), 0x4D800000 },
+	{ _MMIO(0x9888), 0x3D800800 },
+	{ _MMIO(0x9888), 0x4F800000 },
+	{ _MMIO(0x9888), 0x43800842 },
+	{ _MMIO(0x9888), 0x51800000 },
+	{ _MMIO(0x9888), 0x45800842 },
+	{ _MMIO(0x9888), 0x53800000 },
+	{ _MMIO(0x9888), 0x47801042 },
+	{ _MMIO(0x9888), 0x31800000 },
+	{ _MMIO(0x9888), 0x3F800084 },
+	{ _MMIO(0x9888), 0x41800000 },
+};
+
+static int select_memory_reads_config(struct drm_i915_private *dev_priv)
+{
+	dev_priv->perf.oa.mux_regs =
+		mux_config_memory_reads;
+	dev_priv->perf.oa.mux_regs_len =
+		ARRAY_SIZE(mux_config_memory_reads);
+
+	dev_priv->perf.oa.b_counter_regs =
+		b_counter_config_memory_reads;
+	dev_priv->perf.oa.b_counter_regs_len =
+		ARRAY_SIZE(b_counter_config_memory_reads);
+
+	dev_priv->perf.oa.flex_regs =
+		flex_eu_config_memory_reads;
+	dev_priv->perf.oa.flex_regs_len =
+		ARRAY_SIZE(flex_eu_config_memory_reads);
+
+	return 0;
+}
+
+static const struct i915_oa_reg b_counter_config_memory_writes[] = {
+	{ _MMIO(0x2724), 0xf0800000 },
+	{ _MMIO(0x2720), 0x00000000 },
+	{ _MMIO(0x2714), 0xf0800000 },
+	{ _MMIO(0x2710), 0x00000000 },
+	{ _MMIO(0x274c), 0x86543210 },
+	{ _MMIO(0x2748), 0x86543210 },
+	{ _MMIO(0x2744), 0x00006667 },
+	{ _MMIO(0x2740), 0x00000000 },
+	{ _MMIO(0x275c), 0x86543210 },
+	{ _MMIO(0x2758), 0x86543210 },
+	{ _MMIO(0x2754), 0x00006465 },
+	{ _MMIO(0x2750), 0x00000000 },
+	{ _MMIO(0x2770), 0x0007f81a },
+	{ _MMIO(0x2774), 0x0000fe00 },
+	{ _MMIO(0x2778), 0x0007f82a },
+	{ _MMIO(0x277c), 0x0000fe00 },
+	{ _MMIO(0x2780), 0x0007f822 },
+	{ _MMIO(0x2784), 0x0000fe00 },
+	{ _MMIO(0x2788), 0x0007f8ba },
+	{ _MMIO(0x278c), 0x0000fe00 },
+	{ _MMIO(0x2790), 0x0007f87a },
+	{ _MMIO(0x2794), 0x0000fe00 },
+	{ _MMIO(0x2798), 0x0007f8ea },
+	{ _MMIO(0x279c), 0x0000fe00 },
+	{ _MMIO(0x27a0), 0x0007f8e2 },
+	{ _MMIO(0x27a4), 0x0000fe00 },
+	{ _MMIO(0x27a8), 0x0007f8f2 },
+	{ _MMIO(0x27ac), 0x0000fe00 },
+};
+
+static const struct i915_oa_reg flex_eu_config_memory_writes[] = {
+	{ _MMIO(0xE458), 0x00005004 },
+	{ _MMIO(0xE558), 0x00015014 },
+	{ _MMIO(0xE658), 0x00025024 },
+	{ _MMIO(0xE758), 0x00035034 },
+	{ _MMIO(0xE45c), 0x00045044 },
+	{ _MMIO(0xE55c), 0x00055054 },
+	{ _MMIO(0xE65c), 0x00065064 },
+};
+
+static const struct i915_oa_reg mux_config_memory_writes[] = {
+	{ _MMIO(0x9888), 0x198B0343 },
+	{ _MMIO(0x9888), 0x13845400 },
+	{ _MMIO(0x9888), 0x3580001A },
+	{ _MMIO(0x9888), 0x3D800805 },
+	{ _MMIO(0x9888), 0x038B6300 },
+	{ _MMIO(0x9888), 0x058B6B62 },
+	{ _MMIO(0x9888), 0x078B006A },
+	{ _MMIO(0x9888), 0x118B0000 },
+	{ _MMIO(0x9888), 0x238B0000 },
+	{ _MMIO(0x9888), 0x258B0000 },
+	{ _MMIO(0x9888), 0x1F85A080 },
+	{ _MMIO(0x9888), 0x2185AAAA },
+	{ _MMIO(0x9888), 0x23850002 },
+	{ _MMIO(0x9888), 0x07834000 },
+	{ _MMIO(0x9888), 0x09834000 },
+	{ _MMIO(0x9888), 0x0B834000 },
+	{ _MMIO(0x9888), 0x0D834000 },
+	{ _MMIO(0x9888), 0x01840010 },
+	{ _MMIO(0x9888), 0x07844880 },
+	{ _MMIO(0x9888), 0x09840992 },
+	{ _MMIO(0x9888), 0x0B840A94 },
+	{ _MMIO(0x9888), 0x0D840B96 },
+	{ _MMIO(0x9888), 0x11840000 },
+	{ _MMIO(0x9888), 0x03848000 },
+	{ _MMIO(0x9888), 0x0584C000 },
+	{ _MMIO(0x9888), 0x2D800147 },
+	{ _MMIO(0x9888), 0x2F8000E5 },
+	{ _MMIO(0x9888), 0x138080E3 },
+	{ _MMIO(0x9888), 0x1580C0E1 },
+	{ _MMIO(0x9888), 0x21800000 },
+	{ _MMIO(0x9888), 0x11804000 },
+	{ _MMIO(0x9888), 0x1780C000 },
+	{ _MMIO(0x9888), 0x1980C000 },
+	{ _MMIO(0x9888), 0x1B80C000 },
+	{ _MMIO(0x9888), 0x1D80C000 },
+	{ _MMIO(0x9888), 0x1F800000 },
+	{ _MMIO(0x0D24), 0x00000000 },
+	{ _MMIO(0x9888), 0x4D800000 },
+	{ _MMIO(0x9888), 0x4F800000 },
+	{ _MMIO(0x9888), 0x43800842 },
+	{ _MMIO(0x9888), 0x51800000 },
+	{ _MMIO(0x9888), 0x45800842 },
+	{ _MMIO(0x9888), 0x53800000 },
+	{ _MMIO(0x9888), 0x47801082 },
+	{ _MMIO(0x9888), 0x31800000 },
+	{ _MMIO(0x9888), 0x3F800084 },
+	{ _MMIO(0x9888), 0x41800000 },
+};
+
+static int select_memory_writes_config(struct drm_i915_private *dev_priv)
+{
+	dev_priv->perf.oa.mux_regs =
+		mux_config_memory_writes;
+	dev_priv->perf.oa.mux_regs_len =
+		ARRAY_SIZE(mux_config_memory_writes);
+
+	dev_priv->perf.oa.b_counter_regs =
+		b_counter_config_memory_writes;
+	dev_priv->perf.oa.b_counter_regs_len =
+		ARRAY_SIZE(b_counter_config_memory_writes);
+
+	dev_priv->perf.oa.flex_regs =
+		flex_eu_config_memory_writes;
+	dev_priv->perf.oa.flex_regs_len =
+		ARRAY_SIZE(flex_eu_config_memory_writes);
+
+	return 0;
+}
+
+static const struct i915_oa_reg b_counter_config_compute_extended[] = {
+	{ _MMIO(0x2724), 0xf0800000 },
+	{ _MMIO(0x2720), 0x00000000 },
+	{ _MMIO(0x2714), 0xf0800000 },
+	{ _MMIO(0x2710), 0x00000000 },
+	{ _MMIO(0x2770), 0x0007fc2a },
+	{ _MMIO(0x2774), 0x0000bf00 },
+	{ _MMIO(0x2778), 0x0007fc6a },
+	{ _MMIO(0x277c), 0x0000bf00 },
+	{ _MMIO(0x2780), 0x0007fc92 },
+	{ _MMIO(0x2784), 0x0000bf00 },
+	{ _MMIO(0x2788), 0x0007fca2 },
+	{ _MMIO(0x278c), 0x0000bf00 },
+	{ _MMIO(0x2790), 0x0007fc32 },
+	{ _MMIO(0x2794), 0x0000bf00 },
+	{ _MMIO(0x2798), 0x0007fc9a },
+	{ _MMIO(0x279c), 0x0000bf00 },
+	{ _MMIO(0x27a0), 0x0007fe6a },
+	{ _MMIO(0x27a4), 0x0000bf00 },
+	{ _MMIO(0x27a8), 0x0007fe7a },
+	{ _MMIO(0x27ac), 0x0000bf00 },
+};
+
+static const struct i915_oa_reg flex_eu_config_compute_extended[] = {
+	{ _MMIO(0xE458), 0x00005004 },
+	{ _MMIO(0xE558), 0x00000003 },
+	{ _MMIO(0xE658), 0x00002001 },
+	{ _MMIO(0xE758), 0x00778008 },
+	{ _MMIO(0xE45c), 0x00088078 },
+	{ _MMIO(0xE55c), 0x00808708 },
+	{ _MMIO(0xE65c), 0x00a08908 },
+};
+
+static const struct i915_oa_reg mux_config_compute_extended_1_0_subslices_0x01[] = {
+	{ _MMIO(0x9888), 0x143D0160 },
+	{ _MMIO(0x9888), 0x163D2800 },
+	{ _MMIO(0x9888), 0x183D0120 },
+	{ _MMIO(0x9888), 0x105800E0 },
+	{ _MMIO(0x9888), 0x005CC000 },
+	{ _MMIO(0x9888), 0x065C8000 },
+	{ _MMIO(0x9888), 0x085CC000 },
+	{ _MMIO(0x9888), 0x0A5CC000 },
+	{ _MMIO(0x9888), 0x0C5CC000 },
+	{ _MMIO(0x9888), 0x0E5CC000 },
+	{ _MMIO(0x9888), 0x025CC000 },
+	{ _MMIO(0x9888), 0x045CC000 },
+	{ _MMIO(0x9888), 0x003D0011 },
+	{ _MMIO(0x9888), 0x063D0900 },
+	{ _MMIO(0x9888), 0x083D0A13 },
+	{ _MMIO(0x9888), 0x0A3D0B15 },
+	{ _MMIO(0x9888), 0x0C3D2317 },
+	{ _MMIO(0x9888), 0x043D21B7 },
+	{ _MMIO(0x9888), 0x103D0000 },
+	{ _MMIO(0x9888), 0x0E3D0000 },
+	{ _MMIO(0x9888), 0x1A3D0000 },
+	{ _MMIO(0x9888), 0x0E5825C1 },
+	{ _MMIO(0x9888), 0x00586100 },
+	{ _MMIO(0x9888), 0x0258204C },
+	{ _MMIO(0x9888), 0x06588000 },
+	{ _MMIO(0x9888), 0x0858C000 },
+	{ _MMIO(0x9888), 0x0A58C000 },
+	{ _MMIO(0x9888), 0x0C58C000 },
+	{ _MMIO(0x9888), 0x0458C000 },
+	{ _MMIO(0x9888), 0x005B4000 },
+	{ _MMIO(0x9888), 0x0E5B4000 },
+	{ _MMIO(0x9888), 0x185B5400 },
+	{ _MMIO(0x9888), 0x1A5B0155 },
+	{ _MMIO(0x9888), 0x025B4000 },
+	{ _MMIO(0x9888), 0x045B4000 },
+	{ _MMIO(0x9888), 0x065B4000 },
+	{ _MMIO(0x9888), 0x085B4000 },
+	{ _MMIO(0x9888), 0x0A5B4000 },
+	{ _MMIO(0x9888), 0x0C1FA800 },
+	{ _MMIO(0x9888), 0x0E1FAA2A },
+	{ _MMIO(0x9888), 0x101F02AA },
+	{ _MMIO(0x9888), 0x00384000 },
+	{ _MMIO(0x9888), 0x0E384000 },
+	{ _MMIO(0x9888), 0x16384000 },
+	{ _MMIO(0x9888), 0x18381555 },
+	{ _MMIO(0x9888), 0x02384000 },
+	{ _MMIO(0x9888), 0x04384000 },
+	{ _MMIO(0x9888), 0x06384000 },
+	{ _MMIO(0x9888), 0x08384000 },
+	{ _MMIO(0x9888), 0x0A384000 },
+	{ _MMIO(0x9888), 0x0039A000 },
+	{ _MMIO(0x9888), 0x06398000 },
+	{ _MMIO(0x9888), 0x0839A000 },
+	{ _MMIO(0x9888), 0x0A39A000 },
+	{ _MMIO(0x9888), 0x0C39A000 },
+	{ _MMIO(0x9888), 0x0E39A000 },
+	{ _MMIO(0x9888), 0x0239A000 },
+	{ _MMIO(0x9888), 0x0439A000 },
+	{ _MMIO(0x9888), 0x018A8000 },
+	{ _MMIO(0x9888), 0x0F8A8000 },
+	{ _MMIO(0x9888), 0x198A8000 },
+	{ _MMIO(0x9888), 0x1B8AAAA0 },
+	{ _MMIO(0x9888), 0x1D8A0002 },
+	{ _MMIO(0x9888), 0x038A8000 },
+	{ _MMIO(0x9888), 0x058A8000 },
+	{ _MMIO(0x9888), 0x078A8000 },
+	{ _MMIO(0x9888), 0x098A8000 },
+	{ _MMIO(0x9888), 0x0B8A8000 },
+	{ _MMIO(0x9888), 0x238B2AA0 },
+	{ _MMIO(0x9888), 0x258B5551 },
+	{ _MMIO(0x9888), 0x278B0015 },
+};
+
+static const struct i915_oa_reg mux_config_compute_extended_1_1_subslices_0x08[] = {
+	{ _MMIO(0x9888), 0x14BD0160 },
+	{ _MMIO(0x9888), 0x16BD2800 },
+	{ _MMIO(0x9888), 0x18BD0120 },
+	{ _MMIO(0x9888), 0x10D800E0 },
+	{ _MMIO(0x9888), 0x00DCC000 },
+	{ _MMIO(0x9888), 0x06DC8000 },
+	{ _MMIO(0x9888), 0x08DCC000 },
+	{ _MMIO(0x9888), 0x0ADCC000 },
+	{ _MMIO(0x9888), 0x0CDCC000 },
+	{ _MMIO(0x9888), 0x0EDCC000 },
+	{ _MMIO(0x9888), 0x02DCC000 },
+	{ _MMIO(0x9888), 0x04DCC000 },
+	{ _MMIO(0x9888), 0x00BD0011 },
+	{ _MMIO(0x9888), 0x06BD0900 },
+	{ _MMIO(0x9888), 0x08BD0A13 },
+	{ _MMIO(0x9888), 0x0ABD0B15 },
+	{ _MMIO(0x9888), 0x0CBD2317 },
+	{ _MMIO(0x9888), 0x04BD21B7 },
+	{ _MMIO(0x9888), 0x10BD0000 },
+	{ _MMIO(0x9888), 0x0EBD0000 },
+	{ _MMIO(0x9888), 0x1ABD0000 },
+	{ _MMIO(0x9888), 0x0ED825C1 },
+	{ _MMIO(0x9888), 0x00D86100 },
+	{ _MMIO(0x9888), 0x02D8204C },
+	{ _MMIO(0x9888), 0x06D88000 },
+	{ _MMIO(0x9888), 0x08D8C000 },
+	{ _MMIO(0x9888), 0x0AD8C000 },
+	{ _MMIO(0x9888), 0x0CD8C000 },
+	{ _MMIO(0x9888), 0x04D8C000 },
+	{ _MMIO(0x9888), 0x00DB4000 },
+	{ _MMIO(0x9888), 0x0EDB4000 },
+	{ _MMIO(0x9888), 0x18DB5400 },
+	{ _MMIO(0x9888), 0x1ADB0155 },
+	{ _MMIO(0x9888), 0x02DB4000 },
+	{ _MMIO(0x9888), 0x04DB4000 },
+	{ _MMIO(0x9888), 0x06DB4000 },
+	{ _MMIO(0x9888), 0x08DB4000 },
+	{ _MMIO(0x9888), 0x0ADB4000 },
+	{ _MMIO(0x9888), 0x0C9FA800 },
+	{ _MMIO(0x9888), 0x0E9FAA2A },
+	{ _MMIO(0x9888), 0x109F02AA },
+	{ _MMIO(0x9888), 0x00B84000 },
+	{ _MMIO(0x9888), 0x0EB84000 },
+	{ _MMIO(0x9888), 0x16B84000 },
+	{ _MMIO(0x9888), 0x18B81555 },
+	{ _MMIO(0x9888), 0x02B84000 },
+	{ _MMIO(0x9888), 0x04B84000 },
+	{ _MMIO(0x9888), 0x06B84000 },
+	{ _MMIO(0x9888), 0x08B84000 },
+	{ _MMIO(0x9888), 0x0AB84000 },
+	{ _MMIO(0x9888), 0x00B9A000 },
+	{ _MMIO(0x9888), 0x06B98000 },
+	{ _MMIO(0x9888), 0x08B9A000 },
+	{ _MMIO(0x9888), 0x0AB9A000 },
+	{ _MMIO(0x9888), 0x0CB9A000 },
+	{ _MMIO(0x9888), 0x0EB9A000 },
+	{ _MMIO(0x9888), 0x02B9A000 },
+	{ _MMIO(0x9888), 0x04B9A000 },
+	{ _MMIO(0x9888), 0x01888000 },
+	{ _MMIO(0x9888), 0x0D88F800 },
+	{ _MMIO(0x9888), 0x0F88000F },
+	{ _MMIO(0x9888), 0x03888000 },
+	{ _MMIO(0x9888), 0x05888000 },
+	{ _MMIO(0x9888), 0x07888000 },
+	{ _MMIO(0x9888), 0x09888000 },
+	{ _MMIO(0x9888), 0x0B888000 },
+	{ _MMIO(0x9888), 0x238B5540 },
+	{ _MMIO(0x9888), 0x258BAAA2 },
+	{ _MMIO(0x9888), 0x278B002A },
+	{ _MMIO(0x9888), 0x018C4000 },
+	{ _MMIO(0x9888), 0x0F8C4000 },
+	{ _MMIO(0x9888), 0x178C2000 },
+	{ _MMIO(0x9888), 0x198C5500 },
+	{ _MMIO(0x9888), 0x1B8C0015 },
+	{ _MMIO(0x9888), 0x038C4000 },
+	{ _MMIO(0x9888), 0x058C4000 },
+	{ _MMIO(0x9888), 0x078C4000 },
+	{ _MMIO(0x9888), 0x098C4000 },
+	{ _MMIO(0x9888), 0x0B8C4000 },
+	{ _MMIO(0x9888), 0x018DA000 },
+	{ _MMIO(0x9888), 0x078D8000 },
+	{ _MMIO(0x9888), 0x098DA000 },
+	{ _MMIO(0x9888), 0x0B8DA000 },
+	{ _MMIO(0x9888), 0x0D8DA000 },
+	{ _MMIO(0x9888), 0x0F8DA000 },
+	{ _MMIO(0x9888), 0x038DA000 },
+	{ _MMIO(0x9888), 0x058DA000 },
+};
+
+static const struct i915_oa_reg mux_config_compute_extended_1_2_subslices_0x02[] = {
+	{ _MMIO(0x9888), 0x105C00E0 },
+	{ _MMIO(0x9888), 0x145B0160 },
+	{ _MMIO(0x9888), 0x165B2800 },
+	{ _MMIO(0x9888), 0x185B0120 },
+	{ _MMIO(0x9888), 0x0E5C25C1 },
+	{ _MMIO(0x9888), 0x005C6100 },
+	{ _MMIO(0x9888), 0x025C204C },
+	{ _MMIO(0x9888), 0x065C8000 },
+	{ _MMIO(0x9888), 0x085CC000 },
+	{ _MMIO(0x9888), 0x0A5CC000 },
+	{ _MMIO(0x9888), 0x0C5CC000 },
+	{ _MMIO(0x9888), 0x045CC000 },
+	{ _MMIO(0x9888), 0x005B0011 },
+	{ _MMIO(0x9888), 0x065B0900 },
+	{ _MMIO(0x9888), 0x085B0A13 },
+	{ _MMIO(0x9888), 0x0A5B0B15 },
+	{ _MMIO(0x9888), 0x0C5B2317 },
+	{ _MMIO(0x9888), 0x045B21B7 },
+	{ _MMIO(0x9888), 0x105B0000 },
+	{ _MMIO(0x9888), 0x0E5B0000 },
+	{ _MMIO(0x9888), 0x1A5B0000 },
+	{ _MMIO(0x9888), 0x0C1FA800 },
+	{ _MMIO(0x9888), 0x0E1FAA2A },
+	{ _MMIO(0x9888), 0x101F02AA },
+	{ _MMIO(0x9888), 0x00384000 },
+	{ _MMIO(0x9888), 0x0E384000 },
+	{ _MMIO(0x9888), 0x16384000 },
+	{ _MMIO(0x9888), 0x18381555 },
+	{ _MMIO(0x9888), 0x02384000 },
+	{ _MMIO(0x9888), 0x04384000 },
+	{ _MMIO(0x9888), 0x06384000 },
+	{ _MMIO(0x9888), 0x08384000 },
+	{ _MMIO(0x9888), 0x0A384000 },
+	{ _MMIO(0x9888), 0x0039A000 },
+	{ _MMIO(0x9888), 0x06398000 },
+	{ _MMIO(0x9888), 0x0839A000 },
+	{ _MMIO(0x9888), 0x0A39A000 },
+	{ _MMIO(0x9888), 0x0C39A000 },
+	{ _MMIO(0x9888), 0x0E39A000 },
+	{ _MMIO(0x9888), 0x0239A000 },
+	{ _MMIO(0x9888), 0x0439A000 },
+	{ _MMIO(0x9888), 0x018A8000 },
+	{ _MMIO(0x9888), 0x0F8A8000 },
+	{ _MMIO(0x9888), 0x198A8000 },
+	{ _MMIO(0x9888), 0x1B8AAAA0 },
+	{ _MMIO(0x9888), 0x1D8A0002 },
+	{ _MMIO(0x9888), 0x038A8000 },
+	{ _MMIO(0x9888), 0x058A8000 },
+	{ _MMIO(0x9888), 0x078A8000 },
+	{ _MMIO(0x9888), 0x098A8000 },
+	{ _MMIO(0x9888), 0x0B8A8000 },
+	{ _MMIO(0x9888), 0x238B2AA0 },
+	{ _MMIO(0x9888), 0x258B5551 },
+	{ _MMIO(0x9888), 0x278B0015 },
+};
+
+static const struct i915_oa_reg mux_config_compute_extended_1_3_subslices_0x10[] = {
+	{ _MMIO(0x9888), 0x10DC00E0 },
+	{ _MMIO(0x9888), 0x14DB0160 },
+	{ _MMIO(0x9888), 0x16DB2800 },
+	{ _MMIO(0x9888), 0x18DB0120 },
+	{ _MMIO(0x9888), 0x0EDC25C1 },
+	{ _MMIO(0x9888), 0x00DC6100 },
+	{ _MMIO(0x9888), 0x02DC204C },
+	{ _MMIO(0x9888), 0x06DC8000 },
+	{ _MMIO(0x9888), 0x08DCC000 },
+	{ _MMIO(0x9888), 0x0ADCC000 },
+	{ _MMIO(0x9888), 0x0CDCC000 },
+	{ _MMIO(0x9888), 0x04DCC000 },
+	{ _MMIO(0x9888), 0x00DB0011 },
+	{ _MMIO(0x9888), 0x06DB0900 },
+	{ _MMIO(0x9888), 0x08DB0A13 },
+	{ _MMIO(0x9888), 0x0ADB0B15 },
+	{ _MMIO(0x9888), 0x0CDB2317 },
+	{ _MMIO(0x9888), 0x04DB21B7 },
+	{ _MMIO(0x9888), 0x10DB0000 },
+	{ _MMIO(0x9888), 0x0EDB0000 },
+	{ _MMIO(0x9888), 0x1ADB0000 },
+	{ _MMIO(0x9888), 0x0C9FA800 },
+	{ _MMIO(0x9888), 0x0E9FAA2A },
+	{ _MMIO(0x9888), 0x109F02AA },
+	{ _MMIO(0x9888), 0x00B84000 },
+	{ _MMIO(0x9888), 0x0EB84000 },
+	{ _MMIO(0x9888), 0x16B84000 },
+	{ _MMIO(0x9888), 0x18B81555 },
+	{ _MMIO(0x9888), 0x02B84000 },
+	{ _MMIO(0x9888), 0x04B84000 },
+	{ _MMIO(0x9888), 0x06B84000 },
+	{ _MMIO(0x9888), 0x08B84000 },
+	{ _MMIO(0x9888), 0x0AB84000 },
+	{ _MMIO(0x9888), 0x00B9A000 },
+	{ _MMIO(0x9888), 0x06B98000 },
+	{ _MMIO(0x9888), 0x08B9A000 },
+	{ _MMIO(0x9888), 0x0AB9A000 },
+	{ _MMIO(0x9888), 0x0CB9A000 },
+	{ _MMIO(0x9888), 0x0EB9A000 },
+	{ _MMIO(0x9888), 0x02B9A000 },
+	{ _MMIO(0x9888), 0x04B9A000 },
+	{ _MMIO(0x9888), 0x01888000 },
+	{ _MMIO(0x9888), 0x0D88F800 },
+	{ _MMIO(0x9888), 0x0F88000F },
+	{ _MMIO(0x9888), 0x03888000 },
+	{ _MMIO(0x9888), 0x05888000 },
+	{ _MMIO(0x9888), 0x07888000 },
+	{ _MMIO(0x9888), 0x09888000 },
+	{ _MMIO(0x9888), 0x0B888000 },
+	{ _MMIO(0x9888), 0x238B5540 },
+	{ _MMIO(0x9888), 0x258BAAA2 },
+	{ _MMIO(0x9888), 0x278B002A },
+	{ _MMIO(0x9888), 0x018C4000 },
+	{ _MMIO(0x9888), 0x0F8C4000 },
+	{ _MMIO(0x9888), 0x178C2000 },
+	{ _MMIO(0x9888), 0x198C5500 },
+	{ _MMIO(0x9888), 0x1B8C0015 },
+	{ _MMIO(0x9888), 0x038C4000 },
+	{ _MMIO(0x9888), 0x058C4000 },
+	{ _MMIO(0x9888), 0x078C4000 },
+	{ _MMIO(0x9888), 0x098C4000 },
+	{ _MMIO(0x9888), 0x0B8C4000 },
+	{ _MMIO(0x9888), 0x018DA000 },
+	{ _MMIO(0x9888), 0x078D8000 },
+	{ _MMIO(0x9888), 0x098DA000 },
+	{ _MMIO(0x9888), 0x0B8DA000 },
+	{ _MMIO(0x9888), 0x0D8DA000 },
+	{ _MMIO(0x9888), 0x0F8DA000 },
+	{ _MMIO(0x9888), 0x038DA000 },
+	{ _MMIO(0x9888), 0x058DA000 },
+};
+
+static const struct i915_oa_reg mux_config_compute_extended_1_4_subslices_0x04[] = {
+	{ _MMIO(0x9888), 0x103800E0 },
+	{ _MMIO(0x9888), 0x143A0160 },
+	{ _MMIO(0x9888), 0x163A2800 },
+	{ _MMIO(0x9888), 0x183A0120 },
+	{ _MMIO(0x9888), 0x0C1FA800 },
+	{ _MMIO(0x9888), 0x0E1FAA2A },
+	{ _MMIO(0x9888), 0x101F02AA },
+	{ _MMIO(0x9888), 0x0E38A5C1 },
+	{ _MMIO(0x9888), 0x0038A100 },
+	{ _MMIO(0x9888), 0x0238204C },
+	{ _MMIO(0x9888), 0x16388000 },
+	{ _MMIO(0x9888), 0x183802AA },
+	{ _MMIO(0x9888), 0x04380000 },
+	{ _MMIO(0x9888), 0x06380000 },
+	{ _MMIO(0x9888), 0x08388000 },
+	{ _MMIO(0x9888), 0x0A388000 },
+	{ _MMIO(0x9888), 0x0039A000 },
+	{ _MMIO(0x9888), 0x06398000 },
+	{ _MMIO(0x9888), 0x0839A000 },
+	{ _MMIO(0x9888), 0x0A39A000 },
+	{ _MMIO(0x9888), 0x0C39A000 },
+	{ _MMIO(0x9888), 0x0E39A000 },
+	{ _MMIO(0x9888), 0x0239A000 },
+	{ _MMIO(0x9888), 0x0439A000 },
+	{ _MMIO(0x9888), 0x003A0011 },
+	{ _MMIO(0x9888), 0x063A0900 },
+	{ _MMIO(0x9888), 0x083A0A13 },
+	{ _MMIO(0x9888), 0x0A3A0B15 },
+	{ _MMIO(0x9888), 0x0C3A2317 },
+	{ _MMIO(0x9888), 0x043A21B7 },
+	{ _MMIO(0x9888), 0x103A0000 },
+	{ _MMIO(0x9888), 0x0E3A0000 },
+	{ _MMIO(0x9888), 0x1A3A0000 },
+	{ _MMIO(0x9888), 0x018A8000 },
+	{ _MMIO(0x9888), 0x0F8A8000 },
+	{ _MMIO(0x9888), 0x198A8000 },
+	{ _MMIO(0x9888), 0x1B8AAAA0 },
+	{ _MMIO(0x9888), 0x1D8A0002 },
+	{ _MMIO(0x9888), 0x038A8000 },
+	{ _MMIO(0x9888), 0x058A8000 },
+	{ _MMIO(0x9888), 0x078A8000 },
+	{ _MMIO(0x9888), 0x098A8000 },
+	{ _MMIO(0x9888), 0x0B8A8000 },
+	{ _MMIO(0x9888), 0x238B2AA0 },
+	{ _MMIO(0x9888), 0x258B5551 },
+	{ _MMIO(0x9888), 0x278B0015 },
+};
+
+static const struct i915_oa_reg mux_config_compute_extended_1_5_subslices_0x20[] = {
+	{ _MMIO(0x9888), 0x10B800E0 },
+	{ _MMIO(0x9888), 0x14BA0160 },
+	{ _MMIO(0x9888), 0x16BA2800 },
+	{ _MMIO(0x9888), 0x18BA0120 },
+	{ _MMIO(0x9888), 0x0C9FA800 },
+	{ _MMIO(0x9888), 0x0E9FAA2A },
+	{ _MMIO(0x9888), 0x109F02AA },
+	{ _MMIO(0x9888), 0x0EB8A5C1 },
+	{ _MMIO(0x9888), 0x00B8A100 },
+	{ _MMIO(0x9888), 0x02B8204C },
+	{ _MMIO(0x9888), 0x16B88000 },
+	{ _MMIO(0x9888), 0x18B802AA },
+	{ _MMIO(0x9888), 0x04B80000 },
+	{ _MMIO(0x9888), 0x06B80000 },
+	{ _MMIO(0x9888), 0x08B88000 },
+	{ _MMIO(0x9888), 0x0AB88000 },
+	{ _MMIO(0x9888), 0x00B9A000 },
+	{ _MMIO(0x9888), 0x06B98000 },
+	{ _MMIO(0x9888), 0x08B9A000 },
+	{ _MMIO(0x9888), 0x0AB9A000 },
+	{ _MMIO(0x9888), 0x0CB9A000 },
+	{ _MMIO(0x9888), 0x0EB9A000 },
+	{ _MMIO(0x9888), 0x02B9A000 },
+	{ _MMIO(0x9888), 0x04B9A000 },
+	{ _MMIO(0x9888), 0x00BA0011 },
+	{ _MMIO(0x9888), 0x06BA0900 },
+	{ _MMIO(0x9888), 0x08BA0A13 },
+	{ _MMIO(0x9888), 0x0ABA0B15 },
+	{ _MMIO(0x9888), 0x0CBA2317 },
+	{ _MMIO(0x9888), 0x04BA21B7 },
+	{ _MMIO(0x9888), 0x10BA0000 },
+	{ _MMIO(0x9888), 0x0EBA0000 },
+	{ _MMIO(0x9888), 0x1ABA0000 },
+	{ _MMIO(0x9888), 0x01888000 },
+	{ _MMIO(0x9888), 0x0D88F800 },
+	{ _MMIO(0x9888), 0x0F88000F },
+	{ _MMIO(0x9888), 0x03888000 },
+	{ _MMIO(0x9888), 0x05888000 },
+	{ _MMIO(0x9888), 0x07888000 },
+	{ _MMIO(0x9888), 0x09888000 },
+	{ _MMIO(0x9888), 0x0B888000 },
+	{ _MMIO(0x9888), 0x238B5540 },
+	{ _MMIO(0x9888), 0x258BAAA2 },
+	{ _MMIO(0x9888), 0x278B002A },
+	{ _MMIO(0x9888), 0x018C4000 },
+	{ _MMIO(0x9888), 0x0F8C4000 },
+	{ _MMIO(0x9888), 0x178C2000 },
+	{ _MMIO(0x9888), 0x198C5500 },
+	{ _MMIO(0x9888), 0x1B8C0015 },
+	{ _MMIO(0x9888), 0x038C4000 },
+	{ _MMIO(0x9888), 0x058C4000 },
+	{ _MMIO(0x9888), 0x078C4000 },
+	{ _MMIO(0x9888), 0x098C4000 },
+	{ _MMIO(0x9888), 0x0B8C4000 },
+	{ _MMIO(0x9888), 0x018DA000 },
+	{ _MMIO(0x9888), 0x078D8000 },
+	{ _MMIO(0x9888), 0x098DA000 },
+	{ _MMIO(0x9888), 0x0B8DA000 },
+	{ _MMIO(0x9888), 0x0D8DA000 },
+	{ _MMIO(0x9888), 0x0F8DA000 },
+	{ _MMIO(0x9888), 0x038DA000 },
+	{ _MMIO(0x9888), 0x058DA000 },
+};
+
+static const struct i915_oa_reg mux_config_compute_extended[] = {
+	{ _MMIO(0x9888), 0x1F85AA80 },
+	{ _MMIO(0x9888), 0x2185AAA2 },
+	{ _MMIO(0x9888), 0x2385002A },
+	{ _MMIO(0x9888), 0x01834000 },
+	{ _MMIO(0x9888), 0x0F834000 },
+	{ _MMIO(0x9888), 0x19835400 },
+	{ _MMIO(0x9888), 0x1B830155 },
+	{ _MMIO(0x9888), 0x03834000 },
+	{ _MMIO(0x9888), 0x05834000 },
+	{ _MMIO(0x9888), 0x07834000 },
+	{ _MMIO(0x9888), 0x09834000 },
+	{ _MMIO(0x9888), 0x0B834000 },
+	{ _MMIO(0x9888), 0x0184C000 },
+	{ _MMIO(0x9888), 0x07848000 },
+	{ _MMIO(0x9888), 0x0984C000 },
+	{ _MMIO(0x9888), 0x0B84C000 },
+	{ _MMIO(0x9888), 0x0D84C000 },
+	{ _MMIO(0x9888), 0x0F84C000 },
+	{ _MMIO(0x9888), 0x0384C000 },
+	{ _MMIO(0x9888), 0x0584C000 },
+	{ _MMIO(0x9888), 0x1180C000 },
+	{ _MMIO(0x9888), 0x17808000 },
+	{ _MMIO(0x9888), 0x1980C000 },
+	{ _MMIO(0x9888), 0x1B80C000 },
+	{ _MMIO(0x9888), 0x1D80C000 },
+	{ _MMIO(0x9888), 0x1F80C000 },
+	{ _MMIO(0x9888), 0x1380C000 },
+	{ _MMIO(0x9888), 0x1580C000 },
+	{ _MMIO(0x0D24), 0x00000000 },
+	{ _MMIO(0x9888), 0x4D800000 },
+	{ _MMIO(0x9888), 0x3D800000 },
+	{ _MMIO(0x9888), 0x4F800000 },
+	{ _MMIO(0x9888), 0x43800000 },
+	{ _MMIO(0x9888), 0x51800000 },
+	{ _MMIO(0x9888), 0x45800000 },
+	{ _MMIO(0x9888), 0x53800000 },
+	{ _MMIO(0x9888), 0x47800420 },
+	{ _MMIO(0x9888), 0x21800000 },
+	{ _MMIO(0x9888), 0x31800000 },
+	{ _MMIO(0x9888), 0x3F800421 },
+	{ _MMIO(0x9888), 0x41800000 },
+};
+
+static int select_compute_extended_config(struct drm_i915_private *dev_priv)
+{
+	if (INTEL_INFO(dev_priv)->subslice_mask & 0x01) {
+		dev_priv->perf.oa.mux_regs =
+			mux_config_compute_extended_1_0_subslices_0x01;
+		dev_priv->perf.oa.mux_regs_len =
+			ARRAY_SIZE(mux_config_compute_extended_1_0_subslices_0x01);
+	} else if (INTEL_INFO(dev_priv)->subslice_mask & 0x08) {
+		dev_priv->perf.oa.mux_regs =
+			mux_config_compute_extended_1_1_subslices_0x08;
+		dev_priv->perf.oa.mux_regs_len =
+			ARRAY_SIZE(mux_config_compute_extended_1_1_subslices_0x08);
+	} else if (INTEL_INFO(dev_priv)->subslice_mask & 0x02) {
+		dev_priv->perf.oa.mux_regs =
+			mux_config_compute_extended_1_2_subslices_0x02;
+		dev_priv->perf.oa.mux_regs_len =
+			ARRAY_SIZE(mux_config_compute_extended_1_2_subslices_0x02);
+	} else if (INTEL_INFO(dev_priv)->subslice_mask & 0x10) {
+		dev_priv->perf.oa.mux_regs =
+			mux_config_compute_extended_1_3_subslices_0x10;
+		dev_priv->perf.oa.mux_regs_len =
+			ARRAY_SIZE(mux_config_compute_extended_1_3_subslices_0x10);
+	} else if (INTEL_INFO(dev_priv)->subslice_mask & 0x04) {
+		dev_priv->perf.oa.mux_regs =
+			mux_config_compute_extended_1_4_subslices_0x04;
+		dev_priv->perf.oa.mux_regs_len =
+			ARRAY_SIZE(mux_config_compute_extended_1_4_subslices_0x04);
+	} else if (INTEL_INFO(dev_priv)->subslice_mask & 0x20) {
+		dev_priv->perf.oa.mux_regs =
+			mux_config_compute_extended_1_5_subslices_0x20;
+		dev_priv->perf.oa.mux_regs_len =
+			ARRAY_SIZE(mux_config_compute_extended_1_5_subslices_0x20);
+	dev_priv->perf.oa.mux_regs =
+		mux_config_compute_extended;
+	dev_priv->perf.oa.mux_regs_len =
+		ARRAY_SIZE(mux_config_compute_extended);
+	} else {
+		DRM_DEBUG_DRIVER("No suitable MUX config for \"COMPUTE_EXTENDED\" metric set");
+		return -EINVAL;
+	}
+
+	dev_priv->perf.oa.b_counter_regs =
+		b_counter_config_compute_extended;
+	dev_priv->perf.oa.b_counter_regs_len =
+		ARRAY_SIZE(b_counter_config_compute_extended);
+
+	dev_priv->perf.oa.flex_regs =
+		flex_eu_config_compute_extended;
+	dev_priv->perf.oa.flex_regs_len =
+		ARRAY_SIZE(flex_eu_config_compute_extended);
+
+	return 0;
+}
+
+static const struct i915_oa_reg b_counter_config_compute_l3_cache[] = {
+	{ _MMIO(0x2710), 0x00000000 },
+	{ _MMIO(0x2714), 0x30800000 },
+	{ _MMIO(0x2720), 0x00000000 },
+	{ _MMIO(0x2724), 0x30800000 },
+	{ _MMIO(0x2770), 0x0007fffa },
+	{ _MMIO(0x2774), 0x0000fefe },
+	{ _MMIO(0x2778), 0x0007fffa },
+	{ _MMIO(0x277c), 0x0000fefd },
+	{ _MMIO(0x2790), 0x0007fffa },
+	{ _MMIO(0x2794), 0x0000fbef },
+	{ _MMIO(0x2798), 0x0007fffa },
+	{ _MMIO(0x279c), 0x0000fbdf },
+};
+
+static const struct i915_oa_reg flex_eu_config_compute_l3_cache[] = {
+	{ _MMIO(0xE458), 0x00005004 },
+	{ _MMIO(0xE558), 0x00000003 },
+	{ _MMIO(0xE658), 0x00002001 },
+	{ _MMIO(0xE758), 0x00101100 },
+	{ _MMIO(0xE45c), 0x00201200 },
+	{ _MMIO(0xE55c), 0x00301300 },
+	{ _MMIO(0xE65c), 0x00401400 },
+};
+
+static const struct i915_oa_reg mux_config_compute_l3_cache[] = {
+	{ _MMIO(0x9888), 0x143F00B3 },
+	{ _MMIO(0x9888), 0x14BF00B3 },
+	{ _MMIO(0x9888), 0x138303C0 },
+	{ _MMIO(0x9888), 0x3B800060 },
+	{ _MMIO(0x9888), 0x3D800805 },
+	{ _MMIO(0x9888), 0x003F0029 },
+	{ _MMIO(0x9888), 0x063F1400 },
+	{ _MMIO(0x9888), 0x083F1225 },
+	{ _MMIO(0x9888), 0x0E3F1327 },
+	{ _MMIO(0x9888), 0x103F0000 },
+	{ _MMIO(0x9888), 0x005A4000 },
+	{ _MMIO(0x9888), 0x065A8000 },
+	{ _MMIO(0x9888), 0x085AC000 },
+	{ _MMIO(0x9888), 0x0E5AC000 },
+	{ _MMIO(0x9888), 0x001D4000 },
+	{ _MMIO(0x9888), 0x061D8000 },
+	{ _MMIO(0x9888), 0x081DC000 },
+	{ _MMIO(0x9888), 0x0E1DC000 },
+	{ _MMIO(0x9888), 0x0C1F0800 },
+	{ _MMIO(0x9888), 0x0E1F2A00 },
+	{ _MMIO(0x9888), 0x101F0280 },
+	{ _MMIO(0x9888), 0x00391000 },
+	{ _MMIO(0x9888), 0x06394000 },
+	{ _MMIO(0x9888), 0x08395000 },
+	{ _MMIO(0x9888), 0x0E395000 },
+	{ _MMIO(0x9888), 0x0ABF1429 },
+	{ _MMIO(0x9888), 0x0CBF1225 },
+	{ _MMIO(0x9888), 0x00BF1380 },
+	{ _MMIO(0x9888), 0x02BF0026 },
+	{ _MMIO(0x9888), 0x10BF0000 },
+	{ _MMIO(0x9888), 0x0ADAC000 },
+	{ _MMIO(0x9888), 0x0CDAC000 },
+	{ _MMIO(0x9888), 0x00DA8000 },
+	{ _MMIO(0x9888), 0x02DA4000 },
+	{ _MMIO(0x9888), 0x0A9DC000 },
+	{ _MMIO(0x9888), 0x0C9DC000 },
+	{ _MMIO(0x9888), 0x009D8000 },
+	{ _MMIO(0x9888), 0x029D4000 },
+	{ _MMIO(0x9888), 0x0E9F8000 },
+	{ _MMIO(0x9888), 0x109F002A },
+	{ _MMIO(0x9888), 0x0C9FA000 },
+	{ _MMIO(0x9888), 0x0AB95000 },
+	{ _MMIO(0x9888), 0x0CB95000 },
+	{ _MMIO(0x9888), 0x00B94000 },
+	{ _MMIO(0x9888), 0x02B91000 },
+	{ _MMIO(0x9888), 0x0D88C000 },
+	{ _MMIO(0x9888), 0x0F880003 },
+	{ _MMIO(0x9888), 0x03888000 },
+	{ _MMIO(0x9888), 0x05888000 },
+	{ _MMIO(0x9888), 0x018A8000 },
+	{ _MMIO(0x9888), 0x0F8A8000 },
+	{ _MMIO(0x9888), 0x198A8000 },
+	{ _MMIO(0x9888), 0x1B8A8020 },
+	{ _MMIO(0x9888), 0x1D8A0002 },
+	{ _MMIO(0x9888), 0x238B0520 },
+	{ _MMIO(0x9888), 0x258BA950 },
+	{ _MMIO(0x9888), 0x278B0016 },
+	{ _MMIO(0x9888), 0x198C5400 },
+	{ _MMIO(0x9888), 0x1B8C0001 },
+	{ _MMIO(0x9888), 0x038C4000 },
+	{ _MMIO(0x9888), 0x058C4000 },
+	{ _MMIO(0x9888), 0x0B8DA000 },
+	{ _MMIO(0x9888), 0x0D8DA000 },
+	{ _MMIO(0x9888), 0x018D8000 },
+	{ _MMIO(0x9888), 0x038D2000 },
+	{ _MMIO(0x9888), 0x1F85AA80 },
+	{ _MMIO(0x9888), 0x2185AAA0 },
+	{ _MMIO(0x9888), 0x2385002A },
+	{ _MMIO(0x9888), 0x03835180 },
+	{ _MMIO(0x9888), 0x05834022 },
+	{ _MMIO(0x9888), 0x11830000 },
+	{ _MMIO(0x9888), 0x01834000 },
+	{ _MMIO(0x9888), 0x0F834000 },
+	{ _MMIO(0x9888), 0x19835400 },
+	{ _MMIO(0x9888), 0x1B830155 },
+	{ _MMIO(0x9888), 0x07830000 },
+	{ _MMIO(0x9888), 0x09830000 },
+	{ _MMIO(0x9888), 0x0184C000 },
+	{ _MMIO(0x9888), 0x07848000 },
+	{ _MMIO(0x9888), 0x0984C000 },
+	{ _MMIO(0x9888), 0x0B84C000 },
+	{ _MMIO(0x9888), 0x0D84C000 },
+	{ _MMIO(0x9888), 0x0F84C000 },
+	{ _MMIO(0x9888), 0x0384C000 },
+	{ _MMIO(0x9888), 0x05844000 },
+	{ _MMIO(0x9888), 0x1B80C137 },
+	{ _MMIO(0x9888), 0x1D80C147 },
+	{ _MMIO(0x9888), 0x21800000 },
+	{ _MMIO(0x9888), 0x1180C000 },
+	{ _MMIO(0x9888), 0x17808000 },
+	{ _MMIO(0x9888), 0x1980C000 },
+	{ _MMIO(0x9888), 0x1F80C000 },
+	{ _MMIO(0x9888), 0x1380C000 },
+	{ _MMIO(0x9888), 0x15804000 },
+	{ _MMIO(0x0D24), 0x00000000 },
+	{ _MMIO(0x9888), 0x4D801000 },
+	{ _MMIO(0x9888), 0x4F800111 },
+	{ _MMIO(0x9888), 0x43800842 },
+	{ _MMIO(0x9888), 0x51800000 },
+	{ _MMIO(0x9888), 0x45800000 },
+	{ _MMIO(0x9888), 0x53800000 },
+	{ _MMIO(0x9888), 0x47800840 },
+	{ _MMIO(0x9888), 0x31800000 },
+	{ _MMIO(0x9888), 0x3F800800 },
+	{ _MMIO(0x9888), 0x418014A2 },
+};
+
+static int select_compute_l3_cache_config(struct drm_i915_private *dev_priv)
+{
+	dev_priv->perf.oa.mux_regs =
+		mux_config_compute_l3_cache;
+	dev_priv->perf.oa.mux_regs_len =
+		ARRAY_SIZE(mux_config_compute_l3_cache);
+
+	dev_priv->perf.oa.b_counter_regs =
+		b_counter_config_compute_l3_cache;
+	dev_priv->perf.oa.b_counter_regs_len =
+		ARRAY_SIZE(b_counter_config_compute_l3_cache);
+
+	dev_priv->perf.oa.flex_regs =
+		flex_eu_config_compute_l3_cache;
+	dev_priv->perf.oa.flex_regs_len =
+		ARRAY_SIZE(flex_eu_config_compute_l3_cache);
+
+	return 0;
+}
+
+static const struct i915_oa_reg b_counter_config_data_port_reads_coalescing[] = {
+	{ _MMIO(0x2724), 0xf0800000 },
+	{ _MMIO(0x2720), 0x00000000 },
+	{ _MMIO(0x2714), 0xf0800000 },
+	{ _MMIO(0x2710), 0x00000000 },
+	{ _MMIO(0x274c), 0xba98ba98 },
+	{ _MMIO(0x2748), 0xba98ba98 },
+	{ _MMIO(0x2744), 0x00003377 },
+	{ _MMIO(0x2740), 0x00000000 },
+	{ _MMIO(0x2770), 0x0007fff2 },
+	{ _MMIO(0x2774), 0x00007ff0 },
+	{ _MMIO(0x2778), 0x0007ffe2 },
+	{ _MMIO(0x277c), 0x00007ff0 },
+	{ _MMIO(0x2780), 0x0007ffc2 },
+	{ _MMIO(0x2784), 0x00007ff0 },
+	{ _MMIO(0x2788), 0x0007ff82 },
+	{ _MMIO(0x278c), 0x00007ff0 },
+	{ _MMIO(0x2790), 0x0007fffa },
+	{ _MMIO(0x2794), 0x0000bfef },
+	{ _MMIO(0x2798), 0x0007fffa },
+	{ _MMIO(0x279c), 0x0000bfdf },
+	{ _MMIO(0x27a0), 0x0007fffa },
+	{ _MMIO(0x27a4), 0x0000bfbf },
+	{ _MMIO(0x27a8), 0x0007fffa },
+	{ _MMIO(0x27ac), 0x0000bf7f },
+};
+
+static const struct i915_oa_reg flex_eu_config_data_port_reads_coalescing[] = {
+	{ _MMIO(0xE458), 0x00005004 },
+	{ _MMIO(0xE558), 0x00000003 },
+	{ _MMIO(0xE658), 0x00002001 },
+	{ _MMIO(0xE758), 0x00778008 },
+	{ _MMIO(0xE45c), 0x00088078 },
+	{ _MMIO(0xE55c), 0x00808708 },
+	{ _MMIO(0xE65c), 0x00a08908 },
+};
+
+static const struct i915_oa_reg mux_config_data_port_reads_coalescing_1_0_subslices_0x01[] = {
+	{ _MMIO(0x9888), 0x103D0005 },
+	{ _MMIO(0x9888), 0x163D240B },
+	{ _MMIO(0x9888), 0x1058022F },
+	{ _MMIO(0x9888), 0x185B5520 },
+	{ _MMIO(0x9888), 0x198B0003 },
+	{ _MMIO(0x9888), 0x005CC000 },
+	{ _MMIO(0x9888), 0x065CC000 },
+	{ _MMIO(0x9888), 0x085CC000 },
+	{ _MMIO(0x9888), 0x0A5CC000 },
+	{ _MMIO(0x9888), 0x0C5CC000 },
+	{ _MMIO(0x9888), 0x0E5CC000 },
+	{ _MMIO(0x9888), 0x025C4000 },
+	{ _MMIO(0x9888), 0x045C8000 },
+	{ _MMIO(0x9888), 0x003D0000 },
+	{ _MMIO(0x9888), 0x063D00B0 },
+	{ _MMIO(0x9888), 0x083D0182 },
+	{ _MMIO(0x9888), 0x0A3D10A0 },
+	{ _MMIO(0x9888), 0x0C3D11A2 },
+	{ _MMIO(0x9888), 0x0E3D0000 },
+	{ _MMIO(0x9888), 0x183D0000 },
+	{ _MMIO(0x9888), 0x1A3D0000 },
+	{ _MMIO(0x9888), 0x0E582242 },
+	{ _MMIO(0x9888), 0x00586700 },
+	{ _MMIO(0x9888), 0x0258004F },
+	{ _MMIO(0x9888), 0x0658C000 },
+	{ _MMIO(0x9888), 0x0858C000 },
+	{ _MMIO(0x9888), 0x0A58C000 },
+	{ _MMIO(0x9888), 0x0C58C000 },
+	{ _MMIO(0x9888), 0x045B6300 },
+	{ _MMIO(0x9888), 0x105B0000 },
+	{ _MMIO(0x9888), 0x005B4000 },
+	{ _MMIO(0x9888), 0x0E5B4000 },
+	{ _MMIO(0x9888), 0x1A5B0155 },
+	{ _MMIO(0x9888), 0x025B4000 },
+	{ _MMIO(0x9888), 0x0A5B0000 },
+	{ _MMIO(0x9888), 0x0C5B4000 },
+	{ _MMIO(0x9888), 0x0C1FA800 },
+	{ _MMIO(0x9888), 0x0E1FAAA0 },
+	{ _MMIO(0x9888), 0x101F02AA },
+	{ _MMIO(0x9888), 0x00384000 },
+	{ _MMIO(0x9888), 0x0E384000 },
+	{ _MMIO(0x9888), 0x16384000 },
+	{ _MMIO(0x9888), 0x18381555 },
+	{ _MMIO(0x9888), 0x02384000 },
+	{ _MMIO(0x9888), 0x04384000 },
+	{ _MMIO(0x9888), 0x0A384000 },
+	{ _MMIO(0x9888), 0x0C384000 },
+	{ _MMIO(0x9888), 0x0039A000 },
+	{ _MMIO(0x9888), 0x0639A000 },
+	{ _MMIO(0x9888), 0x0839A000 },
+	{ _MMIO(0x9888), 0x0A39A000 },
+	{ _MMIO(0x9888), 0x0C39A000 },
+	{ _MMIO(0x9888), 0x0E39A000 },
+	{ _MMIO(0x9888), 0x02392000 },
+	{ _MMIO(0x9888), 0x04398000 },
+	{ _MMIO(0x9888), 0x018A8000 },
+	{ _MMIO(0x9888), 0x0F8A8000 },
+	{ _MMIO(0x9888), 0x198A8000 },
+	{ _MMIO(0x9888), 0x1B8AAAA0 },
+	{ _MMIO(0x9888), 0x1D8A0002 },
+	{ _MMIO(0x9888), 0x038A8000 },
+	{ _MMIO(0x9888), 0x058A8000 },
+	{ _MMIO(0x9888), 0x0B8A8000 },
+	{ _MMIO(0x9888), 0x0D8A8000 },
+	{ _MMIO(0x9888), 0x038B6300 },
+	{ _MMIO(0x9888), 0x058B0062 },
+	{ _MMIO(0x9888), 0x118B0000 },
+	{ _MMIO(0x9888), 0x238B02A0 },
+	{ _MMIO(0x9888), 0x258B5555 },
+	{ _MMIO(0x9888), 0x278B0015 },
+	{ _MMIO(0x9888), 0x1F85AA80 },
+	{ _MMIO(0x9888), 0x2185AAAA },
+	{ _MMIO(0x9888), 0x2385002A },
+	{ _MMIO(0x9888), 0x01834000 },
+	{ _MMIO(0x9888), 0x0F834000 },
+	{ _MMIO(0x9888), 0x19835400 },
+	{ _MMIO(0x9888), 0x1B830155 },
+	{ _MMIO(0x9888), 0x03834000 },
+	{ _MMIO(0x9888), 0x05834000 },
+	{ _MMIO(0x9888), 0x07834000 },
+	{ _MMIO(0x9888), 0x09834000 },
+	{ _MMIO(0x9888), 0x0B834000 },
+	{ _MMIO(0x9888), 0x0D834000 },
+	{ _MMIO(0x9888), 0x0184C000 },
+	{ _MMIO(0x9888), 0x0784C000 },
+	{ _MMIO(0x9888), 0x0984C000 },
+	{ _MMIO(0x9888), 0x0B84C000 },
+	{ _MMIO(0x9888), 0x0D84C000 },
+	{ _MMIO(0x9888), 0x0F84C000 },
+	{ _MMIO(0x9888), 0x0384C000 },
+	{ _MMIO(0x9888), 0x0584C000 },
+	{ _MMIO(0x9888), 0x1180C000 },
+	{ _MMIO(0x9888), 0x1780C000 },
+	{ _MMIO(0x9888), 0x1980C000 },
+	{ _MMIO(0x9888), 0x1B80C000 },
+	{ _MMIO(0x9888), 0x1D80C000 },
+	{ _MMIO(0x9888), 0x1F80C000 },
+	{ _MMIO(0x9888), 0x1380C000 },
+	{ _MMIO(0x9888), 0x1580C000 },
+	{ _MMIO(0x0D24), 0x00000000 },
+	{ _MMIO(0x9888), 0x4D801000 },
+	{ _MMIO(0x9888), 0x3D800000 },
+	{ _MMIO(0x9888), 0x4F800001 },
+	{ _MMIO(0x9888), 0x43800000 },
+	{ _MMIO(0x9888), 0x51800000 },
+	{ _MMIO(0x9888), 0x45800000 },
+	{ _MMIO(0x9888), 0x53800000 },
+	{ _MMIO(0x9888), 0x47800420 },
+	{ _MMIO(0x9888), 0x21800000 },
+	{ _MMIO(0x9888), 0x31800000 },
+	{ _MMIO(0x9888), 0x3F800421 },
+	{ _MMIO(0x9888), 0x41800041 },
+};
+
+static int select_data_port_reads_coalescing_config(struct drm_i915_private *dev_priv)
+{
+	if (INTEL_INFO(dev_priv)->subslice_mask & 0x01) {
+		dev_priv->perf.oa.mux_regs =
+			mux_config_data_port_reads_coalescing_1_0_subslices_0x01;
+		dev_priv->perf.oa.mux_regs_len =
+			ARRAY_SIZE(mux_config_data_port_reads_coalescing_1_0_subslices_0x01);
+	} else {
+		DRM_DEBUG_DRIVER("No suitable MUX config for \"DATA_PORT_READS_COALESCING\" metric set");
+		return -EINVAL;
+	}
+
+	dev_priv->perf.oa.b_counter_regs =
+		b_counter_config_data_port_reads_coalescing;
+	dev_priv->perf.oa.b_counter_regs_len =
+		ARRAY_SIZE(b_counter_config_data_port_reads_coalescing);
+
+	dev_priv->perf.oa.flex_regs =
+		flex_eu_config_data_port_reads_coalescing;
+	dev_priv->perf.oa.flex_regs_len =
+		ARRAY_SIZE(flex_eu_config_data_port_reads_coalescing);
+
+	return 0;
+}
+
+static const struct i915_oa_reg b_counter_config_data_port_writes_coalescing[] = {
+	{ _MMIO(0x2724), 0xf0800000 },
+	{ _MMIO(0x2720), 0x00000000 },
+	{ _MMIO(0x2714), 0xf0800000 },
+	{ _MMIO(0x2710), 0x00000000 },
+	{ _MMIO(0x274c), 0xba98ba98 },
+	{ _MMIO(0x2748), 0xba98ba98 },
+	{ _MMIO(0x2744), 0x00003377 },
+	{ _MMIO(0x2740), 0x00000000 },
+	{ _MMIO(0x2770), 0x0007ff72 },
+	{ _MMIO(0x2774), 0x0000bfd0 },
+	{ _MMIO(0x2778), 0x0007ff62 },
+	{ _MMIO(0x277c), 0x0000bfd0 },
+	{ _MMIO(0x2780), 0x0007ff42 },
+	{ _MMIO(0x2784), 0x0000bfd0 },
+	{ _MMIO(0x2788), 0x0007ff02 },
+	{ _MMIO(0x278c), 0x0000bfd0 },
+	{ _MMIO(0x2790), 0x0005fff2 },
+	{ _MMIO(0x2794), 0x0000bfd0 },
+	{ _MMIO(0x2798), 0x0005ffe2 },
+	{ _MMIO(0x279c), 0x0000bfd0 },
+	{ _MMIO(0x27a0), 0x0005ffc2 },
+	{ _MMIO(0x27a4), 0x0000bfd0 },
+	{ _MMIO(0x27a8), 0x0005ff82 },
+	{ _MMIO(0x27ac), 0x0000bfd0 },
+};
+
+static const struct i915_oa_reg flex_eu_config_data_port_writes_coalescing[] = {
+	{ _MMIO(0xE458), 0x00005004 },
+	{ _MMIO(0xE558), 0x00000003 },
+	{ _MMIO(0xE658), 0x00002001 },
+	{ _MMIO(0xE758), 0x00778008 },
+	{ _MMIO(0xE45c), 0x00088078 },
+	{ _MMIO(0xE55c), 0x00808708 },
+	{ _MMIO(0xE65c), 0x00a08908 },
+};
+
+static const struct i915_oa_reg mux_config_data_port_writes_coalescing_1_0_subslices_0x01[] = {
+	{ _MMIO(0x9888), 0x103D0005 },
+	{ _MMIO(0x9888), 0x143D0120 },
+	{ _MMIO(0x9888), 0x163D2400 },
+	{ _MMIO(0x9888), 0x1058022F },
+	{ _MMIO(0x9888), 0x105B0000 },
+	{ _MMIO(0x9888), 0x198B0003 },
+	{ _MMIO(0x9888), 0x005CC000 },
+	{ _MMIO(0x9888), 0x065CC000 },
+	{ _MMIO(0x9888), 0x085CC000 },
+	{ _MMIO(0x9888), 0x0A5CC000 },
+	{ _MMIO(0x9888), 0x0E5CC000 },
+	{ _MMIO(0x9888), 0x025C4000 },
+	{ _MMIO(0x9888), 0x045C8000 },
+	{ _MMIO(0x9888), 0x003D0000 },
+	{ _MMIO(0x9888), 0x063D0094 },
+	{ _MMIO(0x9888), 0x083D0182 },
+	{ _MMIO(0x9888), 0x0A3D1814 },
+	{ _MMIO(0x9888), 0x0E3D0000 },
+	{ _MMIO(0x9888), 0x183D0000 },
+	{ _MMIO(0x9888), 0x1A3D0000 },
+	{ _MMIO(0x9888), 0x0C3D0000 },
+	{ _MMIO(0x9888), 0x0E582242 },
+	{ _MMIO(0x9888), 0x00586700 },
+	{ _MMIO(0x9888), 0x0258004F },
+	{ _MMIO(0x9888), 0x0658C000 },
+	{ _MMIO(0x9888), 0x0858C000 },
+	{ _MMIO(0x9888), 0x0A58C000 },
+	{ _MMIO(0x9888), 0x045B6A80 },
+	{ _MMIO(0x9888), 0x005B4000 },
+	{ _MMIO(0x9888), 0x0E5B4000 },
+	{ _MMIO(0x9888), 0x185B5400 },
+	{ _MMIO(0x9888), 0x1A5B0141 },
+	{ _MMIO(0x9888), 0x025B4000 },
+	{ _MMIO(0x9888), 0x0A5B0000 },
+	{ _MMIO(0x9888), 0x0C5B4000 },
+	{ _MMIO(0x9888), 0x0C1FA800 },
+	{ _MMIO(0x9888), 0x0E1FAAA0 },
+	{ _MMIO(0x9888), 0x101F0282 },
+	{ _MMIO(0x9888), 0x00384000 },
+	{ _MMIO(0x9888), 0x0E384000 },
+	{ _MMIO(0x9888), 0x16384000 },
+	{ _MMIO(0x9888), 0x18381415 },
+	{ _MMIO(0x9888), 0x02384000 },
+	{ _MMIO(0x9888), 0x04384000 },
+	{ _MMIO(0x9888), 0x0A384000 },
+	{ _MMIO(0x9888), 0x0C384000 },
+	{ _MMIO(0x9888), 0x0039A000 },
+	{ _MMIO(0x9888), 0x0639A000 },
+	{ _MMIO(0x9888), 0x0839A000 },
+	{ _MMIO(0x9888), 0x0A39A000 },
+	{ _MMIO(0x9888), 0x0E39A000 },
+	{ _MMIO(0x9888), 0x02392000 },
+	{ _MMIO(0x9888), 0x04398000 },
+	{ _MMIO(0x9888), 0x018A8000 },
+	{ _MMIO(0x9888), 0x0F8A8000 },
+	{ _MMIO(0x9888), 0x198A8000 },
+	{ _MMIO(0x9888), 0x1B8A82A0 },
+	{ _MMIO(0x9888), 0x1D8A0002 },
+	{ _MMIO(0x9888), 0x038A8000 },
+	{ _MMIO(0x9888), 0x058A8000 },
+	{ _MMIO(0x9888), 0x0B8A8000 },
+	{ _MMIO(0x9888), 0x0D8A8000 },
+	{ _MMIO(0x9888), 0x038B6300 },
+	{ _MMIO(0x9888), 0x058B0062 },
+	{ _MMIO(0x9888), 0x118B0000 },
+	{ _MMIO(0x9888), 0x238B02A0 },
+	{ _MMIO(0x9888), 0x258B1555 },
+	{ _MMIO(0x9888), 0x278B0014 },
+	{ _MMIO(0x9888), 0x1F85AA80 },
+	{ _MMIO(0x9888), 0x21852AAA },
+	{ _MMIO(0x9888), 0x23850028 },
+	{ _MMIO(0x9888), 0x01834000 },
+	{ _MMIO(0x9888), 0x0F834000 },
+	{ _MMIO(0x9888), 0x19835400 },
+	{ _MMIO(0x9888), 0x1B830141 },
+	{ _MMIO(0x9888), 0x03834000 },
+	{ _MMIO(0x9888), 0x05834000 },
+	{ _MMIO(0x9888), 0x07834000 },
+	{ _MMIO(0x9888), 0x09834000 },
+	{ _MMIO(0x9888), 0x0B834000 },
+	{ _MMIO(0x9888), 0x0D834000 },
+	{ _MMIO(0x9888), 0x0184C000 },
+	{ _MMIO(0x9888), 0x0784C000 },
+	{ _MMIO(0x9888), 0x0984C000 },
+	{ _MMIO(0x9888), 0x0B84C000 },
+	{ _MMIO(0x9888), 0x0F84C000 },
+	{ _MMIO(0x9888), 0x0384C000 },
+	{ _MMIO(0x9888), 0x0584C000 },
+	{ _MMIO(0x9888), 0x1180C000 },
+	{ _MMIO(0x9888), 0x1780C000 },
+	{ _MMIO(0x9888), 0x1980C000 },
+	{ _MMIO(0x9888), 0x1B80C000 },
+	{ _MMIO(0x9888), 0x1F80C000 },
+	{ _MMIO(0x9888), 0x1380C000 },
+	{ _MMIO(0x9888), 0x1580C000 },
+	{ _MMIO(0x0D24), 0x00000000 },
+	{ _MMIO(0x9888), 0x4D801000 },
+	{ _MMIO(0x9888), 0x3D800000 },
+	{ _MMIO(0x9888), 0x4F800001 },
+	{ _MMIO(0x9888), 0x43800000 },
+	{ _MMIO(0x9888), 0x51800000 },
+	{ _MMIO(0x9888), 0x45800000 },
+	{ _MMIO(0x9888), 0x21800000 },
+	{ _MMIO(0x9888), 0x31800000 },
+	{ _MMIO(0x9888), 0x53800000 },
+	{ _MMIO(0x9888), 0x47800420 },
+	{ _MMIO(0x9888), 0x3F800421 },
+	{ _MMIO(0x9888), 0x41800041 },
+};
+
+static int select_data_port_writes_coalescing_config(struct drm_i915_private *dev_priv)
+{
+	if (INTEL_INFO(dev_priv)->subslice_mask & 0x01) {
+		dev_priv->perf.oa.mux_regs =
+			mux_config_data_port_writes_coalescing_1_0_subslices_0x01;
+		dev_priv->perf.oa.mux_regs_len =
+			ARRAY_SIZE(mux_config_data_port_writes_coalescing_1_0_subslices_0x01);
+	} else {
+		DRM_DEBUG_DRIVER("No suitable MUX config for \"DATA_PORT_WRITES_COALESCING\" metric set");
+		return -EINVAL;
+	}
+
+	dev_priv->perf.oa.b_counter_regs =
+		b_counter_config_data_port_writes_coalescing;
+	dev_priv->perf.oa.b_counter_regs_len =
+		ARRAY_SIZE(b_counter_config_data_port_writes_coalescing);
+
+	dev_priv->perf.oa.flex_regs =
+		flex_eu_config_data_port_writes_coalescing;
+	dev_priv->perf.oa.flex_regs_len =
+		ARRAY_SIZE(flex_eu_config_data_port_writes_coalescing);
+
+	return 0;
+}
+
+static const struct i915_oa_reg b_counter_config_hdc_and_sf[] = {
+	{ _MMIO(0x2740), 0x00000000 },
+	{ _MMIO(0x2744), 0x00800000 },
+	{ _MMIO(0x2710), 0x00000000 },
+	{ _MMIO(0x2714), 0x10800000 },
+	{ _MMIO(0x2720), 0x00000000 },
+	{ _MMIO(0x2724), 0x00800000 },
+	{ _MMIO(0x2770), 0x00000002 },
+	{ _MMIO(0x2774), 0x0000fff7 },
+};
+
+static const struct i915_oa_reg flex_eu_config_hdc_and_sf[] = {
+	{ _MMIO(0xE458), 0x00005004 },
+	{ _MMIO(0xE558), 0x00010003 },
+	{ _MMIO(0xE658), 0x00012011 },
+	{ _MMIO(0xE758), 0x00015014 },
+	{ _MMIO(0xE45c), 0x00051050 },
+	{ _MMIO(0xE55c), 0x00053052 },
+	{ _MMIO(0xE65c), 0x00055054 },
+};
+
+static const struct i915_oa_reg mux_config_hdc_and_sf[] = {
+	{ _MMIO(0x9888), 0x105c0232 },
+	{ _MMIO(0x9888), 0x10580232 },
+	{ _MMIO(0x9888), 0x10380232 },
+	{ _MMIO(0x9888), 0x10dc0232 },
+	{ _MMIO(0x9888), 0x10d80232 },
+	{ _MMIO(0x9888), 0x10b80232 },
+	{ _MMIO(0x9888), 0x118e4400 },
+	{ _MMIO(0x9888), 0x025c6080 },
+	{ _MMIO(0x9888), 0x045c004b },
+	{ _MMIO(0x9888), 0x005c8000 },
+	{ _MMIO(0x9888), 0x00582080 },
+	{ _MMIO(0x9888), 0x0258004b },
+	{ _MMIO(0x9888), 0x025b4000 },
+	{ _MMIO(0x9888), 0x045b4000 },
+	{ _MMIO(0x9888), 0x0c1fa000 },
+	{ _MMIO(0x9888), 0x0e1f00aa },
+	{ _MMIO(0x9888), 0x04386080 },
+	{ _MMIO(0x9888), 0x0638404b },
+	{ _MMIO(0x9888), 0x02384000 },
+	{ _MMIO(0x9888), 0x08384000 },
+	{ _MMIO(0x9888), 0x0a380000 },
+	{ _MMIO(0x9888), 0x0c380000 },
+	{ _MMIO(0x9888), 0x00398000 },
+	{ _MMIO(0x9888), 0x0239a000 },
+	{ _MMIO(0x9888), 0x0439a000 },
+	{ _MMIO(0x9888), 0x06392000 },
+	{ _MMIO(0x9888), 0x0cdc25c1 },
+	{ _MMIO(0x9888), 0x0adcc000 },
+	{ _MMIO(0x9888), 0x0ad825c1 },
+	{ _MMIO(0x9888), 0x18db4000 },
+	{ _MMIO(0x9888), 0x1adb0001 },
+	{ _MMIO(0x9888), 0x0e9f8000 },
+	{ _MMIO(0x9888), 0x109f02aa },
+	{ _MMIO(0x9888), 0x0eb825c1 },
+	{ _MMIO(0x9888), 0x18b80154 },
+	{ _MMIO(0x9888), 0x0ab9a000 },
+	{ _MMIO(0x9888), 0x0cb9a000 },
+	{ _MMIO(0x9888), 0x0eb9a000 },
+	{ _MMIO(0x9888), 0x0d88c000 },
+	{ _MMIO(0x9888), 0x0f88000f },
+	{ _MMIO(0x9888), 0x038a8000 },
+	{ _MMIO(0x9888), 0x058a8000 },
+	{ _MMIO(0x9888), 0x078a8000 },
+	{ _MMIO(0x9888), 0x098a8000 },
+	{ _MMIO(0x9888), 0x0b8a8000 },
+	{ _MMIO(0x9888), 0x0d8a8000 },
+	{ _MMIO(0x9888), 0x258baa05 },
+	{ _MMIO(0x9888), 0x278b002a },
+	{ _MMIO(0x9888), 0x238b2a80 },
+	{ _MMIO(0x9888), 0x198c5400 },
+	{ _MMIO(0x9888), 0x1b8c0015 },
+	{ _MMIO(0x9888), 0x098dc000 },
+	{ _MMIO(0x9888), 0x0b8da000 },
+	{ _MMIO(0x9888), 0x0d8da000 },
+	{ _MMIO(0x9888), 0x0f8da000 },
+	{ _MMIO(0x9888), 0x098e05c0 },
+	{ _MMIO(0x9888), 0x058e0000 },
+	{ _MMIO(0x9888), 0x198f0020 },
+	{ _MMIO(0x9888), 0x2185aa0a },
+	{ _MMIO(0x9888), 0x2385002a },
+	{ _MMIO(0x9888), 0x1f85aa00 },
+	{ _MMIO(0x9888), 0x19835000 },
+	{ _MMIO(0x9888), 0x1b830155 },
+	{ _MMIO(0x9888), 0x03834000 },
+	{ _MMIO(0x9888), 0x05834000 },
+	{ _MMIO(0x9888), 0x07834000 },
+	{ _MMIO(0x9888), 0x09834000 },
+	{ _MMIO(0x9888), 0x0b834000 },
+	{ _MMIO(0x9888), 0x0d834000 },
+	{ _MMIO(0x9888), 0x09848000 },
+	{ _MMIO(0x9888), 0x0b84c000 },
+	{ _MMIO(0x9888), 0x0d84c000 },
+	{ _MMIO(0x9888), 0x0f84c000 },
+	{ _MMIO(0x9888), 0x01848000 },
+	{ _MMIO(0x9888), 0x0384c000 },
+	{ _MMIO(0x9888), 0x0584c000 },
+	{ _MMIO(0x9888), 0x07844000 },
+	{ _MMIO(0x9888), 0x19808000 },
+	{ _MMIO(0x9888), 0x1b80c000 },
+	{ _MMIO(0x9888), 0x1d80c000 },
+	{ _MMIO(0x9888), 0x1f80c000 },
+	{ _MMIO(0x9888), 0x11808000 },
+	{ _MMIO(0x9888), 0x1380c000 },
+	{ _MMIO(0x9888), 0x1580c000 },
+	{ _MMIO(0x9888), 0x17804000 },
+	{ _MMIO(0x9888), 0x51800040 },
+	{ _MMIO(0x9888), 0x43800400 },
+	{ _MMIO(0x9888), 0x45800800 },
+	{ _MMIO(0x9888), 0x53800000 },
+	{ _MMIO(0x9888), 0x47800c62 },
+	{ _MMIO(0x9888), 0x21800000 },
+	{ _MMIO(0x9888), 0x31800000 },
+	{ _MMIO(0x9888), 0x4d800000 },
+	{ _MMIO(0x9888), 0x3f801042 },
+	{ _MMIO(0x9888), 0x4f800000 },
+	{ _MMIO(0x9888), 0x418014a4 },
+};
+
+static int select_hdc_and_sf_config(struct drm_i915_private *dev_priv)
+{
+	dev_priv->perf.oa.mux_regs =
+		mux_config_hdc_and_sf;
+	dev_priv->perf.oa.mux_regs_len =
+		ARRAY_SIZE(mux_config_hdc_and_sf);
+
+	dev_priv->perf.oa.b_counter_regs =
+		b_counter_config_hdc_and_sf;
+	dev_priv->perf.oa.b_counter_regs_len =
+		ARRAY_SIZE(b_counter_config_hdc_and_sf);
+
+	dev_priv->perf.oa.flex_regs =
+		flex_eu_config_hdc_and_sf;
+	dev_priv->perf.oa.flex_regs_len =
+		ARRAY_SIZE(flex_eu_config_hdc_and_sf);
+
+	return 0;
+}
+
+static const struct i915_oa_reg b_counter_config_l3_1[] = {
+	{ _MMIO(0x2740), 0x00000000 },
+	{ _MMIO(0x2744), 0x00800000 },
+	{ _MMIO(0x2710), 0x00000000 },
+	{ _MMIO(0x2714), 0xf0800000 },
+	{ _MMIO(0x2720), 0x00000000 },
+	{ _MMIO(0x2724), 0xf0800000 },
+	{ _MMIO(0x2770), 0x00100070 },
+	{ _MMIO(0x2774), 0x0000fff1 },
+	{ _MMIO(0x2778), 0x00014002 },
+	{ _MMIO(0x277c), 0x0000c3ff },
+	{ _MMIO(0x2780), 0x00010002 },
+	{ _MMIO(0x2784), 0x0000c7ff },
+	{ _MMIO(0x2788), 0x00004002 },
+	{ _MMIO(0x278c), 0x0000d3ff },
+	{ _MMIO(0x2790), 0x00100700 },
+	{ _MMIO(0x2794), 0x0000ff1f },
+	{ _MMIO(0x2798), 0x00001402 },
+	{ _MMIO(0x279c), 0x0000fc3f },
+	{ _MMIO(0x27a0), 0x00001002 },
+	{ _MMIO(0x27a4), 0x0000fc7f },
+	{ _MMIO(0x27a8), 0x00000402 },
+	{ _MMIO(0x27ac), 0x0000fd3f },
+};
+
+static const struct i915_oa_reg flex_eu_config_l3_1[] = {
+	{ _MMIO(0xE458), 0x00005004 },
+	{ _MMIO(0xE558), 0x00010003 },
+	{ _MMIO(0xE658), 0x00012011 },
+	{ _MMIO(0xE758), 0x00015014 },
+	{ _MMIO(0xE45c), 0x00051050 },
+	{ _MMIO(0xE55c), 0x00053052 },
+	{ _MMIO(0xE65c), 0x00055054 },
+};
+
+static const struct i915_oa_reg mux_config_l3_1[] = {
+	{ _MMIO(0x9888), 0x10bf03da },
+	{ _MMIO(0x9888), 0x14bf0001 },
+	{ _MMIO(0x9888), 0x12980340 },
+	{ _MMIO(0x9888), 0x12990340 },
+	{ _MMIO(0x9888), 0x0cbf1187 },
+	{ _MMIO(0x9888), 0x0ebf1205 },
+	{ _MMIO(0x9888), 0x00bf0500 },
+	{ _MMIO(0x9888), 0x02bf042b },
+	{ _MMIO(0x9888), 0x04bf002c },
+	{ _MMIO(0x9888), 0x0cdac000 },
+	{ _MMIO(0x9888), 0x0edac000 },
+	{ _MMIO(0x9888), 0x00da8000 },
+	{ _MMIO(0x9888), 0x02dac000 },
+	{ _MMIO(0x9888), 0x04da4000 },
+	{ _MMIO(0x9888), 0x04983400 },
+	{ _MMIO(0x9888), 0x10980000 },
+	{ _MMIO(0x9888), 0x06990034 },
+	{ _MMIO(0x9888), 0x10990000 },
+	{ _MMIO(0x9888), 0x0c9dc000 },
+	{ _MMIO(0x9888), 0x0e9dc000 },
+	{ _MMIO(0x9888), 0x009d8000 },
+	{ _MMIO(0x9888), 0x029dc000 },
+	{ _MMIO(0x9888), 0x049d4000 },
+	{ _MMIO(0x9888), 0x109f02a8 },
+	{ _MMIO(0x9888), 0x0c9fa000 },
+	{ _MMIO(0x9888), 0x0e9f00ba },
+	{ _MMIO(0x9888), 0x0cb88000 },
+	{ _MMIO(0x9888), 0x0cb95000 },
+	{ _MMIO(0x9888), 0x0eb95000 },
+	{ _MMIO(0x9888), 0x00b94000 },
+	{ _MMIO(0x9888), 0x02b95000 },
+	{ _MMIO(0x9888), 0x04b91000 },
+	{ _MMIO(0x9888), 0x06b92000 },
+	{ _MMIO(0x9888), 0x0cba4000 },
+	{ _MMIO(0x9888), 0x0f88000f },
+	{ _MMIO(0x9888), 0x03888000 },
+	{ _MMIO(0x9888), 0x05888000 },
+	{ _MMIO(0x9888), 0x07888000 },
+	{ _MMIO(0x9888), 0x09888000 },
+	{ _MMIO(0x9888), 0x0b888000 },
+	{ _MMIO(0x9888), 0x0d880400 },
+	{ _MMIO(0x9888), 0x258b800a },
+	{ _MMIO(0x9888), 0x278b002a },
+	{ _MMIO(0x9888), 0x238b5500 },
+	{ _MMIO(0x9888), 0x198c4000 },
+	{ _MMIO(0x9888), 0x1b8c0015 },
+	{ _MMIO(0x9888), 0x038c4000 },
+	{ _MMIO(0x9888), 0x058c4000 },
+	{ _MMIO(0x9888), 0x078c4000 },
+	{ _MMIO(0x9888), 0x098c4000 },
+	{ _MMIO(0x9888), 0x0b8c4000 },
+	{ _MMIO(0x9888), 0x0d8c4000 },
+	{ _MMIO(0x9888), 0x0d8da000 },
+	{ _MMIO(0x9888), 0x0f8da000 },
+	{ _MMIO(0x9888), 0x018d8000 },
+	{ _MMIO(0x9888), 0x038da000 },
+	{ _MMIO(0x9888), 0x058da000 },
+	{ _MMIO(0x9888), 0x078d2000 },
+	{ _MMIO(0x9888), 0x2185800a },
+	{ _MMIO(0x9888), 0x2385002a },
+	{ _MMIO(0x9888), 0x1f85aa00 },
+	{ _MMIO(0x9888), 0x1b830154 },
+	{ _MMIO(0x9888), 0x03834000 },
+	{ _MMIO(0x9888), 0x05834000 },
+	{ _MMIO(0x9888), 0x07834000 },
+	{ _MMIO(0x9888), 0x09834000 },
+	{ _MMIO(0x9888), 0x0b834000 },
+	{ _MMIO(0x9888), 0x0d834000 },
+	{ _MMIO(0x9888), 0x0d84c000 },
+	{ _MMIO(0x9888), 0x0f84c000 },
+	{ _MMIO(0x9888), 0x01848000 },
+	{ _MMIO(0x9888), 0x0384c000 },
+	{ _MMIO(0x9888), 0x0584c000 },
+	{ _MMIO(0x9888), 0x07844000 },
+	{ _MMIO(0x9888), 0x1d80c000 },
+	{ _MMIO(0x9888), 0x1f80c000 },
+	{ _MMIO(0x9888), 0x11808000 },
+	{ _MMIO(0x9888), 0x1380c000 },
+	{ _MMIO(0x9888), 0x1580c000 },
+	{ _MMIO(0x9888), 0x17804000 },
+	{ _MMIO(0x9888), 0x53800000 },
+	{ _MMIO(0x9888), 0x45800000 },
+	{ _MMIO(0x9888), 0x47800000 },
+	{ _MMIO(0x9888), 0x21800000 },
+	{ _MMIO(0x9888), 0x31800000 },
+	{ _MMIO(0x9888), 0x4d800000 },
+	{ _MMIO(0x9888), 0x3f800000 },
+	{ _MMIO(0x9888), 0x4f800000 },
+	{ _MMIO(0x9888), 0x41800060 },
+};
+
+static int select_l3_1_config(struct drm_i915_private *dev_priv)
+{
+	dev_priv->perf.oa.mux_regs =
+		mux_config_l3_1;
+	dev_priv->perf.oa.mux_regs_len =
+		ARRAY_SIZE(mux_config_l3_1);
+
+	dev_priv->perf.oa.b_counter_regs =
+		b_counter_config_l3_1;
+	dev_priv->perf.oa.b_counter_regs_len =
+		ARRAY_SIZE(b_counter_config_l3_1);
+
+	dev_priv->perf.oa.flex_regs =
+		flex_eu_config_l3_1;
+	dev_priv->perf.oa.flex_regs_len =
+		ARRAY_SIZE(flex_eu_config_l3_1);
+
+	return 0;
+}
+
+static const struct i915_oa_reg b_counter_config_l3_2[] = {
+	{ _MMIO(0x2740), 0x00000000 },
+	{ _MMIO(0x2744), 0x00800000 },
+	{ _MMIO(0x2710), 0x00000000 },
+	{ _MMIO(0x2714), 0xf0800000 },
+	{ _MMIO(0x2720), 0x00000000 },
+	{ _MMIO(0x2724), 0xf0800000 },
+	{ _MMIO(0x2770), 0x00100070 },
+	{ _MMIO(0x2774), 0x0000fff1 },
+	{ _MMIO(0x2778), 0x00014002 },
+	{ _MMIO(0x277c), 0x0000c3ff },
+	{ _MMIO(0x2780), 0x00010002 },
+	{ _MMIO(0x2784), 0x0000c7ff },
+	{ _MMIO(0x2788), 0x00004002 },
+	{ _MMIO(0x278c), 0x0000d3ff },
+	{ _MMIO(0x2790), 0x00100700 },
+	{ _MMIO(0x2794), 0x0000ff1f },
+	{ _MMIO(0x2798), 0x00001402 },
+	{ _MMIO(0x279c), 0x0000fc3f },
+	{ _MMIO(0x27a0), 0x00001002 },
+	{ _MMIO(0x27a4), 0x0000fc7f },
+	{ _MMIO(0x27a8), 0x00000402 },
+	{ _MMIO(0x27ac), 0x0000fd3f },
+};
+
+static const struct i915_oa_reg flex_eu_config_l3_2[] = {
+	{ _MMIO(0xE458), 0x00005004 },
+	{ _MMIO(0xE558), 0x00010003 },
+	{ _MMIO(0xE658), 0x00012011 },
+	{ _MMIO(0xE758), 0x00015014 },
+	{ _MMIO(0xE45c), 0x00051050 },
+	{ _MMIO(0xE55c), 0x00053052 },
+	{ _MMIO(0xE65c), 0x00055054 },
+};
+
+static const struct i915_oa_reg mux_config_l3_2[] = {
+	{ _MMIO(0x9888), 0x103f03da },
+	{ _MMIO(0x9888), 0x143f0001 },
+	{ _MMIO(0x9888), 0x12180340 },
+	{ _MMIO(0x9888), 0x12190340 },
+	{ _MMIO(0x9888), 0x0c3f1187 },
+	{ _MMIO(0x9888), 0x0e3f1205 },
+	{ _MMIO(0x9888), 0x003f0500 },
+	{ _MMIO(0x9888), 0x023f042b },
+	{ _MMIO(0x9888), 0x043f002c },
+	{ _MMIO(0x9888), 0x0c5ac000 },
+	{ _MMIO(0x9888), 0x0e5ac000 },
+	{ _MMIO(0x9888), 0x005a8000 },
+	{ _MMIO(0x9888), 0x025ac000 },
+	{ _MMIO(0x9888), 0x045a4000 },
+	{ _MMIO(0x9888), 0x04183400 },
+	{ _MMIO(0x9888), 0x10180000 },
+	{ _MMIO(0x9888), 0x06190034 },
+	{ _MMIO(0x9888), 0x10190000 },
+	{ _MMIO(0x9888), 0x0c1dc000 },
+	{ _MMIO(0x9888), 0x0e1dc000 },
+	{ _MMIO(0x9888), 0x001d8000 },
+	{ _MMIO(0x9888), 0x021dc000 },
+	{ _MMIO(0x9888), 0x041d4000 },
+	{ _MMIO(0x9888), 0x101f02a8 },
+	{ _MMIO(0x9888), 0x0c1fa000 },
+	{ _MMIO(0x9888), 0x0e1f00ba },
+	{ _MMIO(0x9888), 0x0c388000 },
+	{ _MMIO(0x9888), 0x0c395000 },
+	{ _MMIO(0x9888), 0x0e395000 },
+	{ _MMIO(0x9888), 0x00394000 },
+	{ _MMIO(0x9888), 0x02395000 },
+	{ _MMIO(0x9888), 0x04391000 },
+	{ _MMIO(0x9888), 0x06392000 },
+	{ _MMIO(0x9888), 0x0c3a4000 },
+	{ _MMIO(0x9888), 0x1b8aa800 },
+	{ _MMIO(0x9888), 0x1d8a0002 },
+	{ _MMIO(0x9888), 0x038a8000 },
+	{ _MMIO(0x9888), 0x058a8000 },
+	{ _MMIO(0x9888), 0x078a8000 },
+	{ _MMIO(0x9888), 0x098a8000 },
+	{ _MMIO(0x9888), 0x0b8a8000 },
+	{ _MMIO(0x9888), 0x0d8a8000 },
+	{ _MMIO(0x9888), 0x258b4005 },
+	{ _MMIO(0x9888), 0x278b0015 },
+	{ _MMIO(0x9888), 0x238b2a80 },
+	{ _MMIO(0x9888), 0x2185800a },
+	{ _MMIO(0x9888), 0x2385002a },
+	{ _MMIO(0x9888), 0x1f85aa00 },
+	{ _MMIO(0x9888), 0x1b830154 },
+	{ _MMIO(0x9888), 0x03834000 },
+	{ _MMIO(0x9888), 0x05834000 },
+	{ _MMIO(0x9888), 0x07834000 },
+	{ _MMIO(0x9888), 0x09834000 },
+	{ _MMIO(0x9888), 0x0b834000 },
+	{ _MMIO(0x9888), 0x0d834000 },
+	{ _MMIO(0x9888), 0x0d84c000 },
+	{ _MMIO(0x9888), 0x0f84c000 },
+	{ _MMIO(0x9888), 0x01848000 },
+	{ _MMIO(0x9888), 0x0384c000 },
+	{ _MMIO(0x9888), 0x0584c000 },
+	{ _MMIO(0x9888), 0x07844000 },
+	{ _MMIO(0x9888), 0x1d80c000 },
+	{ _MMIO(0x9888), 0x1f80c000 },
+	{ _MMIO(0x9888), 0x11808000 },
+	{ _MMIO(0x9888), 0x1380c000 },
+	{ _MMIO(0x9888), 0x1580c000 },
+	{ _MMIO(0x9888), 0x17804000 },
+	{ _MMIO(0x9888), 0x53800000 },
+	{ _MMIO(0x9888), 0x45800000 },
+	{ _MMIO(0x9888), 0x47800000 },
+	{ _MMIO(0x9888), 0x21800000 },
+	{ _MMIO(0x9888), 0x31800000 },
+	{ _MMIO(0x9888), 0x4d800000 },
+	{ _MMIO(0x9888), 0x3f800000 },
+	{ _MMIO(0x9888), 0x4f800000 },
+	{ _MMIO(0x9888), 0x41800060 },
+};
+
+static int select_l3_2_config(struct drm_i915_private *dev_priv)
+{
+	dev_priv->perf.oa.mux_regs =
+		mux_config_l3_2;
+	dev_priv->perf.oa.mux_regs_len =
+		ARRAY_SIZE(mux_config_l3_2);
+
+	dev_priv->perf.oa.b_counter_regs =
+		b_counter_config_l3_2;
+	dev_priv->perf.oa.b_counter_regs_len =
+		ARRAY_SIZE(b_counter_config_l3_2);
+
+	dev_priv->perf.oa.flex_regs =
+		flex_eu_config_l3_2;
+	dev_priv->perf.oa.flex_regs_len =
+		ARRAY_SIZE(flex_eu_config_l3_2);
+
+	return 0;
+}
+
+static const struct i915_oa_reg b_counter_config_l3_3[] = {
+	{ _MMIO(0x2740), 0x00000000 },
+	{ _MMIO(0x2744), 0x00800000 },
+	{ _MMIO(0x2710), 0x00000000 },
+	{ _MMIO(0x2714), 0xf0800000 },
+	{ _MMIO(0x2720), 0x00000000 },
+	{ _MMIO(0x2724), 0xf0800000 },
+	{ _MMIO(0x2770), 0x00100070 },
+	{ _MMIO(0x2774), 0x0000fff1 },
+	{ _MMIO(0x2778), 0x00014002 },
+	{ _MMIO(0x277c), 0x0000c3ff },
+	{ _MMIO(0x2780), 0x00010002 },
+	{ _MMIO(0x2784), 0x0000c7ff },
+	{ _MMIO(0x2788), 0x00004002 },
+	{ _MMIO(0x278c), 0x0000d3ff },
+	{ _MMIO(0x2790), 0x00100700 },
+	{ _MMIO(0x2794), 0x0000ff1f },
+	{ _MMIO(0x2798), 0x00001402 },
+	{ _MMIO(0x279c), 0x0000fc3f },
+	{ _MMIO(0x27a0), 0x00001002 },
+	{ _MMIO(0x27a4), 0x0000fc7f },
+	{ _MMIO(0x27a8), 0x00000402 },
+	{ _MMIO(0x27ac), 0x0000fd3f },
+};
+
+static const struct i915_oa_reg flex_eu_config_l3_3[] = {
+	{ _MMIO(0xE458), 0x00005004 },
+	{ _MMIO(0xE558), 0x00010003 },
+	{ _MMIO(0xE658), 0x00012011 },
+	{ _MMIO(0xE758), 0x00015014 },
+	{ _MMIO(0xE45c), 0x00051050 },
+	{ _MMIO(0xE55c), 0x00053052 },
+	{ _MMIO(0xE65c), 0x00055054 },
+};
+
+static const struct i915_oa_reg mux_config_l3_3[] = {
+	{ _MMIO(0x9888), 0x121b0340 },
+	{ _MMIO(0x9888), 0x103f0274 },
+	{ _MMIO(0x9888), 0x123f0000 },
+	{ _MMIO(0x9888), 0x129b0340 },
+	{ _MMIO(0x9888), 0x10bf0274 },
+	{ _MMIO(0x9888), 0x12bf0000 },
+	{ _MMIO(0x9888), 0x041b3400 },
+	{ _MMIO(0x9888), 0x101b0000 },
+	{ _MMIO(0x9888), 0x045c8000 },
+	{ _MMIO(0x9888), 0x0a3d4000 },
+	{ _MMIO(0x9888), 0x003f0080 },
+	{ _MMIO(0x9888), 0x023f0793 },
+	{ _MMIO(0x9888), 0x043f0014 },
+	{ _MMIO(0x9888), 0x04588000 },
+	{ _MMIO(0x9888), 0x005a8000 },
+	{ _MMIO(0x9888), 0x025ac000 },
+	{ _MMIO(0x9888), 0x045a4000 },
+	{ _MMIO(0x9888), 0x0a5b4000 },
+	{ _MMIO(0x9888), 0x001d8000 },
+	{ _MMIO(0x9888), 0x021dc000 },
+	{ _MMIO(0x9888), 0x041d4000 },
+	{ _MMIO(0x9888), 0x0c1fa000 },
+	{ _MMIO(0x9888), 0x0e1f002a },
+	{ _MMIO(0x9888), 0x0a384000 },
+	{ _MMIO(0x9888), 0x00394000 },
+	{ _MMIO(0x9888), 0x02395000 },
+	{ _MMIO(0x9888), 0x04399000 },
+	{ _MMIO(0x9888), 0x069b0034 },
+	{ _MMIO(0x9888), 0x109b0000 },
+	{ _MMIO(0x9888), 0x06dc4000 },
+	{ _MMIO(0x9888), 0x0cbd4000 },
+	{ _MMIO(0x9888), 0x0cbf0981 },
+	{ _MMIO(0x9888), 0x0ebf0a0f },
+	{ _MMIO(0x9888), 0x06d84000 },
+	{ _MMIO(0x9888), 0x0cdac000 },
+	{ _MMIO(0x9888), 0x0edac000 },
+	{ _MMIO(0x9888), 0x0cdb4000 },
+	{ _MMIO(0x9888), 0x0c9dc000 },
+	{ _MMIO(0x9888), 0x0e9dc000 },
+	{ _MMIO(0x9888), 0x109f02a8 },
+	{ _MMIO(0x9888), 0x0e9f0080 },
+	{ _MMIO(0x9888), 0x0cb84000 },
+	{ _MMIO(0x9888), 0x0cb95000 },
+	{ _MMIO(0x9888), 0x0eb95000 },
+	{ _MMIO(0x9888), 0x06b92000 },
+	{ _MMIO(0x9888), 0x0f88000f },
+	{ _MMIO(0x9888), 0x0d880400 },
+	{ _MMIO(0x9888), 0x038a8000 },
+	{ _MMIO(0x9888), 0x058a8000 },
+	{ _MMIO(0x9888), 0x078a8000 },
+	{ _MMIO(0x9888), 0x098a8000 },
+	{ _MMIO(0x9888), 0x0b8a8000 },
+	{ _MMIO(0x9888), 0x258b8009 },
+	{ _MMIO(0x9888), 0x278b002a },
+	{ _MMIO(0x9888), 0x238b2a80 },
+	{ _MMIO(0x9888), 0x198c4000 },
+	{ _MMIO(0x9888), 0x1b8c0015 },
+	{ _MMIO(0x9888), 0x0d8c4000 },
+	{ _MMIO(0x9888), 0x0d8da000 },
+	{ _MMIO(0x9888), 0x0f8da000 },
+	{ _MMIO(0x9888), 0x078d2000 },
+	{ _MMIO(0x9888), 0x2185800a },
+	{ _MMIO(0x9888), 0x2385002a },
+	{ _MMIO(0x9888), 0x1f85aa00 },
+	{ _MMIO(0x9888), 0x1b830154 },
+	{ _MMIO(0x9888), 0x03834000 },
+	{ _MMIO(0x9888), 0x05834000 },
+	{ _MMIO(0x9888), 0x07834000 },
+	{ _MMIO(0x9888), 0x09834000 },
+	{ _MMIO(0x9888), 0x0b834000 },
+	{ _MMIO(0x9888), 0x0d834000 },
+	{ _MMIO(0x9888), 0x0d84c000 },
+	{ _MMIO(0x9888), 0x0f84c000 },
+	{ _MMIO(0x9888), 0x01848000 },
+	{ _MMIO(0x9888), 0x0384c000 },
+	{ _MMIO(0x9888), 0x0584c000 },
+	{ _MMIO(0x9888), 0x07844000 },
+	{ _MMIO(0x9888), 0x1d80c000 },
+	{ _MMIO(0x9888), 0x1f80c000 },
+	{ _MMIO(0x9888), 0x11808000 },
+	{ _MMIO(0x9888), 0x1380c000 },
+	{ _MMIO(0x9888), 0x1580c000 },
+	{ _MMIO(0x9888), 0x17804000 },
+	{ _MMIO(0x9888), 0x53800000 },
+	{ _MMIO(0x9888), 0x45800c00 },
+	{ _MMIO(0x9888), 0x47800c63 },
+	{ _MMIO(0x9888), 0x21800000 },
+	{ _MMIO(0x9888), 0x31800000 },
+	{ _MMIO(0x9888), 0x4d800000 },
+	{ _MMIO(0x9888), 0x3f8014a5 },
+	{ _MMIO(0x9888), 0x4f800000 },
+	{ _MMIO(0x9888), 0x41800045 },
+};
+
+static int select_l3_3_config(struct drm_i915_private *dev_priv)
+{
+	dev_priv->perf.oa.mux_regs =
+		mux_config_l3_3;
+	dev_priv->perf.oa.mux_regs_len =
+		ARRAY_SIZE(mux_config_l3_3);
+
+	dev_priv->perf.oa.b_counter_regs =
+		b_counter_config_l3_3;
+	dev_priv->perf.oa.b_counter_regs_len =
+		ARRAY_SIZE(b_counter_config_l3_3);
+
+	dev_priv->perf.oa.flex_regs =
+		flex_eu_config_l3_3;
+	dev_priv->perf.oa.flex_regs_len =
+		ARRAY_SIZE(flex_eu_config_l3_3);
+
+	return 0;
+}
+
+static const struct i915_oa_reg b_counter_config_l3_4[] = {
+	{ _MMIO(0x2740), 0x00000000 },
+	{ _MMIO(0x2744), 0x00800000 },
+	{ _MMIO(0x2710), 0x00000000 },
+	{ _MMIO(0x2714), 0xf0800000 },
+	{ _MMIO(0x2720), 0x00000000 },
+	{ _MMIO(0x2724), 0xf0800000 },
+	{ _MMIO(0x2770), 0x00100070 },
+	{ _MMIO(0x2774), 0x0000fff1 },
+	{ _MMIO(0x2778), 0x00014002 },
+	{ _MMIO(0x277c), 0x0000c3ff },
+	{ _MMIO(0x2780), 0x00010002 },
+	{ _MMIO(0x2784), 0x0000c7ff },
+	{ _MMIO(0x2788), 0x00004002 },
+	{ _MMIO(0x278c), 0x0000d3ff },
+	{ _MMIO(0x2790), 0x00100700 },
+	{ _MMIO(0x2794), 0x0000ff1f },
+	{ _MMIO(0x2798), 0x00001402 },
+	{ _MMIO(0x279c), 0x0000fc3f },
+	{ _MMIO(0x27a0), 0x00001002 },
+	{ _MMIO(0x27a4), 0x0000fc7f },
+	{ _MMIO(0x27a8), 0x00000402 },
+	{ _MMIO(0x27ac), 0x0000fd3f },
+};
+
+static const struct i915_oa_reg flex_eu_config_l3_4[] = {
+	{ _MMIO(0xE458), 0x00005004 },
+	{ _MMIO(0xE558), 0x00010003 },
+	{ _MMIO(0xE658), 0x00012011 },
+	{ _MMIO(0xE758), 0x00015014 },
+	{ _MMIO(0xE45c), 0x00051050 },
+	{ _MMIO(0xE55c), 0x00053052 },
+	{ _MMIO(0xE65c), 0x00055054 },
+};
+
+static const struct i915_oa_reg mux_config_l3_4[] = {
+	{ _MMIO(0x9888), 0x121a0340 },
+	{ _MMIO(0x9888), 0x103f0017 },
+	{ _MMIO(0x9888), 0x123f0020 },
+	{ _MMIO(0x9888), 0x129a0340 },
+	{ _MMIO(0x9888), 0x10bf0017 },
+	{ _MMIO(0x9888), 0x12bf0020 },
+	{ _MMIO(0x9888), 0x041a3400 },
+	{ _MMIO(0x9888), 0x101a0000 },
+	{ _MMIO(0x9888), 0x043b8000 },
+	{ _MMIO(0x9888), 0x0a3e0010 },
+	{ _MMIO(0x9888), 0x003f0200 },
+	{ _MMIO(0x9888), 0x023f0113 },
+	{ _MMIO(0x9888), 0x043f0014 },
+	{ _MMIO(0x9888), 0x02592000 },
+	{ _MMIO(0x9888), 0x005a8000 },
+	{ _MMIO(0x9888), 0x025ac000 },
+	{ _MMIO(0x9888), 0x045a4000 },
+	{ _MMIO(0x9888), 0x0a1c8000 },
+	{ _MMIO(0x9888), 0x001d8000 },
+	{ _MMIO(0x9888), 0x021dc000 },
+	{ _MMIO(0x9888), 0x041d4000 },
+	{ _MMIO(0x9888), 0x0a1e8000 },
+	{ _MMIO(0x9888), 0x0c1fa000 },
+	{ _MMIO(0x9888), 0x0e1f001a },
+	{ _MMIO(0x9888), 0x00394000 },
+	{ _MMIO(0x9888), 0x02395000 },
+	{ _MMIO(0x9888), 0x04391000 },
+	{ _MMIO(0x9888), 0x069a0034 },
+	{ _MMIO(0x9888), 0x109a0000 },
+	{ _MMIO(0x9888), 0x06bb4000 },
+	{ _MMIO(0x9888), 0x0abe0040 },
+	{ _MMIO(0x9888), 0x0cbf0984 },
+	{ _MMIO(0x9888), 0x0ebf0a02 },
+	{ _MMIO(0x9888), 0x02d94000 },
+	{ _MMIO(0x9888), 0x0cdac000 },
+	{ _MMIO(0x9888), 0x0edac000 },
+	{ _MMIO(0x9888), 0x0c9c0400 },
+	{ _MMIO(0x9888), 0x0c9dc000 },
+	{ _MMIO(0x9888), 0x0e9dc000 },
+	{ _MMIO(0x9888), 0x0c9e0400 },
+	{ _MMIO(0x9888), 0x109f02a8 },
+	{ _MMIO(0x9888), 0x0e9f0040 },
+	{ _MMIO(0x9888), 0x0cb95000 },
+	{ _MMIO(0x9888), 0x0eb95000 },
+	{ _MMIO(0x9888), 0x0f88000f },
+	{ _MMIO(0x9888), 0x0d880400 },
+	{ _MMIO(0x9888), 0x038a8000 },
+	{ _MMIO(0x9888), 0x058a8000 },
+	{ _MMIO(0x9888), 0x078a8000 },
+	{ _MMIO(0x9888), 0x098a8000 },
+	{ _MMIO(0x9888), 0x0b8a8000 },
+	{ _MMIO(0x9888), 0x258b8009 },
+	{ _MMIO(0x9888), 0x278b002a },
+	{ _MMIO(0x9888), 0x238b2a80 },
+	{ _MMIO(0x9888), 0x198c4000 },
+	{ _MMIO(0x9888), 0x1b8c0015 },
+	{ _MMIO(0x9888), 0x0d8c4000 },
+	{ _MMIO(0x9888), 0x0d8da000 },
+	{ _MMIO(0x9888), 0x0f8da000 },
+	{ _MMIO(0x9888), 0x078d2000 },
+	{ _MMIO(0x9888), 0x2185800a },
+	{ _MMIO(0x9888), 0x2385002a },
+	{ _MMIO(0x9888), 0x1f85aa00 },
+	{ _MMIO(0x9888), 0x1b830154 },
+	{ _MMIO(0x9888), 0x03834000 },
+	{ _MMIO(0x9888), 0x05834000 },
+	{ _MMIO(0x9888), 0x07834000 },
+	{ _MMIO(0x9888), 0x09834000 },
+	{ _MMIO(0x9888), 0x0b834000 },
+	{ _MMIO(0x9888), 0x0d834000 },
+	{ _MMIO(0x9888), 0x0d84c000 },
+	{ _MMIO(0x9888), 0x0f84c000 },
+	{ _MMIO(0x9888), 0x01848000 },
+	{ _MMIO(0x9888), 0x0384c000 },
+	{ _MMIO(0x9888), 0x0584c000 },
+	{ _MMIO(0x9888), 0x07844000 },
+	{ _MMIO(0x9888), 0x1d80c000 },
+	{ _MMIO(0x9888), 0x1f80c000 },
+	{ _MMIO(0x9888), 0x11808000 },
+	{ _MMIO(0x9888), 0x1380c000 },
+	{ _MMIO(0x9888), 0x1580c000 },
+	{ _MMIO(0x9888), 0x17804000 },
+	{ _MMIO(0x9888), 0x53800000 },
+	{ _MMIO(0x9888), 0x45800800 },
+	{ _MMIO(0x9888), 0x47800842 },
+	{ _MMIO(0x9888), 0x21800000 },
+	{ _MMIO(0x9888), 0x31800000 },
+	{ _MMIO(0x9888), 0x4d800000 },
+	{ _MMIO(0x9888), 0x3f801084 },
+	{ _MMIO(0x9888), 0x4f800000 },
+	{ _MMIO(0x9888), 0x41800044 },
+};
+
+static int select_l3_4_config(struct drm_i915_private *dev_priv)
+{
+	dev_priv->perf.oa.mux_regs =
+		mux_config_l3_4;
+	dev_priv->perf.oa.mux_regs_len =
+		ARRAY_SIZE(mux_config_l3_4);
+
+	dev_priv->perf.oa.b_counter_regs =
+		b_counter_config_l3_4;
+	dev_priv->perf.oa.b_counter_regs_len =
+		ARRAY_SIZE(b_counter_config_l3_4);
+
+	dev_priv->perf.oa.flex_regs =
+		flex_eu_config_l3_4;
+	dev_priv->perf.oa.flex_regs_len =
+		ARRAY_SIZE(flex_eu_config_l3_4);
+
+	return 0;
+}
+
+static const struct i915_oa_reg b_counter_config_rasterizer_and_pixel_backend[] = {
+	{ _MMIO(0x2740), 0x00000000 },
+	{ _MMIO(0x2744), 0x00800000 },
+	{ _MMIO(0x2710), 0x00000000 },
+	{ _MMIO(0x2714), 0xf0800000 },
+	{ _MMIO(0x2720), 0x00000000 },
+	{ _MMIO(0x2724), 0x30800000 },
+	{ _MMIO(0x2770), 0x00006000 },
+	{ _MMIO(0x2774), 0x0000f3ff },
+	{ _MMIO(0x2778), 0x00001800 },
+	{ _MMIO(0x277c), 0x0000fcff },
+	{ _MMIO(0x2780), 0x00000600 },
+	{ _MMIO(0x2784), 0x0000ff3f },
+	{ _MMIO(0x2788), 0x00000180 },
+	{ _MMIO(0x278c), 0x0000ffcf },
+	{ _MMIO(0x2790), 0x00000060 },
+	{ _MMIO(0x2794), 0x0000fff3 },
+	{ _MMIO(0x2798), 0x00000018 },
+	{ _MMIO(0x279c), 0x0000fffc },
+};
+
+static const struct i915_oa_reg flex_eu_config_rasterizer_and_pixel_backend[] = {
+	{ _MMIO(0xE458), 0x00005004 },
+	{ _MMIO(0xE558), 0x00010003 },
+	{ _MMIO(0xE658), 0x00012011 },
+	{ _MMIO(0xE758), 0x00015014 },
+	{ _MMIO(0xE45c), 0x00051050 },
+	{ _MMIO(0xE55c), 0x00053052 },
+	{ _MMIO(0xE65c), 0x00055054 },
+};
+
+static const struct i915_oa_reg mux_config_rasterizer_and_pixel_backend[] = {
+	{ _MMIO(0x9888), 0x143b000e },
+	{ _MMIO(0x9888), 0x043c55c0 },
+	{ _MMIO(0x9888), 0x0a1e0280 },
+	{ _MMIO(0x9888), 0x0c1e0408 },
+	{ _MMIO(0x9888), 0x10390000 },
+	{ _MMIO(0x9888), 0x12397a1f },
+	{ _MMIO(0x9888), 0x14bb000e },
+	{ _MMIO(0x9888), 0x04bc5000 },
+	{ _MMIO(0x9888), 0x0a9e0296 },
+	{ _MMIO(0x9888), 0x0c9e0008 },
+	{ _MMIO(0x9888), 0x10b90000 },
+	{ _MMIO(0x9888), 0x12b97a1f },
+	{ _MMIO(0x9888), 0x063b0042 },
+	{ _MMIO(0x9888), 0x103b0000 },
+	{ _MMIO(0x9888), 0x083c0000 },
+	{ _MMIO(0x9888), 0x0a3e0040 },
+	{ _MMIO(0x9888), 0x043f8000 },
+	{ _MMIO(0x9888), 0x02594000 },
+	{ _MMIO(0x9888), 0x045a8000 },
+	{ _MMIO(0x9888), 0x0c1c0400 },
+	{ _MMIO(0x9888), 0x041d8000 },
+	{ _MMIO(0x9888), 0x081e02c0 },
+	{ _MMIO(0x9888), 0x0e1e0000 },
+	{ _MMIO(0x9888), 0x0c1fa800 },
+	{ _MMIO(0x9888), 0x0e1f0260 },
+	{ _MMIO(0x9888), 0x101f0014 },
+	{ _MMIO(0x9888), 0x003905e0 },
+	{ _MMIO(0x9888), 0x06390bc0 },
+	{ _MMIO(0x9888), 0x02390018 },
+	{ _MMIO(0x9888), 0x04394000 },
+	{ _MMIO(0x9888), 0x04bb0042 },
+	{ _MMIO(0x9888), 0x10bb0000 },
+	{ _MMIO(0x9888), 0x02bc05c0 },
+	{ _MMIO(0x9888), 0x08bc0000 },
+	{ _MMIO(0x9888), 0x0abe0004 },
+	{ _MMIO(0x9888), 0x02bf8000 },
+	{ _MMIO(0x9888), 0x02d91000 },
+	{ _MMIO(0x9888), 0x02da8000 },
+	{ _MMIO(0x9888), 0x089c8000 },
+	{ _MMIO(0x9888), 0x029d8000 },
+	{ _MMIO(0x9888), 0x089e8000 },
+	{ _MMIO(0x9888), 0x0e9e0000 },
+	{ _MMIO(0x9888), 0x0e9fa806 },
+	{ _MMIO(0x9888), 0x109f0142 },
+	{ _MMIO(0x9888), 0x08b90617 },
+	{ _MMIO(0x9888), 0x0ab90be0 },
+	{ _MMIO(0x9888), 0x02b94000 },
+	{ _MMIO(0x9888), 0x0d88f000 },
+	{ _MMIO(0x9888), 0x0f88000c },
+	{ _MMIO(0x9888), 0x07888000 },
+	{ _MMIO(0x9888), 0x09888000 },
+	{ _MMIO(0x9888), 0x018a8000 },
+	{ _MMIO(0x9888), 0x0f8a8000 },
+	{ _MMIO(0x9888), 0x1b8a2800 },
+	{ _MMIO(0x9888), 0x038a8000 },
+	{ _MMIO(0x9888), 0x058a8000 },
+	{ _MMIO(0x9888), 0x0b8a8000 },
+	{ _MMIO(0x9888), 0x0d8a8000 },
+	{ _MMIO(0x9888), 0x238b52a0 },
+	{ _MMIO(0x9888), 0x258b6a95 },
+	{ _MMIO(0x9888), 0x278b0029 },
+	{ _MMIO(0x9888), 0x178c2000 },
+	{ _MMIO(0x9888), 0x198c1500 },
+	{ _MMIO(0x9888), 0x1b8c0014 },
+	{ _MMIO(0x9888), 0x078c4000 },
+	{ _MMIO(0x9888), 0x098c4000 },
+	{ _MMIO(0x9888), 0x098da000 },
+	{ _MMIO(0x9888), 0x0b8da000 },
+	{ _MMIO(0x9888), 0x0f8da000 },
+	{ _MMIO(0x9888), 0x038d8000 },
+	{ _MMIO(0x9888), 0x058d2000 },
+	{ _MMIO(0x9888), 0x1f85aa80 },
+	{ _MMIO(0x9888), 0x2185aaaa },
+	{ _MMIO(0x9888), 0x2385002a },
+	{ _MMIO(0x9888), 0x01834000 },
+	{ _MMIO(0x9888), 0x0f834000 },
+	{ _MMIO(0x9888), 0x19835400 },
+	{ _MMIO(0x9888), 0x1b830155 },
+	{ _MMIO(0x9888), 0x03834000 },
+	{ _MMIO(0x9888), 0x05834000 },
+	{ _MMIO(0x9888), 0x07834000 },
+	{ _MMIO(0x9888), 0x09834000 },
+	{ _MMIO(0x9888), 0x0b834000 },
+	{ _MMIO(0x9888), 0x0d834000 },
+	{ _MMIO(0x9888), 0x0184c000 },
+	{ _MMIO(0x9888), 0x0784c000 },
+	{ _MMIO(0x9888), 0x0984c000 },
+	{ _MMIO(0x9888), 0x0b84c000 },
+	{ _MMIO(0x9888), 0x0d84c000 },
+	{ _MMIO(0x9888), 0x0f84c000 },
+	{ _MMIO(0x9888), 0x0384c000 },
+	{ _MMIO(0x9888), 0x0584c000 },
+	{ _MMIO(0x9888), 0x1180c000 },
+	{ _MMIO(0x9888), 0x1780c000 },
+	{ _MMIO(0x9888), 0x1980c000 },
+	{ _MMIO(0x9888), 0x1b80c000 },
+	{ _MMIO(0x9888), 0x1d80c000 },
+	{ _MMIO(0x9888), 0x1f80c000 },
+	{ _MMIO(0x9888), 0x1380c000 },
+	{ _MMIO(0x9888), 0x1580c000 },
+	{ _MMIO(0x9888), 0x4d800444 },
+	{ _MMIO(0x9888), 0x3d800000 },
+	{ _MMIO(0x9888), 0x4f804000 },
+	{ _MMIO(0x9888), 0x43801080 },
+	{ _MMIO(0x9888), 0x51800000 },
+	{ _MMIO(0x9888), 0x45800084 },
+	{ _MMIO(0x9888), 0x53800044 },
+	{ _MMIO(0x9888), 0x47801080 },
+	{ _MMIO(0x9888), 0x21800000 },
+	{ _MMIO(0x9888), 0x31800000 },
+	{ _MMIO(0x9888), 0x3f800000 },
+	{ _MMIO(0x9888), 0x41800840 },
+};
+
+static int select_rasterizer_and_pixel_backend_config(struct drm_i915_private *dev_priv)
+{
+	dev_priv->perf.oa.mux_regs =
+		mux_config_rasterizer_and_pixel_backend;
+	dev_priv->perf.oa.mux_regs_len =
+		ARRAY_SIZE(mux_config_rasterizer_and_pixel_backend);
+
+	dev_priv->perf.oa.b_counter_regs =
+		b_counter_config_rasterizer_and_pixel_backend;
+	dev_priv->perf.oa.b_counter_regs_len =
+		ARRAY_SIZE(b_counter_config_rasterizer_and_pixel_backend);
+
+	dev_priv->perf.oa.flex_regs =
+		flex_eu_config_rasterizer_and_pixel_backend;
+	dev_priv->perf.oa.flex_regs_len =
+		ARRAY_SIZE(flex_eu_config_rasterizer_and_pixel_backend);
+
+	return 0;
+}
+
+static const struct i915_oa_reg b_counter_config_sampler_1[] = {
+	{ _MMIO(0x2740), 0x00000000 },
+	{ _MMIO(0x2744), 0x00800000 },
+	{ _MMIO(0x2710), 0x00000000 },
+	{ _MMIO(0x2714), 0x70800000 },
+	{ _MMIO(0x2720), 0x00000000 },
+	{ _MMIO(0x2724), 0x00800000 },
+	{ _MMIO(0x2770), 0x0000c000 },
+	{ _MMIO(0x2774), 0x0000e7ff },
+	{ _MMIO(0x2778), 0x00003000 },
+	{ _MMIO(0x277c), 0x0000f9ff },
+	{ _MMIO(0x2780), 0x00000c00 },
+	{ _MMIO(0x2784), 0x0000fe7f },
+};
+
+static const struct i915_oa_reg flex_eu_config_sampler_1[] = {
+	{ _MMIO(0xE458), 0x00005004 },
+	{ _MMIO(0xE558), 0x00010003 },
+	{ _MMIO(0xE658), 0x00012011 },
+	{ _MMIO(0xE758), 0x00015014 },
+	{ _MMIO(0xE45c), 0x00051050 },
+	{ _MMIO(0xE55c), 0x00053052 },
+	{ _MMIO(0xE65c), 0x00055054 },
+};
+
+static const struct i915_oa_reg mux_config_sampler_1[] = {
+	{ _MMIO(0x9888), 0x18921400 },
+	{ _MMIO(0x9888), 0x149500ab },
+	{ _MMIO(0x9888), 0x18b21400 },
+	{ _MMIO(0x9888), 0x14b500ab },
+	{ _MMIO(0x9888), 0x18d21400 },
+	{ _MMIO(0x9888), 0x14d500ab },
+	{ _MMIO(0x9888), 0x0cdc8000 },
+	{ _MMIO(0x9888), 0x0edc4000 },
+	{ _MMIO(0x9888), 0x02dcc000 },
+	{ _MMIO(0x9888), 0x04dcc000 },
+	{ _MMIO(0x9888), 0x1abd00a0 },
+	{ _MMIO(0x9888), 0x0abd8000 },
+	{ _MMIO(0x9888), 0x0cd88000 },
+	{ _MMIO(0x9888), 0x0ed84000 },
+	{ _MMIO(0x9888), 0x04d88000 },
+	{ _MMIO(0x9888), 0x1adb0050 },
+	{ _MMIO(0x9888), 0x04db8000 },
+	{ _MMIO(0x9888), 0x06db8000 },
+	{ _MMIO(0x9888), 0x08db8000 },
+	{ _MMIO(0x9888), 0x0adb4000 },
+	{ _MMIO(0x9888), 0x109f02a0 },
+	{ _MMIO(0x9888), 0x0c9fa000 },
+	{ _MMIO(0x9888), 0x0e9f00aa },
+	{ _MMIO(0x9888), 0x18b82500 },
+	{ _MMIO(0x9888), 0x02b88000 },
+	{ _MMIO(0x9888), 0x04b84000 },
+	{ _MMIO(0x9888), 0x06b84000 },
+	{ _MMIO(0x9888), 0x08b84000 },
+	{ _MMIO(0x9888), 0x0ab84000 },
+	{ _MMIO(0x9888), 0x0cb88000 },
+	{ _MMIO(0x9888), 0x0cb98000 },
+	{ _MMIO(0x9888), 0x0eb9a000 },
+	{ _MMIO(0x9888), 0x00b98000 },
+	{ _MMIO(0x9888), 0x02b9a000 },
+	{ _MMIO(0x9888), 0x04b9a000 },
+	{ _MMIO(0x9888), 0x06b92000 },
+	{ _MMIO(0x9888), 0x1aba0200 },
+	{ _MMIO(0x9888), 0x02ba8000 },
+	{ _MMIO(0x9888), 0x0cba8000 },
+	{ _MMIO(0x9888), 0x04908000 },
+	{ _MMIO(0x9888), 0x04918000 },
+	{ _MMIO(0x9888), 0x04927300 },
+	{ _MMIO(0x9888), 0x10920000 },
+	{ _MMIO(0x9888), 0x1893000a },
+	{ _MMIO(0x9888), 0x0a934000 },
+	{ _MMIO(0x9888), 0x0a946000 },
+	{ _MMIO(0x9888), 0x0c959000 },
+	{ _MMIO(0x9888), 0x0e950098 },
+	{ _MMIO(0x9888), 0x10950000 },
+	{ _MMIO(0x9888), 0x04b04000 },
+	{ _MMIO(0x9888), 0x04b14000 },
+	{ _MMIO(0x9888), 0x04b20073 },
+	{ _MMIO(0x9888), 0x10b20000 },
+	{ _MMIO(0x9888), 0x04b38000 },
+	{ _MMIO(0x9888), 0x06b38000 },
+	{ _MMIO(0x9888), 0x08b34000 },
+	{ _MMIO(0x9888), 0x04b4c000 },
+	{ _MMIO(0x9888), 0x02b59890 },
+	{ _MMIO(0x9888), 0x10b50000 },
+	{ _MMIO(0x9888), 0x06d04000 },
+	{ _MMIO(0x9888), 0x06d14000 },
+	{ _MMIO(0x9888), 0x06d20073 },
+	{ _MMIO(0x9888), 0x10d20000 },
+	{ _MMIO(0x9888), 0x18d30020 },
+	{ _MMIO(0x9888), 0x02d38000 },
+	{ _MMIO(0x9888), 0x0cd34000 },
+	{ _MMIO(0x9888), 0x0ad48000 },
+	{ _MMIO(0x9888), 0x04d42000 },
+	{ _MMIO(0x9888), 0x0ed59000 },
+	{ _MMIO(0x9888), 0x00d59800 },
+	{ _MMIO(0x9888), 0x10d50000 },
+	{ _MMIO(0x9888), 0x0f88000e },
+	{ _MMIO(0x9888), 0x03888000 },
+	{ _MMIO(0x9888), 0x05888000 },
+	{ _MMIO(0x9888), 0x07888000 },
+	{ _MMIO(0x9888), 0x09888000 },
+	{ _MMIO(0x9888), 0x0b888000 },
+	{ _MMIO(0x9888), 0x0d880400 },
+	{ _MMIO(0x9888), 0x278b002a },
+	{ _MMIO(0x9888), 0x238b5500 },
+	{ _MMIO(0x9888), 0x258b000a },
+	{ _MMIO(0x9888), 0x1b8c0015 },
+	{ _MMIO(0x9888), 0x038c4000 },
+	{ _MMIO(0x9888), 0x058c4000 },
+	{ _MMIO(0x9888), 0x078c4000 },
+	{ _MMIO(0x9888), 0x098c4000 },
+	{ _MMIO(0x9888), 0x0b8c4000 },
+	{ _MMIO(0x9888), 0x0d8c4000 },
+	{ _MMIO(0x9888), 0x0d8d8000 },
+	{ _MMIO(0x9888), 0x0f8da000 },
+	{ _MMIO(0x9888), 0x018d8000 },
+	{ _MMIO(0x9888), 0x038da000 },
+	{ _MMIO(0x9888), 0x058da000 },
+	{ _MMIO(0x9888), 0x078d2000 },
+	{ _MMIO(0x9888), 0x2385002a },
+	{ _MMIO(0x9888), 0x1f85aa00 },
+	{ _MMIO(0x9888), 0x2185000a },
+	{ _MMIO(0x9888), 0x1b830150 },
+	{ _MMIO(0x9888), 0x03834000 },
+	{ _MMIO(0x9888), 0x05834000 },
+	{ _MMIO(0x9888), 0x07834000 },
+	{ _MMIO(0x9888), 0x09834000 },
+	{ _MMIO(0x9888), 0x0b834000 },
+	{ _MMIO(0x9888), 0x0d834000 },
+	{ _MMIO(0x9888), 0x0d848000 },
+	{ _MMIO(0x9888), 0x0f84c000 },
+	{ _MMIO(0x9888), 0x01848000 },
+	{ _MMIO(0x9888), 0x0384c000 },
+	{ _MMIO(0x9888), 0x0584c000 },
+	{ _MMIO(0x9888), 0x07844000 },
+	{ _MMIO(0x9888), 0x1d808000 },
+	{ _MMIO(0x9888), 0x1f80c000 },
+	{ _MMIO(0x9888), 0x11808000 },
+	{ _MMIO(0x9888), 0x1380c000 },
+	{ _MMIO(0x9888), 0x1580c000 },
+	{ _MMIO(0x9888), 0x17804000 },
+	{ _MMIO(0x9888), 0x53800000 },
+	{ _MMIO(0x9888), 0x47801021 },
+	{ _MMIO(0x9888), 0x21800000 },
+	{ _MMIO(0x9888), 0x31800000 },
+	{ _MMIO(0x9888), 0x4d800000 },
+	{ _MMIO(0x9888), 0x3f800c64 },
+	{ _MMIO(0x9888), 0x4f800000 },
+	{ _MMIO(0x9888), 0x41800c02 },
+};
+
+static int select_sampler_1_config(struct drm_i915_private *dev_priv)
+{
+	dev_priv->perf.oa.mux_regs =
+		mux_config_sampler_1;
+	dev_priv->perf.oa.mux_regs_len =
+		ARRAY_SIZE(mux_config_sampler_1);
+
+	dev_priv->perf.oa.b_counter_regs =
+		b_counter_config_sampler_1;
+	dev_priv->perf.oa.b_counter_regs_len =
+		ARRAY_SIZE(b_counter_config_sampler_1);
+
+	dev_priv->perf.oa.flex_regs =
+		flex_eu_config_sampler_1;
+	dev_priv->perf.oa.flex_regs_len =
+		ARRAY_SIZE(flex_eu_config_sampler_1);
+
+	return 0;
+}
+
+static const struct i915_oa_reg b_counter_config_sampler_2[] = {
+	{ _MMIO(0x2740), 0x00000000 },
+	{ _MMIO(0x2744), 0x00800000 },
+	{ _MMIO(0x2710), 0x00000000 },
+	{ _MMIO(0x2714), 0x70800000 },
+	{ _MMIO(0x2720), 0x00000000 },
+	{ _MMIO(0x2724), 0x00800000 },
+	{ _MMIO(0x2770), 0x0000c000 },
+	{ _MMIO(0x2774), 0x0000e7ff },
+	{ _MMIO(0x2778), 0x00003000 },
+	{ _MMIO(0x277c), 0x0000f9ff },
+	{ _MMIO(0x2780), 0x00000c00 },
+	{ _MMIO(0x2784), 0x0000fe7f },
+};
+
+static const struct i915_oa_reg flex_eu_config_sampler_2[] = {
+	{ _MMIO(0xE458), 0x00005004 },
+	{ _MMIO(0xE558), 0x00010003 },
+	{ _MMIO(0xE658), 0x00012011 },
+	{ _MMIO(0xE758), 0x00015014 },
+	{ _MMIO(0xE45c), 0x00051050 },
+	{ _MMIO(0xE55c), 0x00053052 },
+	{ _MMIO(0xE65c), 0x00055054 },
+};
+
+static const struct i915_oa_reg mux_config_sampler_2[] = {
+	{ _MMIO(0x9888), 0x18121400 },
+	{ _MMIO(0x9888), 0x141500ab },
+	{ _MMIO(0x9888), 0x18321400 },
+	{ _MMIO(0x9888), 0x143500ab },
+	{ _MMIO(0x9888), 0x18521400 },
+	{ _MMIO(0x9888), 0x145500ab },
+	{ _MMIO(0x9888), 0x0c5c8000 },
+	{ _MMIO(0x9888), 0x0e5c4000 },
+	{ _MMIO(0x9888), 0x025cc000 },
+	{ _MMIO(0x9888), 0x045cc000 },
+	{ _MMIO(0x9888), 0x1a3d00a0 },
+	{ _MMIO(0x9888), 0x0a3d8000 },
+	{ _MMIO(0x9888), 0x0c588000 },
+	{ _MMIO(0x9888), 0x0e584000 },
+	{ _MMIO(0x9888), 0x04588000 },
+	{ _MMIO(0x9888), 0x1a5b0050 },
+	{ _MMIO(0x9888), 0x045b8000 },
+	{ _MMIO(0x9888), 0x065b8000 },
+	{ _MMIO(0x9888), 0x085b8000 },
+	{ _MMIO(0x9888), 0x0a5b4000 },
+	{ _MMIO(0x9888), 0x101f02a0 },
+	{ _MMIO(0x9888), 0x0c1fa000 },
+	{ _MMIO(0x9888), 0x0e1f00aa },
+	{ _MMIO(0x9888), 0x18382500 },
+	{ _MMIO(0x9888), 0x02388000 },
+	{ _MMIO(0x9888), 0x04384000 },
+	{ _MMIO(0x9888), 0x06384000 },
+	{ _MMIO(0x9888), 0x08384000 },
+	{ _MMIO(0x9888), 0x0a384000 },
+	{ _MMIO(0x9888), 0x0c388000 },
+	{ _MMIO(0x9888), 0x0c398000 },
+	{ _MMIO(0x9888), 0x0e39a000 },
+	{ _MMIO(0x9888), 0x00398000 },
+	{ _MMIO(0x9888), 0x0239a000 },
+	{ _MMIO(0x9888), 0x0439a000 },
+	{ _MMIO(0x9888), 0x06392000 },
+	{ _MMIO(0x9888), 0x1a3a0200 },
+	{ _MMIO(0x9888), 0x023a8000 },
+	{ _MMIO(0x9888), 0x0c3a8000 },
+	{ _MMIO(0x9888), 0x04108000 },
+	{ _MMIO(0x9888), 0x04118000 },
+	{ _MMIO(0x9888), 0x04127300 },
+	{ _MMIO(0x9888), 0x10120000 },
+	{ _MMIO(0x9888), 0x1813000a },
+	{ _MMIO(0x9888), 0x0a134000 },
+	{ _MMIO(0x9888), 0x0a146000 },
+	{ _MMIO(0x9888), 0x0c159000 },
+	{ _MMIO(0x9888), 0x0e150098 },
+	{ _MMIO(0x9888), 0x10150000 },
+	{ _MMIO(0x9888), 0x04304000 },
+	{ _MMIO(0x9888), 0x04314000 },
+	{ _MMIO(0x9888), 0x04320073 },
+	{ _MMIO(0x9888), 0x10320000 },
+	{ _MMIO(0x9888), 0x04338000 },
+	{ _MMIO(0x9888), 0x06338000 },
+	{ _MMIO(0x9888), 0x08334000 },
+	{ _MMIO(0x9888), 0x0434c000 },
+	{ _MMIO(0x9888), 0x02359890 },
+	{ _MMIO(0x9888), 0x10350000 },
+	{ _MMIO(0x9888), 0x06504000 },
+	{ _MMIO(0x9888), 0x06514000 },
+	{ _MMIO(0x9888), 0x06520073 },
+	{ _MMIO(0x9888), 0x10520000 },
+	{ _MMIO(0x9888), 0x18530020 },
+	{ _MMIO(0x9888), 0x02538000 },
+	{ _MMIO(0x9888), 0x0c534000 },
+	{ _MMIO(0x9888), 0x0a548000 },
+	{ _MMIO(0x9888), 0x04542000 },
+	{ _MMIO(0x9888), 0x0e559000 },
+	{ _MMIO(0x9888), 0x00559800 },
+	{ _MMIO(0x9888), 0x10550000 },
+	{ _MMIO(0x9888), 0x1b8aa000 },
+	{ _MMIO(0x9888), 0x1d8a0002 },
+	{ _MMIO(0x9888), 0x038a8000 },
+	{ _MMIO(0x9888), 0x058a8000 },
+	{ _MMIO(0x9888), 0x078a8000 },
+	{ _MMIO(0x9888), 0x098a8000 },
+	{ _MMIO(0x9888), 0x0b8a8000 },
+	{ _MMIO(0x9888), 0x0d8a8000 },
+	{ _MMIO(0x9888), 0x278b0015 },
+	{ _MMIO(0x9888), 0x238b2a80 },
+	{ _MMIO(0x9888), 0x258b0005 },
+	{ _MMIO(0x9888), 0x2385002a },
+	{ _MMIO(0x9888), 0x1f85aa00 },
+	{ _MMIO(0x9888), 0x2185000a },
+	{ _MMIO(0x9888), 0x1b830150 },
+	{ _MMIO(0x9888), 0x03834000 },
+	{ _MMIO(0x9888), 0x05834000 },
+	{ _MMIO(0x9888), 0x07834000 },
+	{ _MMIO(0x9888), 0x09834000 },
+	{ _MMIO(0x9888), 0x0b834000 },
+	{ _MMIO(0x9888), 0x0d834000 },
+	{ _MMIO(0x9888), 0x0d848000 },
+	{ _MMIO(0x9888), 0x0f84c000 },
+	{ _MMIO(0x9888), 0x01848000 },
+	{ _MMIO(0x9888), 0x0384c000 },
+	{ _MMIO(0x9888), 0x0584c000 },
+	{ _MMIO(0x9888), 0x07844000 },
+	{ _MMIO(0x9888), 0x1d808000 },
+	{ _MMIO(0x9888), 0x1f80c000 },
+	{ _MMIO(0x9888), 0x11808000 },
+	{ _MMIO(0x9888), 0x1380c000 },
+	{ _MMIO(0x9888), 0x1580c000 },
+	{ _MMIO(0x9888), 0x17804000 },
+	{ _MMIO(0x9888), 0x53800000 },
+	{ _MMIO(0x9888), 0x47801021 },
+	{ _MMIO(0x9888), 0x21800000 },
+	{ _MMIO(0x9888), 0x31800000 },
+	{ _MMIO(0x9888), 0x4d800000 },
+	{ _MMIO(0x9888), 0x3f800c64 },
+	{ _MMIO(0x9888), 0x4f800000 },
+	{ _MMIO(0x9888), 0x41800c02 },
+};
+
+static int select_sampler_2_config(struct drm_i915_private *dev_priv)
+{
+	dev_priv->perf.oa.mux_regs =
+		mux_config_sampler_2;
+	dev_priv->perf.oa.mux_regs_len =
+		ARRAY_SIZE(mux_config_sampler_2);
+
+	dev_priv->perf.oa.b_counter_regs =
+		b_counter_config_sampler_2;
+	dev_priv->perf.oa.b_counter_regs_len =
+		ARRAY_SIZE(b_counter_config_sampler_2);
+
+	dev_priv->perf.oa.flex_regs =
+		flex_eu_config_sampler_2;
+	dev_priv->perf.oa.flex_regs_len =
+		ARRAY_SIZE(flex_eu_config_sampler_2);
+
+	return 0;
+}
+
+static const struct i915_oa_reg b_counter_config_tdl_1[] = {
+	{ _MMIO(0x2740), 0x00000000 },
+	{ _MMIO(0x2744), 0x00800000 },
+	{ _MMIO(0x2710), 0x00000000 },
+	{ _MMIO(0x2714), 0xf0800000 },
+	{ _MMIO(0x2720), 0x00000000 },
+	{ _MMIO(0x2724), 0x30800000 },
+	{ _MMIO(0x2770), 0x00000002 },
+	{ _MMIO(0x2774), 0x0000fdff },
+	{ _MMIO(0x2778), 0x00000000 },
+	{ _MMIO(0x277c), 0x0000fe7f },
+	{ _MMIO(0x2780), 0x00000002 },
+	{ _MMIO(0x2784), 0x0000ffbf },
+	{ _MMIO(0x2788), 0x00000000 },
+	{ _MMIO(0x278c), 0x0000ffcf },
+	{ _MMIO(0x2790), 0x00000002 },
+	{ _MMIO(0x2794), 0x0000fff7 },
+	{ _MMIO(0x2798), 0x00000000 },
+	{ _MMIO(0x279c), 0x0000fff9 },
+};
+
+static const struct i915_oa_reg flex_eu_config_tdl_1[] = {
+	{ _MMIO(0xE458), 0x00005004 },
+	{ _MMIO(0xE558), 0x00010003 },
+	{ _MMIO(0xE658), 0x00012011 },
+	{ _MMIO(0xE758), 0x00015014 },
+	{ _MMIO(0xE45c), 0x00051050 },
+	{ _MMIO(0xE55c), 0x00053052 },
+	{ _MMIO(0xE65c), 0x00055054 },
+};
+
+static const struct i915_oa_reg mux_config_tdl_1[] = {
+	{ _MMIO(0x9888), 0x16154d60 },
+	{ _MMIO(0x9888), 0x16352e60 },
+	{ _MMIO(0x9888), 0x16554d60 },
+	{ _MMIO(0x9888), 0x16950000 },
+	{ _MMIO(0x9888), 0x16b50000 },
+	{ _MMIO(0x9888), 0x16d50000 },
+	{ _MMIO(0x9888), 0x005c8000 },
+	{ _MMIO(0x9888), 0x045cc000 },
+	{ _MMIO(0x9888), 0x065c4000 },
+	{ _MMIO(0x9888), 0x083d8000 },
+	{ _MMIO(0x9888), 0x0a3d8000 },
+	{ _MMIO(0x9888), 0x0458c000 },
+	{ _MMIO(0x9888), 0x025b8000 },
+	{ _MMIO(0x9888), 0x085b4000 },
+	{ _MMIO(0x9888), 0x0a5b4000 },
+	{ _MMIO(0x9888), 0x0c5b8000 },
+	{ _MMIO(0x9888), 0x0c1fa000 },
+	{ _MMIO(0x9888), 0x0e1f00aa },
+	{ _MMIO(0x9888), 0x02384000 },
+	{ _MMIO(0x9888), 0x04388000 },
+	{ _MMIO(0x9888), 0x06388000 },
+	{ _MMIO(0x9888), 0x08384000 },
+	{ _MMIO(0x9888), 0x0a384000 },
+	{ _MMIO(0x9888), 0x0c384000 },
+	{ _MMIO(0x9888), 0x00398000 },
+	{ _MMIO(0x9888), 0x0239a000 },
+	{ _MMIO(0x9888), 0x0439a000 },
+	{ _MMIO(0x9888), 0x06392000 },
+	{ _MMIO(0x9888), 0x043a8000 },
+	{ _MMIO(0x9888), 0x063a8000 },
+	{ _MMIO(0x9888), 0x08138000 },
+	{ _MMIO(0x9888), 0x0a138000 },
+	{ _MMIO(0x9888), 0x06143000 },
+	{ _MMIO(0x9888), 0x0415cfc7 },
+	{ _MMIO(0x9888), 0x10150000 },
+	{ _MMIO(0x9888), 0x02338000 },
+	{ _MMIO(0x9888), 0x0c338000 },
+	{ _MMIO(0x9888), 0x04342000 },
+	{ _MMIO(0x9888), 0x06344000 },
+	{ _MMIO(0x9888), 0x0035c700 },
+	{ _MMIO(0x9888), 0x063500cf },
+	{ _MMIO(0x9888), 0x10350000 },
+	{ _MMIO(0x9888), 0x04538000 },
+	{ _MMIO(0x9888), 0x06538000 },
+	{ _MMIO(0x9888), 0x0454c000 },
+	{ _MMIO(0x9888), 0x0255cfc7 },
+	{ _MMIO(0x9888), 0x10550000 },
+	{ _MMIO(0x9888), 0x06dc8000 },
+	{ _MMIO(0x9888), 0x08dc4000 },
+	{ _MMIO(0x9888), 0x0cdcc000 },
+	{ _MMIO(0x9888), 0x0edcc000 },
+	{ _MMIO(0x9888), 0x1abd00a8 },
+	{ _MMIO(0x9888), 0x0cd8c000 },
+	{ _MMIO(0x9888), 0x0ed84000 },
+	{ _MMIO(0x9888), 0x0edb8000 },
+	{ _MMIO(0x9888), 0x18db0800 },
+	{ _MMIO(0x9888), 0x1adb0254 },
+	{ _MMIO(0x9888), 0x0e9faa00 },
+	{ _MMIO(0x9888), 0x109f02aa },
+	{ _MMIO(0x9888), 0x0eb84000 },
+	{ _MMIO(0x9888), 0x16b84000 },
+	{ _MMIO(0x9888), 0x18b8156a },
+	{ _MMIO(0x9888), 0x06b98000 },
+	{ _MMIO(0x9888), 0x08b9a000 },
+	{ _MMIO(0x9888), 0x0ab9a000 },
+	{ _MMIO(0x9888), 0x0cb9a000 },
+	{ _MMIO(0x9888), 0x0eb9a000 },
+	{ _MMIO(0x9888), 0x18baa000 },
+	{ _MMIO(0x9888), 0x1aba0002 },
+	{ _MMIO(0x9888), 0x16934000 },
+	{ _MMIO(0x9888), 0x1893000a },
+	{ _MMIO(0x9888), 0x0a947000 },
+	{ _MMIO(0x9888), 0x0c95c5c1 },
+	{ _MMIO(0x9888), 0x0e9500c3 },
+	{ _MMIO(0x9888), 0x10950000 },
+	{ _MMIO(0x9888), 0x0eb38000 },
+	{ _MMIO(0x9888), 0x16b30040 },
+	{ _MMIO(0x9888), 0x18b30020 },
+	{ _MMIO(0x9888), 0x06b48000 },
+	{ _MMIO(0x9888), 0x08b41000 },
+	{ _MMIO(0x9888), 0x0ab48000 },
+	{ _MMIO(0x9888), 0x06b5c500 },
+	{ _MMIO(0x9888), 0x08b500c3 },
+	{ _MMIO(0x9888), 0x0eb5c100 },
+	{ _MMIO(0x9888), 0x10b50000 },
+	{ _MMIO(0x9888), 0x16d31500 },
+	{ _MMIO(0x9888), 0x08d4e000 },
+	{ _MMIO(0x9888), 0x08d5c100 },
+	{ _MMIO(0x9888), 0x0ad5c3c5 },
+	{ _MMIO(0x9888), 0x10d50000 },
+	{ _MMIO(0x9888), 0x0d88f800 },
+	{ _MMIO(0x9888), 0x0f88000f },
+	{ _MMIO(0x9888), 0x038a8000 },
+	{ _MMIO(0x9888), 0x058a8000 },
+	{ _MMIO(0x9888), 0x078a8000 },
+	{ _MMIO(0x9888), 0x098a8000 },
+	{ _MMIO(0x9888), 0x0b8a8000 },
+	{ _MMIO(0x9888), 0x0d8a8000 },
+	{ _MMIO(0x9888), 0x258baaa5 },
+	{ _MMIO(0x9888), 0x278b002a },
+	{ _MMIO(0x9888), 0x238b2a80 },
+	{ _MMIO(0x9888), 0x0f8c4000 },
+	{ _MMIO(0x9888), 0x178c2000 },
+	{ _MMIO(0x9888), 0x198c5500 },
+	{ _MMIO(0x9888), 0x1b8c0015 },
+	{ _MMIO(0x9888), 0x078d8000 },
+	{ _MMIO(0x9888), 0x098da000 },
+	{ _MMIO(0x9888), 0x0b8da000 },
+	{ _MMIO(0x9888), 0x0d8da000 },
+	{ _MMIO(0x9888), 0x0f8da000 },
+	{ _MMIO(0x9888), 0x2185aaaa },
+	{ _MMIO(0x9888), 0x2385002a },
+	{ _MMIO(0x9888), 0x1f85aa00 },
+	{ _MMIO(0x9888), 0x0f834000 },
+	{ _MMIO(0x9888), 0x19835400 },
+	{ _MMIO(0x9888), 0x1b830155 },
+	{ _MMIO(0x9888), 0x03834000 },
+	{ _MMIO(0x9888), 0x05834000 },
+	{ _MMIO(0x9888), 0x07834000 },
+	{ _MMIO(0x9888), 0x09834000 },
+	{ _MMIO(0x9888), 0x0b834000 },
+	{ _MMIO(0x9888), 0x0d834000 },
+	{ _MMIO(0x9888), 0x0784c000 },
+	{ _MMIO(0x9888), 0x0984c000 },
+	{ _MMIO(0x9888), 0x0b84c000 },
+	{ _MMIO(0x9888), 0x0d84c000 },
+	{ _MMIO(0x9888), 0x0f84c000 },
+	{ _MMIO(0x9888), 0x01848000 },
+	{ _MMIO(0x9888), 0x0384c000 },
+	{ _MMIO(0x9888), 0x0584c000 },
+	{ _MMIO(0x9888), 0x1780c000 },
+	{ _MMIO(0x9888), 0x1980c000 },
+	{ _MMIO(0x9888), 0x1b80c000 },
+	{ _MMIO(0x9888), 0x1d80c000 },
+	{ _MMIO(0x9888), 0x1f80c000 },
+	{ _MMIO(0x9888), 0x11808000 },
+	{ _MMIO(0x9888), 0x1380c000 },
+	{ _MMIO(0x9888), 0x1580c000 },
+	{ _MMIO(0x9888), 0x4f800000 },
+	{ _MMIO(0x9888), 0x43800c42 },
+	{ _MMIO(0x9888), 0x51800000 },
+	{ _MMIO(0x9888), 0x45800063 },
+	{ _MMIO(0x9888), 0x53800000 },
+	{ _MMIO(0x9888), 0x47800800 },
+	{ _MMIO(0x9888), 0x21800000 },
+	{ _MMIO(0x9888), 0x31800000 },
+	{ _MMIO(0x9888), 0x4d800000 },
+	{ _MMIO(0x9888), 0x3f8014a4 },
+	{ _MMIO(0x9888), 0x41801042 },
+};
+
+static int select_tdl_1_config(struct drm_i915_private *dev_priv)
+{
+	dev_priv->perf.oa.mux_regs =
+		mux_config_tdl_1;
+	dev_priv->perf.oa.mux_regs_len =
+		ARRAY_SIZE(mux_config_tdl_1);
+
+	dev_priv->perf.oa.b_counter_regs =
+		b_counter_config_tdl_1;
+	dev_priv->perf.oa.b_counter_regs_len =
+		ARRAY_SIZE(b_counter_config_tdl_1);
+
+	dev_priv->perf.oa.flex_regs =
+		flex_eu_config_tdl_1;
+	dev_priv->perf.oa.flex_regs_len =
+		ARRAY_SIZE(flex_eu_config_tdl_1);
+
+	return 0;
+}
+
+static const struct i915_oa_reg b_counter_config_tdl_2[] = {
+	{ _MMIO(0x2740), 0x00000000 },
+	{ _MMIO(0x2744), 0x00800000 },
+	{ _MMIO(0x2710), 0x00000000 },
+	{ _MMIO(0x2714), 0xf0800000 },
+	{ _MMIO(0x2720), 0x00000000 },
+	{ _MMIO(0x2724), 0x30800000 },
+	{ _MMIO(0x2770), 0x00000002 },
+	{ _MMIO(0x2774), 0x0000fdff },
+	{ _MMIO(0x2778), 0x00000000 },
+	{ _MMIO(0x277c), 0x0000fe7f },
+	{ _MMIO(0x2780), 0x00000000 },
+	{ _MMIO(0x2784), 0x0000ff9f },
+	{ _MMIO(0x2788), 0x00000000 },
+	{ _MMIO(0x278c), 0x0000ffe7 },
+	{ _MMIO(0x2790), 0x00000002 },
+	{ _MMIO(0x2794), 0x0000fffb },
+	{ _MMIO(0x2798), 0x00000002 },
+	{ _MMIO(0x279c), 0x0000fffd },
+};
+
+static const struct i915_oa_reg flex_eu_config_tdl_2[] = {
+	{ _MMIO(0xE458), 0x00005004 },
+	{ _MMIO(0xE558), 0x00010003 },
+	{ _MMIO(0xE658), 0x00012011 },
+	{ _MMIO(0xE758), 0x00015014 },
+	{ _MMIO(0xE45c), 0x00051050 },
+	{ _MMIO(0xE55c), 0x00053052 },
+	{ _MMIO(0xE65c), 0x00055054 },
+};
+
+static const struct i915_oa_reg mux_config_tdl_2[] = {
+	{ _MMIO(0x9888), 0x16150000 },
+	{ _MMIO(0x9888), 0x16350000 },
+	{ _MMIO(0x9888), 0x16550000 },
+	{ _MMIO(0x9888), 0x16952e60 },
+	{ _MMIO(0x9888), 0x16b54d60 },
+	{ _MMIO(0x9888), 0x16d52e60 },
+	{ _MMIO(0x9888), 0x065c8000 },
+	{ _MMIO(0x9888), 0x085cc000 },
+	{ _MMIO(0x9888), 0x0a5cc000 },
+	{ _MMIO(0x9888), 0x0c5c4000 },
+	{ _MMIO(0x9888), 0x0e3d8000 },
+	{ _MMIO(0x9888), 0x183da000 },
+	{ _MMIO(0x9888), 0x06588000 },
+	{ _MMIO(0x9888), 0x08588000 },
+	{ _MMIO(0x9888), 0x0a584000 },
+	{ _MMIO(0x9888), 0x0e5b4000 },
+	{ _MMIO(0x9888), 0x185b5800 },
+	{ _MMIO(0x9888), 0x1a5b000a },
+	{ _MMIO(0x9888), 0x0e1faa00 },
+	{ _MMIO(0x9888), 0x101f02aa },
+	{ _MMIO(0x9888), 0x0e384000 },
+	{ _MMIO(0x9888), 0x16384000 },
+	{ _MMIO(0x9888), 0x18382a55 },
+	{ _MMIO(0x9888), 0x06398000 },
+	{ _MMIO(0x9888), 0x0839a000 },
+	{ _MMIO(0x9888), 0x0a39a000 },
+	{ _MMIO(0x9888), 0x0c39a000 },
+	{ _MMIO(0x9888), 0x0e39a000 },
+	{ _MMIO(0x9888), 0x1a3a02a0 },
+	{ _MMIO(0x9888), 0x0e138000 },
+	{ _MMIO(0x9888), 0x16130500 },
+	{ _MMIO(0x9888), 0x06148000 },
+	{ _MMIO(0x9888), 0x08146000 },
+	{ _MMIO(0x9888), 0x0615c100 },
+	{ _MMIO(0x9888), 0x0815c500 },
+	{ _MMIO(0x9888), 0x0a1500c3 },
+	{ _MMIO(0x9888), 0x10150000 },
+	{ _MMIO(0x9888), 0x16335040 },
+	{ _MMIO(0x9888), 0x08349000 },
+	{ _MMIO(0x9888), 0x0a341000 },
+	{ _MMIO(0x9888), 0x083500c1 },
+	{ _MMIO(0x9888), 0x0a35c500 },
+	{ _MMIO(0x9888), 0x0c3500c3 },
+	{ _MMIO(0x9888), 0x10350000 },
+	{ _MMIO(0x9888), 0x1853002a },
+	{ _MMIO(0x9888), 0x0a54e000 },
+	{ _MMIO(0x9888), 0x0c55c500 },
+	{ _MMIO(0x9888), 0x0e55c1c3 },
+	{ _MMIO(0x9888), 0x10550000 },
+	{ _MMIO(0x9888), 0x00dc8000 },
+	{ _MMIO(0x9888), 0x02dcc000 },
+	{ _MMIO(0x9888), 0x04dc4000 },
+	{ _MMIO(0x9888), 0x04bd8000 },
+	{ _MMIO(0x9888), 0x06bd8000 },
+	{ _MMIO(0x9888), 0x02d8c000 },
+	{ _MMIO(0x9888), 0x02db8000 },
+	{ _MMIO(0x9888), 0x04db4000 },
+	{ _MMIO(0x9888), 0x06db4000 },
+	{ _MMIO(0x9888), 0x08db8000 },
+	{ _MMIO(0x9888), 0x0c9fa000 },
+	{ _MMIO(0x9888), 0x0e9f00aa },
+	{ _MMIO(0x9888), 0x02b84000 },
+	{ _MMIO(0x9888), 0x04b84000 },
+	{ _MMIO(0x9888), 0x06b84000 },
+	{ _MMIO(0x9888), 0x08b84000 },
+	{ _MMIO(0x9888), 0x0ab88000 },
+	{ _MMIO(0x9888), 0x0cb88000 },
+	{ _MMIO(0x9888), 0x00b98000 },
+	{ _MMIO(0x9888), 0x02b9a000 },
+	{ _MMIO(0x9888), 0x04b9a000 },
+	{ _MMIO(0x9888), 0x06b92000 },
+	{ _MMIO(0x9888), 0x0aba8000 },
+	{ _MMIO(0x9888), 0x0cba8000 },
+	{ _MMIO(0x9888), 0x04938000 },
+	{ _MMIO(0x9888), 0x06938000 },
+	{ _MMIO(0x9888), 0x0494c000 },
+	{ _MMIO(0x9888), 0x0295cfc7 },
+	{ _MMIO(0x9888), 0x10950000 },
+	{ _MMIO(0x9888), 0x02b38000 },
+	{ _MMIO(0x9888), 0x08b38000 },
+	{ _MMIO(0x9888), 0x04b42000 },
+	{ _MMIO(0x9888), 0x06b41000 },
+	{ _MMIO(0x9888), 0x00b5c700 },
+	{ _MMIO(0x9888), 0x04b500cf },
+	{ _MMIO(0x9888), 0x10b50000 },
+	{ _MMIO(0x9888), 0x0ad38000 },
+	{ _MMIO(0x9888), 0x0cd38000 },
+	{ _MMIO(0x9888), 0x06d46000 },
+	{ _MMIO(0x9888), 0x04d5c700 },
+	{ _MMIO(0x9888), 0x06d500cf },
+	{ _MMIO(0x9888), 0x10d50000 },
+	{ _MMIO(0x9888), 0x03888000 },
+	{ _MMIO(0x9888), 0x05888000 },
+	{ _MMIO(0x9888), 0x07888000 },
+	{ _MMIO(0x9888), 0x09888000 },
+	{ _MMIO(0x9888), 0x0b888000 },
+	{ _MMIO(0x9888), 0x0d880400 },
+	{ _MMIO(0x9888), 0x0f8a8000 },
+	{ _MMIO(0x9888), 0x198a8000 },
+	{ _MMIO(0x9888), 0x1b8aaaa0 },
+	{ _MMIO(0x9888), 0x1d8a0002 },
+	{ _MMIO(0x9888), 0x258b555a },
+	{ _MMIO(0x9888), 0x278b0015 },
+	{ _MMIO(0x9888), 0x238b5500 },
+	{ _MMIO(0x9888), 0x038c4000 },
+	{ _MMIO(0x9888), 0x058c4000 },
+	{ _MMIO(0x9888), 0x078c4000 },
+	{ _MMIO(0x9888), 0x098c4000 },
+	{ _MMIO(0x9888), 0x0b8c4000 },
+	{ _MMIO(0x9888), 0x0d8c4000 },
+	{ _MMIO(0x9888), 0x018d8000 },
+	{ _MMIO(0x9888), 0x038da000 },
+	{ _MMIO(0x9888), 0x058da000 },
+	{ _MMIO(0x9888), 0x078d2000 },
+	{ _MMIO(0x9888), 0x2185aaaa },
+	{ _MMIO(0x9888), 0x2385002a },
+	{ _MMIO(0x9888), 0x1f85aa00 },
+	{ _MMIO(0x9888), 0x0f834000 },
+	{ _MMIO(0x9888), 0x19835400 },
+	{ _MMIO(0x9888), 0x1b830155 },
+	{ _MMIO(0x9888), 0x03834000 },
+	{ _MMIO(0x9888), 0x05834000 },
+	{ _MMIO(0x9888), 0x07834000 },
+	{ _MMIO(0x9888), 0x09834000 },
+	{ _MMIO(0x9888), 0x0b834000 },
+	{ _MMIO(0x9888), 0x0d834000 },
+	{ _MMIO(0x9888), 0x0784c000 },
+	{ _MMIO(0x9888), 0x0984c000 },
+	{ _MMIO(0x9888), 0x0b84c000 },
+	{ _MMIO(0x9888), 0x0d84c000 },
+	{ _MMIO(0x9888), 0x0f84c000 },
+	{ _MMIO(0x9888), 0x01848000 },
+	{ _MMIO(0x9888), 0x0384c000 },
+	{ _MMIO(0x9888), 0x0584c000 },
+	{ _MMIO(0x9888), 0x1780c000 },
+	{ _MMIO(0x9888), 0x1980c000 },
+	{ _MMIO(0x9888), 0x1b80c000 },
+	{ _MMIO(0x9888), 0x1d80c000 },
+	{ _MMIO(0x9888), 0x1f80c000 },
+	{ _MMIO(0x9888), 0x11808000 },
+	{ _MMIO(0x9888), 0x1380c000 },
+	{ _MMIO(0x9888), 0x1580c000 },
+	{ _MMIO(0x9888), 0x4f800000 },
+	{ _MMIO(0x9888), 0x43800882 },
+	{ _MMIO(0x9888), 0x51800000 },
+	{ _MMIO(0x9888), 0x45801082 },
+	{ _MMIO(0x9888), 0x53800000 },
+	{ _MMIO(0x9888), 0x478014a5 },
+	{ _MMIO(0x9888), 0x21800000 },
+	{ _MMIO(0x9888), 0x31800000 },
+	{ _MMIO(0x9888), 0x4d800000 },
+	{ _MMIO(0x9888), 0x3f800002 },
+	{ _MMIO(0x9888), 0x41800c62 },
+};
+
+static int select_tdl_2_config(struct drm_i915_private *dev_priv)
+{
+	dev_priv->perf.oa.mux_regs =
+		mux_config_tdl_2;
+	dev_priv->perf.oa.mux_regs_len =
+		ARRAY_SIZE(mux_config_tdl_2);
+
+	dev_priv->perf.oa.b_counter_regs =
+		b_counter_config_tdl_2;
+	dev_priv->perf.oa.b_counter_regs_len =
+		ARRAY_SIZE(b_counter_config_tdl_2);
+
+	dev_priv->perf.oa.flex_regs =
+		flex_eu_config_tdl_2;
+	dev_priv->perf.oa.flex_regs_len =
+		ARRAY_SIZE(flex_eu_config_tdl_2);
+
+	return 0;
+}
+
 int i915_oa_select_metric_set_bdw(struct drm_i915_private *dev_priv)
 {
 	dev_priv->perf.oa.mux_regs = NULL;
@@ -306,6 +3613,42 @@ int i915_oa_select_metric_set_bdw(struct drm_i915_private *dev_priv)
 	switch (dev_priv->perf.oa.metrics_set) {
 	case METRIC_SET_ID_RENDER_BASIC:
 		return select_render_basic_config(dev_priv);
+	case METRIC_SET_ID_COMPUTE_BASIC:
+		return select_compute_basic_config(dev_priv);
+	case METRIC_SET_ID_RENDER_PIPE_PROFILE:
+		return select_render_pipe_profile_config(dev_priv);
+	case METRIC_SET_ID_MEMORY_READS:
+		return select_memory_reads_config(dev_priv);
+	case METRIC_SET_ID_MEMORY_WRITES:
+		return select_memory_writes_config(dev_priv);
+	case METRIC_SET_ID_COMPUTE_EXTENDED:
+		return select_compute_extended_config(dev_priv);
+	case METRIC_SET_ID_COMPUTE_L3_CACHE:
+		return select_compute_l3_cache_config(dev_priv);
+	case METRIC_SET_ID_DATA_PORT_READS_COALESCING:
+		return select_data_port_reads_coalescing_config(dev_priv);
+	case METRIC_SET_ID_DATA_PORT_WRITES_COALESCING:
+		return select_data_port_writes_coalescing_config(dev_priv);
+	case METRIC_SET_ID_HDC_AND_SF:
+		return select_hdc_and_sf_config(dev_priv);
+	case METRIC_SET_ID_L3_1:
+		return select_l3_1_config(dev_priv);
+	case METRIC_SET_ID_L3_2:
+		return select_l3_2_config(dev_priv);
+	case METRIC_SET_ID_L3_3:
+		return select_l3_3_config(dev_priv);
+	case METRIC_SET_ID_L3_4:
+		return select_l3_4_config(dev_priv);
+	case METRIC_SET_ID_RASTERIZER_AND_PIXEL_BACKEND:
+		return select_rasterizer_and_pixel_backend_config(dev_priv);
+	case METRIC_SET_ID_SAMPLER_1:
+		return select_sampler_1_config(dev_priv);
+	case METRIC_SET_ID_SAMPLER_2:
+		return select_sampler_2_config(dev_priv);
+	case METRIC_SET_ID_TDL_1:
+		return select_tdl_1_config(dev_priv);
+	case METRIC_SET_ID_TDL_2:
+		return select_tdl_2_config(dev_priv);
 	default:
 		return -ENODEV;
 	}
@@ -333,6 +3676,402 @@ static struct attribute_group group_render_basic = {
 	.attrs =  attrs_render_basic,
 };
 
+static ssize_t
+show_compute_basic_id(struct device *kdev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%d\n", METRIC_SET_ID_COMPUTE_BASIC);
+}
+
+static struct device_attribute dev_attr_compute_basic_id = {
+	.attr = { .name = "id", .mode = S_IRUGO },
+	.show = show_compute_basic_id,
+	.store = NULL,
+};
+
+static struct attribute *attrs_compute_basic[] = {
+	&dev_attr_compute_basic_id.attr,
+	NULL,
+};
+
+static struct attribute_group group_compute_basic = {
+	.name = "35fbc9b2-a891-40a6-a38d-022bb7057552",
+	.attrs =  attrs_compute_basic,
+};
+
+static ssize_t
+show_render_pipe_profile_id(struct device *kdev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%d\n", METRIC_SET_ID_RENDER_PIPE_PROFILE);
+}
+
+static struct device_attribute dev_attr_render_pipe_profile_id = {
+	.attr = { .name = "id", .mode = S_IRUGO },
+	.show = show_render_pipe_profile_id,
+	.store = NULL,
+};
+
+static struct attribute *attrs_render_pipe_profile[] = {
+	&dev_attr_render_pipe_profile_id.attr,
+	NULL,
+};
+
+static struct attribute_group group_render_pipe_profile = {
+	.name = "233d0544-fff7-4281-8291-e02f222aff72",
+	.attrs =  attrs_render_pipe_profile,
+};
+
+static ssize_t
+show_memory_reads_id(struct device *kdev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%d\n", METRIC_SET_ID_MEMORY_READS);
+}
+
+static struct device_attribute dev_attr_memory_reads_id = {
+	.attr = { .name = "id", .mode = S_IRUGO },
+	.show = show_memory_reads_id,
+	.store = NULL,
+};
+
+static struct attribute *attrs_memory_reads[] = {
+	&dev_attr_memory_reads_id.attr,
+	NULL,
+};
+
+static struct attribute_group group_memory_reads = {
+	.name = "2b255d48-2117-4fef-a8f7-f151e1d25a2c",
+	.attrs =  attrs_memory_reads,
+};
+
+static ssize_t
+show_memory_writes_id(struct device *kdev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%d\n", METRIC_SET_ID_MEMORY_WRITES);
+}
+
+static struct device_attribute dev_attr_memory_writes_id = {
+	.attr = { .name = "id", .mode = S_IRUGO },
+	.show = show_memory_writes_id,
+	.store = NULL,
+};
+
+static struct attribute *attrs_memory_writes[] = {
+	&dev_attr_memory_writes_id.attr,
+	NULL,
+};
+
+static struct attribute_group group_memory_writes = {
+	.name = "f7fd3220-b466-4a4d-9f98-b0caf3f2394c",
+	.attrs =  attrs_memory_writes,
+};
+
+static ssize_t
+show_compute_extended_id(struct device *kdev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%d\n", METRIC_SET_ID_COMPUTE_EXTENDED);
+}
+
+static struct device_attribute dev_attr_compute_extended_id = {
+	.attr = { .name = "id", .mode = S_IRUGO },
+	.show = show_compute_extended_id,
+	.store = NULL,
+};
+
+static struct attribute *attrs_compute_extended[] = {
+	&dev_attr_compute_extended_id.attr,
+	NULL,
+};
+
+static struct attribute_group group_compute_extended = {
+	.name = "e99ccaca-821c-4df9-97a7-96bdb7204e43",
+	.attrs =  attrs_compute_extended,
+};
+
+static ssize_t
+show_compute_l3_cache_id(struct device *kdev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%d\n", METRIC_SET_ID_COMPUTE_L3_CACHE);
+}
+
+static struct device_attribute dev_attr_compute_l3_cache_id = {
+	.attr = { .name = "id", .mode = S_IRUGO },
+	.show = show_compute_l3_cache_id,
+	.store = NULL,
+};
+
+static struct attribute *attrs_compute_l3_cache[] = {
+	&dev_attr_compute_l3_cache_id.attr,
+	NULL,
+};
+
+static struct attribute_group group_compute_l3_cache = {
+	.name = "27a364dc-8225-4ecb-b607-d6f1925598d9",
+	.attrs =  attrs_compute_l3_cache,
+};
+
+static ssize_t
+show_data_port_reads_coalescing_id(struct device *kdev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%d\n", METRIC_SET_ID_DATA_PORT_READS_COALESCING);
+}
+
+static struct device_attribute dev_attr_data_port_reads_coalescing_id = {
+	.attr = { .name = "id", .mode = S_IRUGO },
+	.show = show_data_port_reads_coalescing_id,
+	.store = NULL,
+};
+
+static struct attribute *attrs_data_port_reads_coalescing[] = {
+	&dev_attr_data_port_reads_coalescing_id.attr,
+	NULL,
+};
+
+static struct attribute_group group_data_port_reads_coalescing = {
+	.name = "857fc630-2f09-4804-85f1-084adfadd5ab",
+	.attrs =  attrs_data_port_reads_coalescing,
+};
+
+static ssize_t
+show_data_port_writes_coalescing_id(struct device *kdev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%d\n", METRIC_SET_ID_DATA_PORT_WRITES_COALESCING);
+}
+
+static struct device_attribute dev_attr_data_port_writes_coalescing_id = {
+	.attr = { .name = "id", .mode = S_IRUGO },
+	.show = show_data_port_writes_coalescing_id,
+	.store = NULL,
+};
+
+static struct attribute *attrs_data_port_writes_coalescing[] = {
+	&dev_attr_data_port_writes_coalescing_id.attr,
+	NULL,
+};
+
+static struct attribute_group group_data_port_writes_coalescing = {
+	.name = "343ebc99-4a55-414c-8c17-d8e259cf5e20",
+	.attrs =  attrs_data_port_writes_coalescing,
+};
+
+static ssize_t
+show_hdc_and_sf_id(struct device *kdev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%d\n", METRIC_SET_ID_HDC_AND_SF);
+}
+
+static struct device_attribute dev_attr_hdc_and_sf_id = {
+	.attr = { .name = "id", .mode = S_IRUGO },
+	.show = show_hdc_and_sf_id,
+	.store = NULL,
+};
+
+static struct attribute *attrs_hdc_and_sf[] = {
+	&dev_attr_hdc_and_sf_id.attr,
+	NULL,
+};
+
+static struct attribute_group group_hdc_and_sf = {
+	.name = "2cf0c064-68df-4fac-9b3f-57f51ca8a069",
+	.attrs =  attrs_hdc_and_sf,
+};
+
+static ssize_t
+show_l3_1_id(struct device *kdev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%d\n", METRIC_SET_ID_L3_1);
+}
+
+static struct device_attribute dev_attr_l3_1_id = {
+	.attr = { .name = "id", .mode = S_IRUGO },
+	.show = show_l3_1_id,
+	.store = NULL,
+};
+
+static struct attribute *attrs_l3_1[] = {
+	&dev_attr_l3_1_id.attr,
+	NULL,
+};
+
+static struct attribute_group group_l3_1 = {
+	.name = "78a87ff9-543a-49ce-95ea-26d86071ea93",
+	.attrs =  attrs_l3_1,
+};
+
+static ssize_t
+show_l3_2_id(struct device *kdev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%d\n", METRIC_SET_ID_L3_2);
+}
+
+static struct device_attribute dev_attr_l3_2_id = {
+	.attr = { .name = "id", .mode = S_IRUGO },
+	.show = show_l3_2_id,
+	.store = NULL,
+};
+
+static struct attribute *attrs_l3_2[] = {
+	&dev_attr_l3_2_id.attr,
+	NULL,
+};
+
+static struct attribute_group group_l3_2 = {
+	.name = "9f2cece5-7bfe-4320-ad66-8c7cc526bec5",
+	.attrs =  attrs_l3_2,
+};
+
+static ssize_t
+show_l3_3_id(struct device *kdev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%d\n", METRIC_SET_ID_L3_3);
+}
+
+static struct device_attribute dev_attr_l3_3_id = {
+	.attr = { .name = "id", .mode = S_IRUGO },
+	.show = show_l3_3_id,
+	.store = NULL,
+};
+
+static struct attribute *attrs_l3_3[] = {
+	&dev_attr_l3_3_id.attr,
+	NULL,
+};
+
+static struct attribute_group group_l3_3 = {
+	.name = "d890ef38-d309-47e4-b8b5-aa779bb19ab0",
+	.attrs =  attrs_l3_3,
+};
+
+static ssize_t
+show_l3_4_id(struct device *kdev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%d\n", METRIC_SET_ID_L3_4);
+}
+
+static struct device_attribute dev_attr_l3_4_id = {
+	.attr = { .name = "id", .mode = S_IRUGO },
+	.show = show_l3_4_id,
+	.store = NULL,
+};
+
+static struct attribute *attrs_l3_4[] = {
+	&dev_attr_l3_4_id.attr,
+	NULL,
+};
+
+static struct attribute_group group_l3_4 = {
+	.name = "5fdff4a6-9dc8-45e1-bfda-ef54869fbdd4",
+	.attrs =  attrs_l3_4,
+};
+
+static ssize_t
+show_rasterizer_and_pixel_backend_id(struct device *kdev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%d\n", METRIC_SET_ID_RASTERIZER_AND_PIXEL_BACKEND);
+}
+
+static struct device_attribute dev_attr_rasterizer_and_pixel_backend_id = {
+	.attr = { .name = "id", .mode = S_IRUGO },
+	.show = show_rasterizer_and_pixel_backend_id,
+	.store = NULL,
+};
+
+static struct attribute *attrs_rasterizer_and_pixel_backend[] = {
+	&dev_attr_rasterizer_and_pixel_backend_id.attr,
+	NULL,
+};
+
+static struct attribute_group group_rasterizer_and_pixel_backend = {
+	.name = "2c0e45e1-7e2c-4a14-ae00-0b7ec868b8aa",
+	.attrs =  attrs_rasterizer_and_pixel_backend,
+};
+
+static ssize_t
+show_sampler_1_id(struct device *kdev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%d\n", METRIC_SET_ID_SAMPLER_1);
+}
+
+static struct device_attribute dev_attr_sampler_1_id = {
+	.attr = { .name = "id", .mode = S_IRUGO },
+	.show = show_sampler_1_id,
+	.store = NULL,
+};
+
+static struct attribute *attrs_sampler_1[] = {
+	&dev_attr_sampler_1_id.attr,
+	NULL,
+};
+
+static struct attribute_group group_sampler_1 = {
+	.name = "71148d78-baf5-474f-878a-e23158d0265d",
+	.attrs =  attrs_sampler_1,
+};
+
+static ssize_t
+show_sampler_2_id(struct device *kdev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%d\n", METRIC_SET_ID_SAMPLER_2);
+}
+
+static struct device_attribute dev_attr_sampler_2_id = {
+	.attr = { .name = "id", .mode = S_IRUGO },
+	.show = show_sampler_2_id,
+	.store = NULL,
+};
+
+static struct attribute *attrs_sampler_2[] = {
+	&dev_attr_sampler_2_id.attr,
+	NULL,
+};
+
+static struct attribute_group group_sampler_2 = {
+	.name = "b996a2b7-c59c-492d-877a-8cd54fd6df84",
+	.attrs =  attrs_sampler_2,
+};
+
+static ssize_t
+show_tdl_1_id(struct device *kdev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%d\n", METRIC_SET_ID_TDL_1);
+}
+
+static struct device_attribute dev_attr_tdl_1_id = {
+	.attr = { .name = "id", .mode = S_IRUGO },
+	.show = show_tdl_1_id,
+	.store = NULL,
+};
+
+static struct attribute *attrs_tdl_1[] = {
+	&dev_attr_tdl_1_id.attr,
+	NULL,
+};
+
+static struct attribute_group group_tdl_1 = {
+	.name = "eb2fecba-b431-42e7-8261-fe9429a6e67a",
+	.attrs =  attrs_tdl_1,
+};
+
+static ssize_t
+show_tdl_2_id(struct device *kdev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%d\n", METRIC_SET_ID_TDL_2);
+}
+
+static struct device_attribute dev_attr_tdl_2_id = {
+	.attr = { .name = "id", .mode = S_IRUGO },
+	.show = show_tdl_2_id,
+	.store = NULL,
+};
+
+static struct attribute *attrs_tdl_2[] = {
+	&dev_attr_tdl_2_id.attr,
+	NULL,
+};
+
+static struct attribute_group group_tdl_2 = {
+	.name = "60749470-a648-4a4b-9f10-dbfe1e36e44d",
+	.attrs =  attrs_tdl_2,
+};
+
 int
 i915_perf_init_sysfs_bdw(struct drm_i915_private *dev_priv)
 {
@@ -341,9 +4080,99 @@ i915_perf_init_sysfs_bdw(struct drm_i915_private *dev_priv)
 	ret = sysfs_create_group(dev_priv->perf.metrics_kobj, &group_render_basic);
 	if (ret)
 		goto error_render_basic;
+	ret = sysfs_create_group(dev_priv->perf.metrics_kobj, &group_compute_basic);
+	if (ret)
+		goto error_compute_basic;
+	ret = sysfs_create_group(dev_priv->perf.metrics_kobj, &group_render_pipe_profile);
+	if (ret)
+		goto error_render_pipe_profile;
+	ret = sysfs_create_group(dev_priv->perf.metrics_kobj, &group_memory_reads);
+	if (ret)
+		goto error_memory_reads;
+	ret = sysfs_create_group(dev_priv->perf.metrics_kobj, &group_memory_writes);
+	if (ret)
+		goto error_memory_writes;
+	ret = sysfs_create_group(dev_priv->perf.metrics_kobj, &group_compute_extended);
+	if (ret)
+		goto error_compute_extended;
+	ret = sysfs_create_group(dev_priv->perf.metrics_kobj, &group_compute_l3_cache);
+	if (ret)
+		goto error_compute_l3_cache;
+	ret = sysfs_create_group(dev_priv->perf.metrics_kobj, &group_data_port_reads_coalescing);
+	if (ret)
+		goto error_data_port_reads_coalescing;
+	ret = sysfs_create_group(dev_priv->perf.metrics_kobj, &group_data_port_writes_coalescing);
+	if (ret)
+		goto error_data_port_writes_coalescing;
+	ret = sysfs_create_group(dev_priv->perf.metrics_kobj, &group_hdc_and_sf);
+	if (ret)
+		goto error_hdc_and_sf;
+	ret = sysfs_create_group(dev_priv->perf.metrics_kobj, &group_l3_1);
+	if (ret)
+		goto error_l3_1;
+	ret = sysfs_create_group(dev_priv->perf.metrics_kobj, &group_l3_2);
+	if (ret)
+		goto error_l3_2;
+	ret = sysfs_create_group(dev_priv->perf.metrics_kobj, &group_l3_3);
+	if (ret)
+		goto error_l3_3;
+	ret = sysfs_create_group(dev_priv->perf.metrics_kobj, &group_l3_4);
+	if (ret)
+		goto error_l3_4;
+	ret = sysfs_create_group(dev_priv->perf.metrics_kobj, &group_rasterizer_and_pixel_backend);
+	if (ret)
+		goto error_rasterizer_and_pixel_backend;
+	ret = sysfs_create_group(dev_priv->perf.metrics_kobj, &group_sampler_1);
+	if (ret)
+		goto error_sampler_1;
+	ret = sysfs_create_group(dev_priv->perf.metrics_kobj, &group_sampler_2);
+	if (ret)
+		goto error_sampler_2;
+	ret = sysfs_create_group(dev_priv->perf.metrics_kobj, &group_tdl_1);
+	if (ret)
+		goto error_tdl_1;
+	ret = sysfs_create_group(dev_priv->perf.metrics_kobj, &group_tdl_2);
+	if (ret)
+		goto error_tdl_2;
 
 	return 0;
 
+error_tdl_2:
+	sysfs_remove_group(dev_priv->perf.metrics_kobj, &group_tdl_1);
+error_tdl_1:
+	sysfs_remove_group(dev_priv->perf.metrics_kobj, &group_sampler_2);
+error_sampler_2:
+	sysfs_remove_group(dev_priv->perf.metrics_kobj, &group_sampler_1);
+error_sampler_1:
+	sysfs_remove_group(dev_priv->perf.metrics_kobj, &group_rasterizer_and_pixel_backend);
+error_rasterizer_and_pixel_backend:
+	sysfs_remove_group(dev_priv->perf.metrics_kobj, &group_l3_4);
+error_l3_4:
+	sysfs_remove_group(dev_priv->perf.metrics_kobj, &group_l3_3);
+error_l3_3:
+	sysfs_remove_group(dev_priv->perf.metrics_kobj, &group_l3_2);
+error_l3_2:
+	sysfs_remove_group(dev_priv->perf.metrics_kobj, &group_l3_1);
+error_l3_1:
+	sysfs_remove_group(dev_priv->perf.metrics_kobj, &group_hdc_and_sf);
+error_hdc_and_sf:
+	sysfs_remove_group(dev_priv->perf.metrics_kobj, &group_data_port_writes_coalescing);
+error_data_port_writes_coalescing:
+	sysfs_remove_group(dev_priv->perf.metrics_kobj, &group_data_port_reads_coalescing);
+error_data_port_reads_coalescing:
+	sysfs_remove_group(dev_priv->perf.metrics_kobj, &group_compute_l3_cache);
+error_compute_l3_cache:
+	sysfs_remove_group(dev_priv->perf.metrics_kobj, &group_compute_extended);
+error_compute_extended:
+	sysfs_remove_group(dev_priv->perf.metrics_kobj, &group_memory_writes);
+error_memory_writes:
+	sysfs_remove_group(dev_priv->perf.metrics_kobj, &group_memory_reads);
+error_memory_reads:
+	sysfs_remove_group(dev_priv->perf.metrics_kobj, &group_render_pipe_profile);
+error_render_pipe_profile:
+	sysfs_remove_group(dev_priv->perf.metrics_kobj, &group_compute_basic);
+error_compute_basic:
+	sysfs_remove_group(dev_priv->perf.metrics_kobj, &group_render_basic);
 error_render_basic:
 	return ret;
 }
@@ -352,4 +4181,22 @@ void
 i915_perf_deinit_sysfs_bdw(struct drm_i915_private *dev_priv)
 {
 	sysfs_remove_group(dev_priv->perf.metrics_kobj, &group_render_basic);
+	sysfs_remove_group(dev_priv->perf.metrics_kobj, &group_compute_basic);
+	sysfs_remove_group(dev_priv->perf.metrics_kobj, &group_render_pipe_profile);
+	sysfs_remove_group(dev_priv->perf.metrics_kobj, &group_memory_reads);
+	sysfs_remove_group(dev_priv->perf.metrics_kobj, &group_memory_writes);
+	sysfs_remove_group(dev_priv->perf.metrics_kobj, &group_compute_extended);
+	sysfs_remove_group(dev_priv->perf.metrics_kobj, &group_compute_l3_cache);
+	sysfs_remove_group(dev_priv->perf.metrics_kobj, &group_data_port_reads_coalescing);
+	sysfs_remove_group(dev_priv->perf.metrics_kobj, &group_data_port_writes_coalescing);
+	sysfs_remove_group(dev_priv->perf.metrics_kobj, &group_hdc_and_sf);
+	sysfs_remove_group(dev_priv->perf.metrics_kobj, &group_l3_1);
+	sysfs_remove_group(dev_priv->perf.metrics_kobj, &group_l3_2);
+	sysfs_remove_group(dev_priv->perf.metrics_kobj, &group_l3_3);
+	sysfs_remove_group(dev_priv->perf.metrics_kobj, &group_l3_4);
+	sysfs_remove_group(dev_priv->perf.metrics_kobj, &group_rasterizer_and_pixel_backend);
+	sysfs_remove_group(dev_priv->perf.metrics_kobj, &group_sampler_1);
+	sysfs_remove_group(dev_priv->perf.metrics_kobj, &group_sampler_2);
+	sysfs_remove_group(dev_priv->perf.metrics_kobj, &group_tdl_1);
+	sysfs_remove_group(dev_priv->perf.metrics_kobj, &group_tdl_2);
 }
