@@ -32,9 +32,141 @@ extern const struct i915_oa_reg i915_oa_3d_b_counter_config_skl[];
 extern const int i915_oa_3d_b_counter_config_skl_len;
 extern const struct i915_oa_reg i915_oa_3d_flex_eu_config_skl[];
 extern const int i915_oa_3d_flex_eu_config_skl_len;
-extern const struct i915_oa_reg i915_oa_3d_mux_config_1_1_sku_0x02_ult_skl[];
-extern const int i915_oa_3d_mux_config_1_1_sku_0x02_ult_skl_len;
-extern const struct i915_oa_reg i915_oa_3d_mux_config_1_1_sku_0x02_ugte_skl[];
-extern const int i915_oa_3d_mux_config_1_1_sku_0x02_ugte_skl_len;
+extern const struct i915_oa_reg i915_oa_3d_mux_config_1_1_sku_lt_0x02_skl[];
+extern const int i915_oa_3d_mux_config_1_1_sku_lt_0x02_skl_len;
+extern const struct i915_oa_reg i915_oa_3d_mux_config_1_1_sku_gte_0x02_skl[];
+extern const int i915_oa_3d_mux_config_1_1_sku_gte_0x02_skl_len;
+
+/* SKL Compute Metrics Basic Gen9 */
+extern const struct i915_oa_reg i915_oa_compute_b_counter_config_skl[];
+extern const int i915_oa_compute_b_counter_config_skl_len;
+extern const struct i915_oa_reg i915_oa_compute_flex_eu_config_skl[];
+extern const int i915_oa_compute_flex_eu_config_skl_len;
+extern const struct i915_oa_reg i915_oa_compute_mux_config_1_0_slice_mask_0x01_sku_lt_0x02_skl[];
+extern const int i915_oa_compute_mux_config_1_0_slice_mask_0x01_sku_lt_0x02_skl_len;
+extern const struct i915_oa_reg i915_oa_compute_mux_config_1_0_slice_mask_0x01_sku_gte_0x02_skl[];
+extern const int i915_oa_compute_mux_config_1_0_slice_mask_0x01_sku_gte_0x02_skl_len;
+extern const struct i915_oa_reg i915_oa_compute_mux_config_1_2_slice_mask_0x02_sku_lt_0x02_skl[];
+extern const int i915_oa_compute_mux_config_1_2_slice_mask_0x02_sku_lt_0x02_skl_len;
+
+/* SKL Render Metrics for 3D Pipeline Profile Gen9 */
+extern const struct i915_oa_reg i915_oa_render_pipe_profile_b_counter_config_skl[];
+extern const int i915_oa_render_pipe_profile_b_counter_config_skl_len;
+extern const struct i915_oa_reg i915_oa_render_pipe_profile_flex_eu_config_skl[];
+extern const int i915_oa_render_pipe_profile_flex_eu_config_skl_len;
+extern const struct i915_oa_reg i915_oa_render_pipe_profile_mux_config_1_0_sku_lt_0x02_skl[];
+extern const int i915_oa_render_pipe_profile_mux_config_1_0_sku_lt_0x02_skl_len;
+extern const struct i915_oa_reg i915_oa_render_pipe_profile_mux_config_1_0_sku_gte_0x02_skl[];
+extern const int i915_oa_render_pipe_profile_mux_config_1_0_sku_gte_0x02_skl_len;
+
+/* SKL Memory Reads Distribution Gen9 */
+extern const struct i915_oa_reg i915_oa_memory_reads_b_counter_config_skl[];
+extern const int i915_oa_memory_reads_b_counter_config_skl_len;
+extern const struct i915_oa_reg i915_oa_memory_reads_flex_eu_config_skl[];
+extern const int i915_oa_memory_reads_flex_eu_config_skl_len;
+extern const struct i915_oa_reg i915_oa_memory_reads_mux_config_1_0_slice_mask_0x01_sku_lt_0x02_skl[];
+extern const int i915_oa_memory_reads_mux_config_1_0_slice_mask_0x01_sku_lt_0x02_skl_len;
+extern const struct i915_oa_reg i915_oa_memory_reads_mux_config_1_0_slice_mask_0x01_sku_gte_0x02_skl[];
+extern const int i915_oa_memory_reads_mux_config_1_0_slice_mask_0x01_sku_gte_0x02_skl_len;
+
+/* SKL Memory Writes Distribution Gen9 */
+extern const struct i915_oa_reg i915_oa_memory_writes_b_counter_config_skl[];
+extern const int i915_oa_memory_writes_b_counter_config_skl_len;
+extern const struct i915_oa_reg i915_oa_memory_writes_flex_eu_config_skl[];
+extern const int i915_oa_memory_writes_flex_eu_config_skl_len;
+extern const struct i915_oa_reg i915_oa_memory_writes_mux_config_1_0_slice_mask_0x01_sku_lt_0x02_skl[];
+extern const int i915_oa_memory_writes_mux_config_1_0_slice_mask_0x01_sku_lt_0x02_skl_len;
+extern const struct i915_oa_reg i915_oa_memory_writes_mux_config_1_0_slice_mask_0x01_sku_gte_0x02_skl[];
+extern const int i915_oa_memory_writes_mux_config_1_0_slice_mask_0x01_sku_gte_0x02_skl_len;
+
+/* SKL Compute Metrics Extended Gen9 */
+extern const struct i915_oa_reg i915_oa_compute_extended_b_counter_config_skl[];
+extern const int i915_oa_compute_extended_b_counter_config_skl_len;
+extern const struct i915_oa_reg i915_oa_compute_extended_flex_eu_config_skl[];
+extern const int i915_oa_compute_extended_flex_eu_config_skl_len;
+extern const struct i915_oa_reg i915_oa_compute_extended_mux_config_1_0_subslice_mask_0x01_sku_lt_0x02_skl[];
+extern const int i915_oa_compute_extended_mux_config_1_0_subslice_mask_0x01_sku_lt_0x02_skl_len;
+extern const struct i915_oa_reg i915_oa_compute_extended_mux_config_1_1_subslice_mask_0x08_sku_lt_0x02_skl[];
+extern const int i915_oa_compute_extended_mux_config_1_1_subslice_mask_0x08_sku_lt_0x02_skl_len;
+extern const struct i915_oa_reg i915_oa_compute_extended_mux_config_1_2_subslice_mask_0x02_sku_lt_0x02_skl[];
+extern const int i915_oa_compute_extended_mux_config_1_2_subslice_mask_0x02_sku_lt_0x02_skl_len;
+extern const struct i915_oa_reg i915_oa_compute_extended_mux_config_1_3_subslice_mask_0x10_sku_lt_0x02_skl[];
+extern const int i915_oa_compute_extended_mux_config_1_3_subslice_mask_0x10_sku_lt_0x02_skl_len;
+extern const struct i915_oa_reg i915_oa_compute_extended_mux_config_1_4_subslice_mask_0x04_sku_lt_0x02_skl[];
+extern const int i915_oa_compute_extended_mux_config_1_4_subslice_mask_0x04_sku_lt_0x02_skl_len;
+extern const struct i915_oa_reg i915_oa_compute_extended_mux_config_1_5_subslice_mask_0x20_sku_lt_0x02_skl[];
+extern const int i915_oa_compute_extended_mux_config_1_5_subslice_mask_0x20_sku_lt_0x02_skl_len;
+
+/* SKL Compute Metrics L3 Cache Gen9 */
+extern const struct i915_oa_reg i915_oa_compute_l3_cache_b_counter_config_skl[];
+extern const int i915_oa_compute_l3_cache_b_counter_config_skl_len;
+extern const struct i915_oa_reg i915_oa_compute_l3_cache_flex_eu_config_skl[];
+extern const int i915_oa_compute_l3_cache_flex_eu_config_skl_len;
+extern const struct i915_oa_reg i915_oa_compute_l3_cache_mux_config_skl[];
+extern const int i915_oa_compute_l3_cache_mux_config_skl_len;
+
+/* SKL Metric set HDCAndSF */
+extern const struct i915_oa_reg i915_oa_hdc_and_sf_b_counter_config_skl[];
+extern const int i915_oa_hdc_and_sf_b_counter_config_skl_len;
+extern const struct i915_oa_reg i915_oa_hdc_and_sf_flex_eu_config_skl[];
+extern const int i915_oa_hdc_and_sf_flex_eu_config_skl_len;
+extern const struct i915_oa_reg i915_oa_hdc_and_sf_mux_config_skl[];
+extern const int i915_oa_hdc_and_sf_mux_config_skl_len;
+
+/* SKL Metric set L3_1 */
+extern const struct i915_oa_reg i915_oa_l3_1_b_counter_config_skl[];
+extern const int i915_oa_l3_1_b_counter_config_skl_len;
+extern const struct i915_oa_reg i915_oa_l3_1_flex_eu_config_skl[];
+extern const int i915_oa_l3_1_flex_eu_config_skl_len;
+extern const struct i915_oa_reg i915_oa_l3_1_mux_config_skl[];
+extern const int i915_oa_l3_1_mux_config_skl_len;
+
+/* SKL Metric set L3_2 */
+extern const struct i915_oa_reg i915_oa_l3_2_b_counter_config_skl[];
+extern const int i915_oa_l3_2_b_counter_config_skl_len;
+extern const struct i915_oa_reg i915_oa_l3_2_flex_eu_config_skl[];
+extern const int i915_oa_l3_2_flex_eu_config_skl_len;
+extern const struct i915_oa_reg i915_oa_l3_2_mux_config_skl[];
+extern const int i915_oa_l3_2_mux_config_skl_len;
+
+/* SKL Metric set L3_3 */
+extern const struct i915_oa_reg i915_oa_l3_3_b_counter_config_skl[];
+extern const int i915_oa_l3_3_b_counter_config_skl_len;
+extern const struct i915_oa_reg i915_oa_l3_3_flex_eu_config_skl[];
+extern const int i915_oa_l3_3_flex_eu_config_skl_len;
+extern const struct i915_oa_reg i915_oa_l3_3_mux_config_skl[];
+extern const int i915_oa_l3_3_mux_config_skl_len;
+
+/* SKL Metric set RasterizerAndPixelBackend */
+extern const struct i915_oa_reg i915_oa_rasterizer_and_pixel_backend_b_counter_config_skl[];
+extern const int i915_oa_rasterizer_and_pixel_backend_b_counter_config_skl_len;
+extern const struct i915_oa_reg i915_oa_rasterizer_and_pixel_backend_flex_eu_config_skl[];
+extern const int i915_oa_rasterizer_and_pixel_backend_flex_eu_config_skl_len;
+extern const struct i915_oa_reg i915_oa_rasterizer_and_pixel_backend_mux_config_skl[];
+extern const int i915_oa_rasterizer_and_pixel_backend_mux_config_skl_len;
+
+/* SKL Metric set Sampler */
+extern const struct i915_oa_reg i915_oa_sampler_b_counter_config_skl[];
+extern const int i915_oa_sampler_b_counter_config_skl_len;
+extern const struct i915_oa_reg i915_oa_sampler_flex_eu_config_skl[];
+extern const int i915_oa_sampler_flex_eu_config_skl_len;
+extern const struct i915_oa_reg i915_oa_sampler_mux_config_skl[];
+extern const int i915_oa_sampler_mux_config_skl_len;
+
+/* SKL Metric set TDL_1 */
+extern const struct i915_oa_reg i915_oa_tdl_1_b_counter_config_skl[];
+extern const int i915_oa_tdl_1_b_counter_config_skl_len;
+extern const struct i915_oa_reg i915_oa_tdl_1_flex_eu_config_skl[];
+extern const int i915_oa_tdl_1_flex_eu_config_skl_len;
+extern const struct i915_oa_reg i915_oa_tdl_1_mux_config_skl[];
+extern const int i915_oa_tdl_1_mux_config_skl_len;
+
+/* SKL Metric set TDL_2 */
+extern const struct i915_oa_reg i915_oa_tdl_2_b_counter_config_skl[];
+extern const int i915_oa_tdl_2_b_counter_config_skl_len;
+extern const struct i915_oa_reg i915_oa_tdl_2_flex_eu_config_skl[];
+extern const int i915_oa_tdl_2_flex_eu_config_skl_len;
+extern const struct i915_oa_reg i915_oa_tdl_2_mux_config_skl[];
+extern const int i915_oa_tdl_2_mux_config_skl_len;
 
 #endif
