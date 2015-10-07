@@ -37,4 +37,154 @@ extern const int i915_oa_3d_mux_config_1_0_slice_mask_0x01_bdw_len;
 extern const struct i915_oa_reg i915_oa_3d_mux_config_1_1_slice_mask_0x02_bdw[];
 extern const int i915_oa_3d_mux_config_1_1_slice_mask_0x02_bdw_len;
 
+/* BDW Compute Metrics Basic Gen8 */
+extern const struct i915_oa_reg i915_oa_compute_b_counter_config_bdw[];
+extern const int i915_oa_compute_b_counter_config_bdw_len;
+extern const struct i915_oa_reg i915_oa_compute_flex_eu_config_bdw[];
+extern const int i915_oa_compute_flex_eu_config_bdw_len;
+extern const struct i915_oa_reg i915_oa_compute_mux_config_1_0_slice_mask_0x01_bdw[];
+extern const int i915_oa_compute_mux_config_1_0_slice_mask_0x01_bdw_len;
+extern const struct i915_oa_reg i915_oa_compute_mux_config_1_2_slice_mask_0x02_bdw[];
+extern const int i915_oa_compute_mux_config_1_2_slice_mask_0x02_bdw_len;
+
+/* BDW Render Metrics for 3D Pipeline Profile */
+extern const struct i915_oa_reg i915_oa_render_pipe_profile_b_counter_config_bdw[];
+extern const int i915_oa_render_pipe_profile_b_counter_config_bdw_len;
+extern const struct i915_oa_reg i915_oa_render_pipe_profile_flex_eu_config_bdw[];
+extern const int i915_oa_render_pipe_profile_flex_eu_config_bdw_len;
+extern const struct i915_oa_reg i915_oa_render_pipe_profile_mux_config_bdw[];
+extern const int i915_oa_render_pipe_profile_mux_config_bdw_len;
+
+/* BDW Memory Reads Distribution Gen8 */
+extern const struct i915_oa_reg i915_oa_memory_reads_b_counter_config_bdw[];
+extern const int i915_oa_memory_reads_b_counter_config_bdw_len;
+extern const struct i915_oa_reg i915_oa_memory_reads_flex_eu_config_bdw[];
+extern const int i915_oa_memory_reads_flex_eu_config_bdw_len;
+extern const struct i915_oa_reg i915_oa_memory_reads_mux_config_bdw[];
+extern const int i915_oa_memory_reads_mux_config_bdw_len;
+
+/* BDW Memory Writes Distribution Gen8 */
+extern const struct i915_oa_reg i915_oa_memory_writes_b_counter_config_bdw[];
+extern const int i915_oa_memory_writes_b_counter_config_bdw_len;
+extern const struct i915_oa_reg i915_oa_memory_writes_flex_eu_config_bdw[];
+extern const int i915_oa_memory_writes_flex_eu_config_bdw_len;
+extern const struct i915_oa_reg i915_oa_memory_writes_mux_config_bdw[];
+extern const int i915_oa_memory_writes_mux_config_bdw_len;
+
+/* BDW Compute Metrics Extended Gen8 */
+extern const struct i915_oa_reg i915_oa_compute_extended_b_counter_config_bdw[];
+extern const int i915_oa_compute_extended_b_counter_config_bdw_len;
+extern const struct i915_oa_reg i915_oa_compute_extended_flex_eu_config_bdw[];
+extern const int i915_oa_compute_extended_flex_eu_config_bdw_len;
+extern const struct i915_oa_reg i915_oa_compute_extended_mux_config_1_0_subslice_mask_0x01_bdw[];
+extern const int i915_oa_compute_extended_mux_config_1_0_subslice_mask_0x01_bdw_len;
+extern const struct i915_oa_reg i915_oa_compute_extended_mux_config_1_1_subslice_mask_0x08_bdw[];
+extern const int i915_oa_compute_extended_mux_config_1_1_subslice_mask_0x08_bdw_len;
+extern const struct i915_oa_reg i915_oa_compute_extended_mux_config_1_2_subslice_mask_0x02_bdw[];
+extern const int i915_oa_compute_extended_mux_config_1_2_subslice_mask_0x02_bdw_len;
+extern const struct i915_oa_reg i915_oa_compute_extended_mux_config_1_3_subslice_mask_0x10_bdw[];
+extern const int i915_oa_compute_extended_mux_config_1_3_subslice_mask_0x10_bdw_len;
+extern const struct i915_oa_reg i915_oa_compute_extended_mux_config_1_4_subslice_mask_0x04_bdw[];
+extern const int i915_oa_compute_extended_mux_config_1_4_subslice_mask_0x04_bdw_len;
+extern const struct i915_oa_reg i915_oa_compute_extended_mux_config_1_5_subslice_mask_0x20_bdw[];
+extern const int i915_oa_compute_extended_mux_config_1_5_subslice_mask_0x20_bdw_len;
+extern const struct i915_oa_reg i915_oa_compute_extended_mux_config_bdw[];
+extern const int i915_oa_compute_extended_mux_config_bdw_len;
+
+/* BDW Compute Metrics L3 Cache Gen8 */
+extern const struct i915_oa_reg i915_oa_compute_l3_cache_b_counter_config_bdw[];
+extern const int i915_oa_compute_l3_cache_b_counter_config_bdw_len;
+extern const struct i915_oa_reg i915_oa_compute_l3_cache_flex_eu_config_bdw[];
+extern const int i915_oa_compute_l3_cache_flex_eu_config_bdw_len;
+extern const struct i915_oa_reg i915_oa_compute_l3_cache_mux_config_bdw[];
+extern const int i915_oa_compute_l3_cache_mux_config_bdw_len;
+
+/* BDW Data Port Reads Coalescing Gen8 */
+extern const struct i915_oa_reg i915_oa_data_port_reads_coalescing_b_counter_config_bdw[];
+extern const int i915_oa_data_port_reads_coalescing_b_counter_config_bdw_len;
+extern const struct i915_oa_reg i915_oa_data_port_reads_coalescing_flex_eu_config_bdw[];
+extern const int i915_oa_data_port_reads_coalescing_flex_eu_config_bdw_len;
+extern const struct i915_oa_reg i915_oa_data_port_reads_coalescing_mux_config_1_0_subslice_mask_0x01_bdw[];
+extern const int i915_oa_data_port_reads_coalescing_mux_config_1_0_subslice_mask_0x01_bdw_len;
+
+/* BDW Data Port Writes Coalescing Gen8 */
+extern const struct i915_oa_reg i915_oa_data_port_writes_coalescing_b_counter_config_bdw[];
+extern const int i915_oa_data_port_writes_coalescing_b_counter_config_bdw_len;
+extern const struct i915_oa_reg i915_oa_data_port_writes_coalescing_flex_eu_config_bdw[];
+extern const int i915_oa_data_port_writes_coalescing_flex_eu_config_bdw_len;
+extern const struct i915_oa_reg i915_oa_data_port_writes_coalescing_mux_config_1_0_subslice_mask_0x01_bdw[];
+extern const int i915_oa_data_port_writes_coalescing_mux_config_1_0_subslice_mask_0x01_bdw_len;
+
+/* BDW Metric set L3_1 */
+extern const struct i915_oa_reg i915_oa_l3_1_b_counter_config_bdw[];
+extern const int i915_oa_l3_1_b_counter_config_bdw_len;
+extern const struct i915_oa_reg i915_oa_l3_1_flex_eu_config_bdw[];
+extern const int i915_oa_l3_1_flex_eu_config_bdw_len;
+extern const struct i915_oa_reg i915_oa_l3_1_mux_config_bdw[];
+extern const int i915_oa_l3_1_mux_config_bdw_len;
+
+/* BDW Metric set L3_2 */
+extern const struct i915_oa_reg i915_oa_l3_2_b_counter_config_bdw[];
+extern const int i915_oa_l3_2_b_counter_config_bdw_len;
+extern const struct i915_oa_reg i915_oa_l3_2_flex_eu_config_bdw[];
+extern const int i915_oa_l3_2_flex_eu_config_bdw_len;
+extern const struct i915_oa_reg i915_oa_l3_2_mux_config_bdw[];
+extern const int i915_oa_l3_2_mux_config_bdw_len;
+
+/* BDW Metric set L3_3 */
+extern const struct i915_oa_reg i915_oa_l3_3_b_counter_config_bdw[];
+extern const int i915_oa_l3_3_b_counter_config_bdw_len;
+extern const struct i915_oa_reg i915_oa_l3_3_flex_eu_config_bdw[];
+extern const int i915_oa_l3_3_flex_eu_config_bdw_len;
+extern const struct i915_oa_reg i915_oa_l3_3_mux_config_bdw[];
+extern const int i915_oa_l3_3_mux_config_bdw_len;
+
+/* BDW Metric set L3_4 */
+extern const struct i915_oa_reg i915_oa_l3_4_b_counter_config_bdw[];
+extern const int i915_oa_l3_4_b_counter_config_bdw_len;
+extern const struct i915_oa_reg i915_oa_l3_4_flex_eu_config_bdw[];
+extern const int i915_oa_l3_4_flex_eu_config_bdw_len;
+extern const struct i915_oa_reg i915_oa_l3_4_mux_config_bdw[];
+extern const int i915_oa_l3_4_mux_config_bdw_len;
+
+/* BDW Metric set RasterizerAndPixelBackend */
+extern const struct i915_oa_reg i915_oa_rasterizer_and_pixel_backend_b_counter_config_bdw[];
+extern const int i915_oa_rasterizer_and_pixel_backend_b_counter_config_bdw_len;
+extern const struct i915_oa_reg i915_oa_rasterizer_and_pixel_backend_flex_eu_config_bdw[];
+extern const int i915_oa_rasterizer_and_pixel_backend_flex_eu_config_bdw_len;
+extern const struct i915_oa_reg i915_oa_rasterizer_and_pixel_backend_mux_config_bdw[];
+extern const int i915_oa_rasterizer_and_pixel_backend_mux_config_bdw_len;
+
+/* BDW Metric set Sampler_1 */
+extern const struct i915_oa_reg i915_oa_sampler_1_b_counter_config_bdw[];
+extern const int i915_oa_sampler_1_b_counter_config_bdw_len;
+extern const struct i915_oa_reg i915_oa_sampler_1_flex_eu_config_bdw[];
+extern const int i915_oa_sampler_1_flex_eu_config_bdw_len;
+extern const struct i915_oa_reg i915_oa_sampler_1_mux_config_bdw[];
+extern const int i915_oa_sampler_1_mux_config_bdw_len;
+
+/* BDW Metric set Sampler_2 */
+extern const struct i915_oa_reg i915_oa_sampler_2_b_counter_config_bdw[];
+extern const int i915_oa_sampler_2_b_counter_config_bdw_len;
+extern const struct i915_oa_reg i915_oa_sampler_2_flex_eu_config_bdw[];
+extern const int i915_oa_sampler_2_flex_eu_config_bdw_len;
+extern const struct i915_oa_reg i915_oa_sampler_2_mux_config_bdw[];
+extern const int i915_oa_sampler_2_mux_config_bdw_len;
+
+/* BDW Metric set TDL_1 */
+extern const struct i915_oa_reg i915_oa_tdl_1_b_counter_config_bdw[];
+extern const int i915_oa_tdl_1_b_counter_config_bdw_len;
+extern const struct i915_oa_reg i915_oa_tdl_1_flex_eu_config_bdw[];
+extern const int i915_oa_tdl_1_flex_eu_config_bdw_len;
+extern const struct i915_oa_reg i915_oa_tdl_1_mux_config_bdw[];
+extern const int i915_oa_tdl_1_mux_config_bdw_len;
+
+/* BDW Metric set TDL_2 */
+extern const struct i915_oa_reg i915_oa_tdl_2_b_counter_config_bdw[];
+extern const int i915_oa_tdl_2_b_counter_config_bdw_len;
+extern const struct i915_oa_reg i915_oa_tdl_2_flex_eu_config_bdw[];
+extern const int i915_oa_tdl_2_flex_eu_config_bdw_len;
+extern const struct i915_oa_reg i915_oa_tdl_2_mux_config_bdw[];
+extern const int i915_oa_tdl_2_mux_config_bdw_len;
+
 #endif

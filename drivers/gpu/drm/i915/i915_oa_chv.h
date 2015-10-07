@@ -35,4 +35,100 @@ extern const int i915_oa_3d_flex_eu_config_chv_len;
 extern const struct i915_oa_reg i915_oa_3d_mux_config_chv[];
 extern const int i915_oa_3d_mux_config_chv_len;
 
+/* CHV Compute Metrics Basic Gen8LP */
+extern const struct i915_oa_reg i915_oa_compute_b_counter_config_chv[];
+extern const int i915_oa_compute_b_counter_config_chv_len;
+extern const struct i915_oa_reg i915_oa_compute_flex_eu_config_chv[];
+extern const int i915_oa_compute_flex_eu_config_chv_len;
+extern const struct i915_oa_reg i915_oa_compute_mux_config_chv[];
+extern const int i915_oa_compute_mux_config_chv_len;
+
+/* CHV Render Metrics for 3D Pipeline Profile */
+extern const struct i915_oa_reg i915_oa_render_pipe_profile_b_counter_config_chv[];
+extern const int i915_oa_render_pipe_profile_b_counter_config_chv_len;
+extern const struct i915_oa_reg i915_oa_render_pipe_profile_flex_eu_config_chv[];
+extern const int i915_oa_render_pipe_profile_flex_eu_config_chv_len;
+extern const struct i915_oa_reg i915_oa_render_pipe_profile_mux_config_chv[];
+extern const int i915_oa_render_pipe_profile_mux_config_chv_len;
+
+/* CHV Metric set HDCAndSF */
+extern const struct i915_oa_reg i915_oa_hdc_and_sf_b_counter_config_chv[];
+extern const int i915_oa_hdc_and_sf_b_counter_config_chv_len;
+extern const struct i915_oa_reg i915_oa_hdc_and_sf_flex_eu_config_chv[];
+extern const int i915_oa_hdc_and_sf_flex_eu_config_chv_len;
+extern const struct i915_oa_reg i915_oa_hdc_and_sf_mux_config_chv[];
+extern const int i915_oa_hdc_and_sf_mux_config_chv_len;
+
+/* CHV Metric set L3_1 */
+extern const struct i915_oa_reg i915_oa_l3_1_b_counter_config_chv[];
+extern const int i915_oa_l3_1_b_counter_config_chv_len;
+extern const struct i915_oa_reg i915_oa_l3_1_flex_eu_config_chv[];
+extern const int i915_oa_l3_1_flex_eu_config_chv_len;
+extern const struct i915_oa_reg i915_oa_l3_1_mux_config_chv[];
+extern const int i915_oa_l3_1_mux_config_chv_len;
+
+/* CHV Metric set L3_2 */
+extern const struct i915_oa_reg i915_oa_l3_2_b_counter_config_chv[];
+extern const int i915_oa_l3_2_b_counter_config_chv_len;
+extern const struct i915_oa_reg i915_oa_l3_2_flex_eu_config_chv[];
+extern const int i915_oa_l3_2_flex_eu_config_chv_len;
+extern const struct i915_oa_reg i915_oa_l3_2_mux_config_chv[];
+extern const int i915_oa_l3_2_mux_config_chv_len;
+
+/* CHV Metric set L3_3 */
+extern const struct i915_oa_reg i915_oa_l3_3_b_counter_config_chv[];
+extern const int i915_oa_l3_3_b_counter_config_chv_len;
+extern const struct i915_oa_reg i915_oa_l3_3_flex_eu_config_chv[];
+extern const int i915_oa_l3_3_flex_eu_config_chv_len;
+extern const struct i915_oa_reg i915_oa_l3_3_mux_config_chv[];
+extern const int i915_oa_l3_3_mux_config_chv_len;
+
+/* CHV Metric set L3_4 */
+extern const struct i915_oa_reg i915_oa_l3_4_b_counter_config_chv[];
+extern const int i915_oa_l3_4_b_counter_config_chv_len;
+extern const struct i915_oa_reg i915_oa_l3_4_flex_eu_config_chv[];
+extern const int i915_oa_l3_4_flex_eu_config_chv_len;
+extern const struct i915_oa_reg i915_oa_l3_4_mux_config_chv[];
+extern const int i915_oa_l3_4_mux_config_chv_len;
+
+/* CHV Metric set RasterizerAndPixelBackend */
+extern const struct i915_oa_reg i915_oa_rasterizer_and_pixel_backend_b_counter_config_chv[];
+extern const int i915_oa_rasterizer_and_pixel_backend_b_counter_config_chv_len;
+extern const struct i915_oa_reg i915_oa_rasterizer_and_pixel_backend_flex_eu_config_chv[];
+extern const int i915_oa_rasterizer_and_pixel_backend_flex_eu_config_chv_len;
+extern const struct i915_oa_reg i915_oa_rasterizer_and_pixel_backend_mux_config_chv[];
+extern const int i915_oa_rasterizer_and_pixel_backend_mux_config_chv_len;
+
+/* CHV Metric set Sampler_1 */
+extern const struct i915_oa_reg i915_oa_sampler_1_b_counter_config_chv[];
+extern const int i915_oa_sampler_1_b_counter_config_chv_len;
+extern const struct i915_oa_reg i915_oa_sampler_1_flex_eu_config_chv[];
+extern const int i915_oa_sampler_1_flex_eu_config_chv_len;
+extern const struct i915_oa_reg i915_oa_sampler_1_mux_config_chv[];
+extern const int i915_oa_sampler_1_mux_config_chv_len;
+
+/* CHV Metric set Sampler_2 */
+extern const struct i915_oa_reg i915_oa_sampler_2_b_counter_config_chv[];
+extern const int i915_oa_sampler_2_b_counter_config_chv_len;
+extern const struct i915_oa_reg i915_oa_sampler_2_flex_eu_config_chv[];
+extern const int i915_oa_sampler_2_flex_eu_config_chv_len;
+extern const struct i915_oa_reg i915_oa_sampler_2_mux_config_chv[];
+extern const int i915_oa_sampler_2_mux_config_chv_len;
+
+/* CHV Metric set TDL_1 */
+extern const struct i915_oa_reg i915_oa_tdl_1_b_counter_config_chv[];
+extern const int i915_oa_tdl_1_b_counter_config_chv_len;
+extern const struct i915_oa_reg i915_oa_tdl_1_flex_eu_config_chv[];
+extern const int i915_oa_tdl_1_flex_eu_config_chv_len;
+extern const struct i915_oa_reg i915_oa_tdl_1_mux_config_chv[];
+extern const int i915_oa_tdl_1_mux_config_chv_len;
+
+/* CHV Metric set TDL_2 */
+extern const struct i915_oa_reg i915_oa_tdl_2_b_counter_config_chv[];
+extern const int i915_oa_tdl_2_b_counter_config_chv_len;
+extern const struct i915_oa_reg i915_oa_tdl_2_flex_eu_config_chv[];
+extern const int i915_oa_tdl_2_flex_eu_config_chv_len;
+extern const struct i915_oa_reg i915_oa_tdl_2_mux_config_chv[];
+extern const int i915_oa_tdl_2_mux_config_chv_len;
+
 #endif
