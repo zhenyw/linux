@@ -2059,7 +2059,7 @@ void i915_oa_context_pin_notify(struct drm_i915_private *dev_priv,
 	mutex_unlock(&dev_priv->perf.lock);
 }
 
-static void gen8_legacy_ctx_switch_notify(struct drm_i915_gem_request *req)
+static void gen8_legacy_ctx_switch_unlocked(struct drm_i915_gem_request *req)
 {
 	struct intel_engine_cs *ring = req->ring;
 	struct drm_i915_private *dev_priv = ring->dev->dev_private;
@@ -2095,19 +2095,6 @@ static void gen8_legacy_ctx_switch_notify(struct drm_i915_gem_request *req)
 	atomic_set(&ring->oa_state_dirty, false);
 }
 
-static void i915_oa_legacy_ctx_switch_notify_locked(struct drm_i915_gem_request *req)
-{
-	struct intel_engine_cs *ring = req->ring;
-	struct drm_i915_private *dev_priv = ring->dev->dev_private;
-
-	if (dev_priv->perf.oa.ops.legacy_ctx_switch_notify == NULL)
-		return;
-
-	if (dev_priv->perf.oa.exclusive_event &&
-	    dev_priv->perf.oa.exclusive_event->enabled)
-		dev_priv->perf.oa.ops.legacy_ctx_switch_notify(req);
-}
-
 void i915_oa_legacy_ctx_switch_notify(struct drm_i915_gem_request *req)
 {
 	struct intel_engine_cs *ring = req->ring;
@@ -2116,13 +2103,29 @@ void i915_oa_legacy_ctx_switch_notify(struct drm_i915_gem_request *req)
 	if (!dev_priv->perf.initialized)
 		return;
 
-	mutex_lock(&dev_priv->perf.lock);
-	i915_oa_legacy_ctx_switch_notify_locked(req);
-	mutex_unlock(&dev_priv->perf.lock);
+	if (dev_priv->perf.oa.ops.legacy_ctx_switch_unlocked == NULL)
+		return;
+
+	if (dev_priv->perf.oa.exclusive_event &&
+	    dev_priv->perf.oa.exclusive_event->enabled) {
+
+		/* XXX: We don't take a lock here and this may run
+		 * async with respect to event methods. Notably we
+		 * don't want to block context switches by long i915
+		 * perf read() operations.
+		 *
+		 * It's expect to always be safe to read the
+		 * dev_priv->perf state needed here, and expected to
+		 * be benign to redundantly update the state if the OA
+		 * unit has been disabled since oa_state_dirty was
+		 * last set.
+		 */
+		dev_priv->perf.oa.ops.legacy_ctx_switch_unlocked(req);
+	}
 }
 
-static void i915_oa_update_reg_state_locked(struct intel_engine_cs *ring,
-					    uint32_t *reg_state)
+static void gen8_update_reg_state_unlocked(struct intel_engine_cs *ring,
+					   uint32_t *reg_state)
 {
 	struct drm_i915_private *dev_priv = ring->dev->dev_private;
 	const struct i915_oa_reg *flex_regs = dev_priv->perf.oa.flex_regs;
@@ -2169,10 +2172,17 @@ void i915_oa_update_reg_state(struct intel_engine_cs *ring, uint32_t *reg_state)
 	if (!dev_priv->perf.initialized)
 		return;
 
-	/* XXX: I'm a bit concerned about the contention with read()s here */
-	mutex_lock(&dev_priv->perf.lock);
-	i915_oa_update_reg_state_locked(ring, reg_state);
-	mutex_unlock(&dev_priv->perf.lock);
+	/* XXX: We don't take a lock here and this may run async with
+	 * respect to event methods. Notably we don't want to block
+	 * context switches by long i915 perf read() operations.
+	 *
+	 * It's expect to always be safe to read the dev_priv->perf
+	 * state needed here, and expected to be benign to redundantly
+	 * update the state if the OA unit has been disabled since
+	 * oa_state_dirty was last set.
+	 */
+
+	gen8_update_reg_state_unlocked(ring, reg_state);
 }
 
 static ssize_t i915_perf_read_locked(struct i915_perf_event *event,
@@ -2598,8 +2608,8 @@ void i915_perf_init(struct drm_device *dev)
 		dev_priv->perf.oa.oa_formats = gen8_plus_oa_formats;
 
 		if (!i915.enable_execlists) {
-			dev_priv->perf.oa.ops.legacy_ctx_switch_notify =
-				gen8_legacy_ctx_switch_notify;
+			dev_priv->perf.oa.ops.legacy_ctx_switch_unlocked =
+				gen8_legacy_ctx_switch_unlocked;
 		}
 
 		if (IS_BROADWELL(dev)) {
