@@ -1779,7 +1779,7 @@ struct i915_oa_ops {
 	void (*update_oacontrol)(struct drm_i915_private *dev_priv);
 	void (*update_specific_hw_ctx_id)(struct drm_i915_private *dev_priv,
 					  u32 ctx_id);
-	void (*legacy_ctx_switch_notify)(struct drm_i915_gem_request *req);
+	void (*legacy_ctx_switch_unlocked)(struct drm_i915_gem_request *req);
 	void (*read)(struct i915_perf_event *event,
 		     struct i915_perf_read_state *read_state);
 	bool (*oa_buffer_is_empty)(struct drm_i915_private *dev_priv);
