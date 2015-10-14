@@ -1777,7 +1777,7 @@ struct i915_perf_event {
 
 struct i915_oa_ops {
 	void (*init_oa_buffer)(struct drm_i915_private *dev_priv);
-	void (*enable_metric_set)(struct drm_i915_private *dev_priv);
+	int (*enable_metric_set)(struct drm_i915_private *dev_priv);
 	void (*disable_metric_set)(struct drm_i915_private *dev_priv);
 	void (*oa_enable)(struct drm_i915_private *dev_priv);
 	void (*oa_disable)(struct drm_i915_private *dev_priv);
