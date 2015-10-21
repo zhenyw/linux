@@ -115,6 +115,14 @@ extern const int i915_oa_data_port_writes_coalescing_flex_eu_config_bdw_len;
 extern const struct i915_oa_reg i915_oa_data_port_writes_coalescing_mux_config_1_0_subslice_mask_0x01_bdw[];
 extern const int i915_oa_data_port_writes_coalescing_mux_config_1_0_subslice_mask_0x01_bdw_len;
 
+/* BDW Metric set HDCAndSF */
+extern const struct i915_oa_reg i915_oa_hdc_and_sf_b_counter_config_bdw[];
+extern const int i915_oa_hdc_and_sf_b_counter_config_bdw_len;
+extern const struct i915_oa_reg i915_oa_hdc_and_sf_flex_eu_config_bdw[];
+extern const int i915_oa_hdc_and_sf_flex_eu_config_bdw_len;
+extern const struct i915_oa_reg i915_oa_hdc_and_sf_mux_config_bdw[];
+extern const int i915_oa_hdc_and_sf_mux_config_bdw_len;
+
 /* BDW Metric set L3_1 */
 extern const struct i915_oa_reg i915_oa_l3_1_b_counter_config_bdw[];
 extern const int i915_oa_l3_1_b_counter_config_bdw_len;
