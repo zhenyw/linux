@@ -1295,6 +1295,11 @@ void i915_perf_init(struct drm_device *dev)
 	if (!IS_HASWELL(dev))
 		return;
 
+	dev_priv->perf.metrics_kobj =
+		kobject_create_and_add("metrics", &dev->primary->kdev->kobj);
+	if (!dev_priv->perf.metrics_kobj)
+		return;
+
 	hrtimer_init(&dev_priv->perf.oa.poll_check_timer,
 		     CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 	dev_priv->perf.oa.poll_check_timer.function = oa_poll_check_timer_cb;
@@ -1322,9 +1327,15 @@ void i915_perf_init(struct drm_device *dev)
 	dev_priv->perf.oa.n_builtin_sets =
 		i915_oa_n_builtin_metric_sets_hsw;
 
-	dev_priv->perf.oa.oa_formats = hsw_oa_formats;
+	if (i915_perf_init_sysfs_hsw(dev_priv)) {
+		kobject_put(dev_priv->perf.metrics_kobj);
+		dev_priv->perf.metrics_kobj = NULL;
+		return;
+	}
 
 	dev_priv->perf.initialized = true;
+
+	return;
 }
 
 void i915_perf_fini(struct drm_device *dev)
@@ -1333,6 +1344,11 @@ void i915_perf_fini(struct drm_device *dev)
 
 	if (!dev_priv->perf.initialized)
 		return;
+
+	i915_perf_deinit_sysfs_hsw(dev_priv);
+
+	kobject_put(dev_priv->perf.metrics_kobj);
+	dev_priv->perf.metrics_kobj = NULL;
 
 	dev_priv->perf.oa.ops.init_oa_buffer = NULL;
 

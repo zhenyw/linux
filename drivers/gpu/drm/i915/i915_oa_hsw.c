@@ -24,6 +24,8 @@
  *
  */
 
+#include <linux/sysfs.h>
+
 #include "i915_drv.h"
 
 enum metric_set_id {
@@ -129,4 +131,47 @@ int i915_oa_select_metric_set_hsw(struct drm_i915_private *dev_priv)
 	default:
 		return -ENODEV;
 	}
+}
+
+static ssize_t
+show_render_basic_id(struct device *kdev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%d\n", METRIC_SET_ID_RENDER_BASIC);
+}
+
+static struct device_attribute dev_attr_render_basic_id = {
+	.attr = { .name = "id", .mode = S_IRUGO },
+	.show = show_render_basic_id,
+	.store = NULL,
+};
+
+static struct attribute *attrs_render_basic[] = {
+	&dev_attr_render_basic_id.attr,
+	NULL,
+};
+
+static struct attribute_group group_render_basic = {
+	.name = "403d8832-1a27-4aa6-a64e-f5389ce7b212",
+	.attrs =  attrs_render_basic,
+};
+
+int
+i915_perf_init_sysfs_hsw(struct drm_i915_private *dev_priv)
+{
+	int ret;
+
+	ret = sysfs_create_group(dev_priv->perf.metrics_kobj, &group_render_basic);
+	if (ret)
+		goto error_render_basic;
+
+	return 0;
+
+error_render_basic:
+	return ret;
+}
+
+void
+i915_perf_deinit_sysfs_hsw(struct drm_i915_private *dev_priv)
+{
+	sysfs_remove_group(dev_priv->perf.metrics_kobj, &group_render_basic);
 }
