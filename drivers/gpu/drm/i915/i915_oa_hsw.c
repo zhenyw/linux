@@ -24,6 +24,8 @@
  *
  */
 
+#include <linux/sysfs.h>
+
 #include "i915_drv.h"
 
 static const struct i915_oa_reg b_counter_config_3d[] = {
@@ -459,4 +461,265 @@ int i915_oa_select_metric_set_hsw(struct drm_i915_private *dev_priv)
         default:
                 return -ENODEV;
         }
+}
+
+static ssize_t
+show_3d_guid(struct device *kdev, struct device_attribute *attr, char *buf)
+{
+        return sprintf(buf, "403d8832-1a27-4aa6-a64e-f5389ce7b212\n");
+}
+
+static struct device_attribute dev_attr_3d_guid = {
+        .attr = { .name = "guid", .mode = S_IRUGO },
+        .show = show_3d_guid,
+        .store = NULL,
+};
+
+static ssize_t
+show_3d_id(struct device *kdev, struct device_attribute *attr, char *buf)
+{
+        return sprintf(buf, "%d\n", I915_OA_METRICS_SET_3D);
+}
+
+static struct device_attribute dev_attr_3d_id = {
+        .attr = { .name = "id", .mode = S_IRUGO },
+        .show = show_3d_id,
+        .store = NULL,
+};
+
+static struct attribute *attrs_3d[] = {
+        &dev_attr_3d_guid.attr,
+        &dev_attr_3d_id.attr,
+        NULL,
+};
+
+static struct attribute_group group_3d = {
+        .name = "3d",
+        .attrs =  attrs_3d,
+};
+
+static ssize_t
+show_compute_guid(struct device *kdev, struct device_attribute *attr, char *buf)
+{
+        return sprintf(buf, "39ad14bc-2380-45c4-91eb-fbcb3aa7ae7b\n");
+}
+
+static struct device_attribute dev_attr_compute_guid = {
+        .attr = { .name = "guid", .mode = S_IRUGO },
+        .show = show_compute_guid,
+        .store = NULL,
+};
+
+static ssize_t
+show_compute_id(struct device *kdev, struct device_attribute *attr, char *buf)
+{
+        return sprintf(buf, "%d\n", I915_OA_METRICS_SET_COMPUTE);
+}
+
+static struct device_attribute dev_attr_compute_id = {
+        .attr = { .name = "id", .mode = S_IRUGO },
+        .show = show_compute_id,
+        .store = NULL,
+};
+
+static struct attribute *attrs_compute[] = {
+        &dev_attr_compute_guid.attr,
+        &dev_attr_compute_id.attr,
+        NULL,
+};
+
+static struct attribute_group group_compute = {
+        .name = "compute",
+        .attrs =  attrs_compute,
+};
+
+static ssize_t
+show_compute_extended_guid(struct device *kdev, struct device_attribute *attr, char *buf)
+{
+        return sprintf(buf, "3865be28-6982-49fe-9494-e4d1b4795413\n");
+}
+
+static struct device_attribute dev_attr_compute_extended_guid = {
+        .attr = { .name = "guid", .mode = S_IRUGO },
+        .show = show_compute_extended_guid,
+        .store = NULL,
+};
+
+static ssize_t
+show_compute_extended_id(struct device *kdev, struct device_attribute *attr, char *buf)
+{
+        return sprintf(buf, "%d\n", I915_OA_METRICS_SET_COMPUTE_EXTENDED);
+}
+
+static struct device_attribute dev_attr_compute_extended_id = {
+        .attr = { .name = "id", .mode = S_IRUGO },
+        .show = show_compute_extended_id,
+        .store = NULL,
+};
+
+static struct attribute *attrs_compute_extended[] = {
+        &dev_attr_compute_extended_guid.attr,
+        &dev_attr_compute_extended_id.attr,
+        NULL,
+};
+
+static struct attribute_group group_compute_extended = {
+        .name = "compute_extended",
+        .attrs =  attrs_compute_extended,
+};
+
+static ssize_t
+show_memory_reads_guid(struct device *kdev, struct device_attribute *attr, char *buf)
+{
+        return sprintf(buf, "bb5ed49b-2497-4095-94f6-26ba294db88a\n");
+}
+
+static struct device_attribute dev_attr_memory_reads_guid = {
+        .attr = { .name = "guid", .mode = S_IRUGO },
+        .show = show_memory_reads_guid,
+        .store = NULL,
+};
+
+static ssize_t
+show_memory_reads_id(struct device *kdev, struct device_attribute *attr, char *buf)
+{
+        return sprintf(buf, "%d\n", I915_OA_METRICS_SET_MEMORY_READS);
+}
+
+static struct device_attribute dev_attr_memory_reads_id = {
+        .attr = { .name = "id", .mode = S_IRUGO },
+        .show = show_memory_reads_id,
+        .store = NULL,
+};
+
+static struct attribute *attrs_memory_reads[] = {
+        &dev_attr_memory_reads_guid.attr,
+        &dev_attr_memory_reads_id.attr,
+        NULL,
+};
+
+static struct attribute_group group_memory_reads = {
+        .name = "memory_reads",
+        .attrs =  attrs_memory_reads,
+};
+
+static ssize_t
+show_memory_writes_guid(struct device *kdev, struct device_attribute *attr, char *buf)
+{
+        return sprintf(buf, "3358d639-9b5f-45ab-976d-9b08cbfc6240\n");
+}
+
+static struct device_attribute dev_attr_memory_writes_guid = {
+        .attr = { .name = "guid", .mode = S_IRUGO },
+        .show = show_memory_writes_guid,
+        .store = NULL,
+};
+
+static ssize_t
+show_memory_writes_id(struct device *kdev, struct device_attribute *attr, char *buf)
+{
+        return sprintf(buf, "%d\n", I915_OA_METRICS_SET_MEMORY_WRITES);
+}
+
+static struct device_attribute dev_attr_memory_writes_id = {
+        .attr = { .name = "id", .mode = S_IRUGO },
+        .show = show_memory_writes_id,
+        .store = NULL,
+};
+
+static struct attribute *attrs_memory_writes[] = {
+        &dev_attr_memory_writes_guid.attr,
+        &dev_attr_memory_writes_id.attr,
+        NULL,
+};
+
+static struct attribute_group group_memory_writes = {
+        .name = "memory_writes",
+        .attrs =  attrs_memory_writes,
+};
+
+static ssize_t
+show_sampler_balance_guid(struct device *kdev, struct device_attribute *attr, char *buf)
+{
+        return sprintf(buf, "bc274488-b4b6-40c7-90da-b77d7ad16189\n");
+}
+
+static struct device_attribute dev_attr_sampler_balance_guid = {
+        .attr = { .name = "guid", .mode = S_IRUGO },
+        .show = show_sampler_balance_guid,
+        .store = NULL,
+};
+
+static ssize_t
+show_sampler_balance_id(struct device *kdev, struct device_attribute *attr, char *buf)
+{
+        return sprintf(buf, "%d\n", I915_OA_METRICS_SET_SAMPLER_BALANCE);
+}
+
+static struct device_attribute dev_attr_sampler_balance_id = {
+        .attr = { .name = "id", .mode = S_IRUGO },
+        .show = show_sampler_balance_id,
+        .store = NULL,
+};
+
+static struct attribute *attrs_sampler_balance[] = {
+        &dev_attr_sampler_balance_guid.attr,
+        &dev_attr_sampler_balance_id.attr,
+        NULL,
+};
+
+static struct attribute_group group_sampler_balance = {
+        .name = "sampler_balance",
+        .attrs =  attrs_sampler_balance,
+};
+
+int
+i915_perf_init_sysfs_hsw(struct drm_i915_private *dev_priv)
+{
+        int ret;
+
+        ret = sysfs_create_group(dev_priv->perf.metrics_kobj, &group_3d);
+        if (ret)
+                goto error_3d;
+        ret = sysfs_create_group(dev_priv->perf.metrics_kobj, &group_compute);
+        if (ret)
+                goto error_compute;
+        ret = sysfs_create_group(dev_priv->perf.metrics_kobj, &group_compute_extended);
+        if (ret)
+                goto error_compute_extended;
+        ret = sysfs_create_group(dev_priv->perf.metrics_kobj, &group_memory_reads);
+        if (ret)
+                goto error_memory_reads;
+        ret = sysfs_create_group(dev_priv->perf.metrics_kobj, &group_memory_writes);
+        if (ret)
+                goto error_memory_writes;
+        ret = sysfs_create_group(dev_priv->perf.metrics_kobj, &group_sampler_balance);
+        if (ret)
+                goto error_sampler_balance;
+
+        return 0;
+
+error_sampler_balance:
+        sysfs_remove_group(dev_priv->perf.metrics_kobj, &group_memory_writes);
+error_memory_writes:
+        sysfs_remove_group(dev_priv->perf.metrics_kobj, &group_memory_reads);
+error_memory_reads:
+        sysfs_remove_group(dev_priv->perf.metrics_kobj, &group_compute_extended);
+error_compute_extended:
+        sysfs_remove_group(dev_priv->perf.metrics_kobj, &group_compute);
+error_compute:
+        sysfs_remove_group(dev_priv->perf.metrics_kobj, &group_3d);
+error_3d:
+        return ret;
+}
+
+void
+i915_perf_deinit_sysfs_hsw(struct drm_i915_private *dev_priv)
+{
+        sysfs_remove_group(dev_priv->perf.metrics_kobj, &group_3d);
+        sysfs_remove_group(dev_priv->perf.metrics_kobj, &group_compute);
+        sysfs_remove_group(dev_priv->perf.metrics_kobj, &group_compute_extended);
+        sysfs_remove_group(dev_priv->perf.metrics_kobj, &group_memory_reads);
+        sysfs_remove_group(dev_priv->perf.metrics_kobj, &group_memory_writes);
+        sysfs_remove_group(dev_priv->perf.metrics_kobj, &group_sampler_balance);
 }
