@@ -829,8 +829,10 @@ static void skl_disable_metric_set(struct drm_i915_private *dev_priv)
 #warning "SKL: Do we need to write to CHICKEN2 to disable DOP clock gating when idle? (vpg does this)"
 }
 
-static void gen7_update_oacontrol(struct drm_i915_private *dev_priv)
+static void gen7_update_oacontrol_locked(struct drm_i915_private *dev_priv)
 {
+	assert_spin_locked(&dev_priv->perf.hook_lock);
+
 	if (dev_priv->perf.oa.exclusive_stream->enabled) {
 		unsigned long ctx_id = 0;
 		bool pinning_ok = false;
@@ -867,9 +869,12 @@ static void gen7_update_oacontrol(struct drm_i915_private *dev_priv)
 
 static void gen7_oa_enable(struct drm_i915_private *dev_priv)
 {
+	unsigned long flags;
 	u32 oastatus1, tail;
 
-	gen7_update_oacontrol(dev_priv);
+	spin_lock_irqsave(&dev_priv->perf.hook_lock, flags);
+	gen7_update_oacontrol_locked(dev_priv);
+	spin_unlock_irqrestore(&dev_priv->perf.hook_lock, flags);
 
 	/* Reset the head ptr so we don't forward reports from before now. */
 	oastatus1 = I915_READ(GEN7_OASTATUS1);
@@ -998,18 +1003,22 @@ static int i915_oa_stream_init(struct i915_perf_stream *stream,
 	return 0;
 }
 
-static void gen7_update_specific_hw_ctx_id(struct drm_i915_private *dev_priv,
-					   u32 ctx_id)
+static void gen7_update_hw_ctx_id_locked(struct drm_i915_private *dev_priv,
+					 u32 ctx_id)
 {
+	assert_spin_locked(&dev_priv->perf.hook_lock);
+
 	dev_priv->perf.oa.specific_ctx_id = ctx_id;
-	gen7_update_oacontrol(dev_priv);
+	gen7_update_oacontrol_locked(dev_priv);
 }
 
 static void i915_oa_context_pin_notify_locked(struct drm_i915_private *dev_priv,
 					      struct intel_context *context)
 {
+	assert_spin_locked(&dev_priv->perf.hook_lock);
+
 	if (i915.enable_execlists ||
-	    dev_priv->perf.oa.ops.update_specific_hw_ctx_id == NULL)
+	    dev_priv->perf.oa.ops.update_hw_ctx_id_locked == NULL)
 		return;
 
 	if (dev_priv->perf.oa.exclusive_stream &&
@@ -1018,19 +1027,21 @@ static void i915_oa_context_pin_notify_locked(struct drm_i915_private *dev_priv,
 			context->legacy_hw_ctx.rcs_state;
 		u32 ctx_id = i915_gem_obj_ggtt_offset(obj);
 
-		dev_priv->perf.oa.ops.update_specific_hw_ctx_id(dev_priv, ctx_id);
+		dev_priv->perf.oa.ops.update_hw_ctx_id_locked(dev_priv, ctx_id);
 	}
 }
 
 void i915_oa_context_pin_notify(struct drm_i915_private *dev_priv,
 				struct intel_context *context)
 {
+	unsigned long flags;
+
 	if (!dev_priv->perf.initialized)
 		return;
 
-	mutex_lock(&dev_priv->perf.lock);
+	spin_lock_irqsave(&dev_priv->perf.hook_lock, flags);
 	i915_oa_context_pin_notify_locked(dev_priv, context);
-	mutex_unlock(&dev_priv->perf.lock);
+	spin_unlock_irqrestore(&dev_priv->perf.hook_lock, flags);
 }
 
 static void gen8_legacy_ctx_switch_unlocked(struct intel_engine_cs *ring)
@@ -1571,6 +1582,7 @@ void i915_perf_init(struct drm_device *dev)
 
 	INIT_LIST_HEAD(&dev_priv->perf.streams);
 	mutex_init(&dev_priv->perf.lock);
+	spin_lock_init(&dev_priv->perf.hook_lock);
 
 	if (IS_HASWELL(dev)) {
 		dev_priv->perf.oa.ops.init_oa_buffer = gen7_init_oa_buffer;
@@ -1578,7 +1590,7 @@ void i915_perf_init(struct drm_device *dev)
 		dev_priv->perf.oa.ops.disable_metric_set = hsw_disable_metric_set;
 		dev_priv->perf.oa.ops.oa_enable = gen7_oa_enable;
 		dev_priv->perf.oa.ops.oa_disable = gen7_oa_disable;
-		dev_priv->perf.oa.ops.update_specific_hw_ctx_id = gen7_update_specific_hw_ctx_id;
+		dev_priv->perf.oa.ops.update_hw_ctx_id_locked = gen7_update_hw_ctx_id_locked;
 		dev_priv->perf.oa.ops.read = gen7_oa_read;
 		dev_priv->perf.oa.ops.oa_buffer_is_empty = gen7_oa_buffer_is_empty;
 

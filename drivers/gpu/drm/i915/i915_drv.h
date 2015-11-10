@@ -1767,8 +1767,8 @@ struct i915_oa_ops {
 	void (*oa_enable)(struct drm_i915_private *dev_priv);
 	void (*oa_disable)(struct drm_i915_private *dev_priv);
 	void (*update_oacontrol)(struct drm_i915_private *dev_priv);
-	void (*update_specific_hw_ctx_id)(struct drm_i915_private *dev_priv,
-					  u32 ctx_id);
+	void (*update_hw_ctx_id_locked)(struct drm_i915_private *dev_priv,
+					u32 ctx_id);
 	void (*legacy_ctx_switch_unlocked)(struct intel_engine_cs *ring);
 	void (*read)(struct i915_perf_stream *stream,
 		     struct i915_perf_read_state *read_state);
@@ -2030,9 +2030,10 @@ struct drm_i915_private {
 		struct kobject *metrics_kobj;
 
 		struct mutex lock;
-
 		struct list_head streams;
 		
+		spinlock_t hook_lock;
+
 		struct {
 			struct i915_perf_stream *exclusive_stream;
 
