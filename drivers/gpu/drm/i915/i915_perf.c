@@ -95,105 +95,6 @@ struct perf_open_properties
 	u32 oa_period_exponent;
 };
 
-static int read_properties(struct drm_i915_private *dev_priv,
-			   u64 __user *uprops,
-			   u32 n_props,
-			   struct perf_open_properties *props)
-{
-	u64 __user *uprop = uprops;
-	int i;
-
-	memset(props, 0, sizeof(struct perf_open_properties));
-
-	if (!n_props) {
-		DRM_ERROR("No i915 perf properties given");
-		return -EINVAL;
-	}
-
-	if (n_props > DRM_I915_PERF_PROP_MAX) {
-		DRM_ERROR("More i915 perf properties specified than exist");
-		return -EINVAL;
-	}
-
-	for (i = 0; i < n_props; i++) {
-		u64 id, value;
-		int ret;
-
-		ret = get_user(id, (u64 __user *)uprop);
-		if (ret)
-			return ret;
-
-		if (id == 0 || id >= DRM_I915_PERF_PROP_MAX) {
-			DRM_ERROR("Unknown i915 perf property ID");
-			return -EINVAL;
-		}
-
-		ret = get_user(value, (u64 __user *)uprop + 1);
-		if (ret)
-			return ret;
-
-		switch ((enum drm_i915_perf_property_id)id) {
-		case DRM_I915_PERF_CTX_HANDLE_PROP:
-			props->single_context = 1;
-			props->ctx_handle = value;
-			break;
-		case DRM_I915_PERF_SAMPLE_OA_PROP:
-			props->sample_flags |= SAMPLE_OA_REPORT;
-			break;
-		case DRM_I915_PERF_OA_METRICS_SET_PROP:
-			if (value == 0 || value >= I915_OA_METRICS_SET_MAX) {
-				DRM_ERROR("Unknown OA metric set ID");
-				return -EINVAL;
-			}
-			props->metrics_set = value;
-			break;
-		case DRM_I915_PERF_OA_FORMAT_PROP:
-			if (value == 0 || value >= I915_OA_FORMAT_MAX) {
-				DRM_ERROR("Invalid OA report format\n");
-				return -EINVAL;
-			}
-			if (!dev_priv->perf.oa.oa_formats[value].size) {
-				DRM_ERROR("Invalid OA report format\n");
-				return -EINVAL;
-			}
-			props->oa_format = value;
-			break;
-		case DRM_I915_PERF_OA_EXPONENT_PROP:
-			if (value > OA_EXPONENT_MAX)
-				return -EINVAL;
-
-			/* NB: The exponent represents a period as follows:
-			 *
-			 *   80ns * 2^(period_exponent + 1)
-			 *
-			 * Theoretically we can program the OA unit to sample
-			 * every 160ns but don't allow that by default unless
-			 * root.
-			 *
-			 * Referring to perf's
-			 * kernel.perf_event_max_sample_rate for a precedent
-			 * (100000 by default); with an OA exponent of 6 we get
-			 * a period of 10.240 microseconds -just under 100000Hz
-			 */
-			if (value < i915_oa_min_timer_exponent &&
-			    !capable(CAP_SYS_ADMIN)) {
-				DRM_ERROR("Sampling period too high without root privileges\n");
-				return -EACCES;
-			}
-
-			props->oa_periodic = true;
-			props->oa_period_exponent = value;
-			break;
-		case DRM_I915_PERF_PROP_MAX:
-			BUG();
-		}
-
-		uprop += 2;
-	}
-
-	return 0;
-}
-
 static bool gen8_oa_buffer_is_empty(struct drm_i915_private *dev_priv)
 {
 	u32 head = I915_READ(GEN8_OAHEADPTR);
@@ -1381,37 +1282,20 @@ lookup_context(struct drm_i915_private *dev_priv,
 	return NULL;
 }
 
-int i915_perf_open_ioctl_locked(struct drm_device *dev, void *data,
+int i915_perf_open_ioctl_locked(struct drm_device *dev,
+				struct drm_i915_perf_open_param *param,
+				struct perf_open_properties *props,
 				struct drm_file *file)
 {
 	struct drm_i915_private *dev_priv = dev->dev_private;
-	struct drm_i915_perf_open_param *param = data;
-	struct perf_open_properties props;
-	u32 known_open_flags = 0;
 	struct intel_context *specific_ctx = NULL;
 	struct i915_perf_stream *stream = NULL;
 	unsigned long f_flags = 0;
 	int stream_fd;
 	int ret = 0;
 
-	known_open_flags = I915_PERF_FLAG_FD_CLOEXEC |
-			   I915_PERF_FLAG_FD_NONBLOCK |
-			   I915_PERF_FLAG_DISABLED;
-	if (param->flags & ~known_open_flags) {
-		DRM_ERROR("Unknown drm_i915_perf_open_param flag\n");
-		ret = -EINVAL;
-		goto err;
-	}
-
-	ret = read_properties(dev_priv,
-			      to_user_ptr(param->properties),
-			      param->n_properties,
-			      &props);
-	if (ret)
-		goto err;
-
-	if (props.single_context) {
-		u32 ctx_handle = props.ctx_handle;
+	if (props->single_context) {
+		u32 ctx_handle = props->ctx_handle;
 
 		specific_ctx = lookup_context(dev_priv, file->filp, ctx_handle);
 		if (!specific_ctx) {
@@ -1440,13 +1324,13 @@ int i915_perf_open_ioctl_locked(struct drm_device *dev, void *data,
 		goto err_ctx;
 	}
 
-	stream->sample_flags = props.sample_flags;
+	stream->sample_flags = props->sample_flags;
 
 	stream->sample_size = sizeof(struct drm_i915_perf_record_header);
 
-	if (props.sample_flags & SAMPLE_OA_REPORT) {
+	if (props->sample_flags & SAMPLE_OA_REPORT) {
 		int report_size =
-			dev_priv->perf.oa.oa_formats[props.oa_format].size;
+			dev_priv->perf.oa.oa_formats[props->oa_format].size;
 
 		stream->sample_size += report_size;
 	}
@@ -1455,7 +1339,7 @@ int i915_perf_open_ioctl_locked(struct drm_device *dev, void *data,
 	stream->ctx = specific_ctx;
 
 	if (stream->sample_flags & SAMPLE_OA_REPORT) {
-		ret = i915_oa_stream_init(stream, param, &props);
+		ret = i915_oa_stream_init(stream, param, props);
 		if (ret)
 			goto err_alloc;
 	} else {
@@ -1503,14 +1387,131 @@ err:
 	return ret;
 }
 
+static int read_properties_unlocked(struct drm_i915_private *dev_priv,
+				    u64 __user *uprops,
+				    u32 n_props,
+				    struct perf_open_properties *props)
+{
+	u64 __user *uprop = uprops;
+	int i;
+
+	memset(props, 0, sizeof(struct perf_open_properties));
+
+	if (!n_props) {
+		DRM_ERROR("No i915 perf properties given");
+		return -EINVAL;
+	}
+
+	if (n_props > DRM_I915_PERF_PROP_MAX) {
+		DRM_ERROR("More i915 perf properties specified than exist");
+		return -EINVAL;
+	}
+
+	for (i = 0; i < n_props; i++) {
+		u64 id, value;
+		int ret;
+
+		ret = get_user(id, (u64 __user *)uprop);
+		if (ret)
+			return ret;
+
+		if (id == 0 || id >= DRM_I915_PERF_PROP_MAX) {
+			DRM_ERROR("Unknown i915 perf property ID");
+			return -EINVAL;
+		}
+
+		ret = get_user(value, (u64 __user *)uprop + 1);
+		if (ret)
+			return ret;
+
+		switch ((enum drm_i915_perf_property_id)id) {
+		case DRM_I915_PERF_CTX_HANDLE_PROP:
+			props->single_context = 1;
+			props->ctx_handle = value;
+			break;
+		case DRM_I915_PERF_SAMPLE_OA_PROP:
+			props->sample_flags |= SAMPLE_OA_REPORT;
+			break;
+		case DRM_I915_PERF_OA_METRICS_SET_PROP:
+			if (value == 0 || value >= I915_OA_METRICS_SET_MAX) {
+				DRM_ERROR("Unknown OA metric set ID");
+				return -EINVAL;
+			}
+			props->metrics_set = value;
+			break;
+		case DRM_I915_PERF_OA_FORMAT_PROP:
+			if (value == 0 || value >= I915_OA_FORMAT_MAX) {
+				DRM_ERROR("Invalid OA report format\n");
+				return -EINVAL;
+			}
+			if (!dev_priv->perf.oa.oa_formats[value].size) {
+				DRM_ERROR("Invalid OA report format\n");
+				return -EINVAL;
+			}
+			props->oa_format = value;
+			break;
+		case DRM_I915_PERF_OA_EXPONENT_PROP:
+			if (value > OA_EXPONENT_MAX)
+				return -EINVAL;
+
+			/* NB: The exponent represents a period as follows:
+			 *
+			 *   80ns * 2^(period_exponent + 1)
+			 *
+			 * Theoretically we can program the OA unit to sample
+			 * every 160ns but don't allow that by default unless
+			 * root.
+			 *
+			 * Referring to perf's
+			 * kernel.perf_event_max_sample_rate for a precedent
+			 * (100000 by default); with an OA exponent of 6 we get
+			 * a period of 10.240 microseconds -just under 100000Hz
+			 */
+			if (value < i915_oa_min_timer_exponent &&
+			    !capable(CAP_SYS_ADMIN)) {
+				DRM_ERROR("Sampling period too high without root privileges\n");
+				return -EACCES;
+			}
+
+			props->oa_periodic = true;
+			props->oa_period_exponent = value;
+			break;
+		case DRM_I915_PERF_PROP_MAX:
+			BUG();
+		}
+
+		uprop += 2;
+	}
+
+	return 0;
+}
+
 int i915_perf_open_ioctl(struct drm_device *dev, void *data,
 			 struct drm_file *file)
 {
 	struct drm_i915_private *dev_priv = dev->dev_private;
+	struct drm_i915_perf_open_param *param = data;
+	struct perf_open_properties props;
+	u32 known_open_flags = 0;
 	int ret;
 
+	known_open_flags = I915_PERF_FLAG_FD_CLOEXEC |
+			   I915_PERF_FLAG_FD_NONBLOCK |
+			   I915_PERF_FLAG_DISABLED;
+	if (param->flags & ~known_open_flags) {
+		DRM_ERROR("Unknown drm_i915_perf_open_param flag\n");
+		return -EINVAL;
+	}
+
+	ret = read_properties_unlocked(dev_priv,
+				       to_user_ptr(param->properties),
+				       param->n_properties,
+				       &props);
+	if (ret)
+		return ret;
+
 	mutex_lock(&dev_priv->perf.lock);
-	ret = i915_perf_open_ioctl_locked(dev, data, file);
+	ret = i915_perf_open_ioctl_locked(dev, param, &props, file);
 	mutex_unlock(&dev_priv->perf.lock);
 
 	return ret;
