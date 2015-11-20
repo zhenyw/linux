@@ -2388,18 +2388,6 @@ int i915_oa_select_metric_set_skl(struct drm_i915_private *dev_priv)
 }
 
 static ssize_t
-show_3d_guid(struct device *kdev, struct device_attribute *attr, char *buf)
-{
-        return sprintf(buf, "fdfc01cc-e28e-423a-aae0-b5ed5d4d7a9f\n");
-}
-
-static struct device_attribute dev_attr_3d_guid = {
-        .attr = { .name = "guid", .mode = S_IRUGO },
-        .show = show_3d_guid,
-        .store = NULL,
-};
-
-static ssize_t
 show_3d_id(struct device *kdev, struct device_attribute *attr, char *buf)
 {
         return sprintf(buf, "%d\n", I915_OA_METRICS_SET_3D);
@@ -2412,26 +2400,13 @@ static struct device_attribute dev_attr_3d_id = {
 };
 
 static struct attribute *attrs_3d[] = {
-        &dev_attr_3d_guid.attr,
         &dev_attr_3d_id.attr,
         NULL,
 };
 
 static struct attribute_group group_3d = {
-        .name = "3d",
+        .name = "fdfc01cc-e28e-423a-aae0-b5ed5d4d7a9f",
         .attrs =  attrs_3d,
-};
-
-static ssize_t
-show_compute_guid(struct device *kdev, struct device_attribute *attr, char *buf)
-{
-        return sprintf(buf, "c9c7ace5-614a-4f8e-90c7-30064c36cad2\n");
-}
-
-static struct device_attribute dev_attr_compute_guid = {
-        .attr = { .name = "guid", .mode = S_IRUGO },
-        .show = show_compute_guid,
-        .store = NULL,
 };
 
 static ssize_t
@@ -2447,26 +2422,13 @@ static struct device_attribute dev_attr_compute_id = {
 };
 
 static struct attribute *attrs_compute[] = {
-        &dev_attr_compute_guid.attr,
         &dev_attr_compute_id.attr,
         NULL,
 };
 
 static struct attribute_group group_compute = {
-        .name = "compute",
+        .name = "c9c7ace5-614a-4f8e-90c7-30064c36cad2",
         .attrs =  attrs_compute,
-};
-
-static ssize_t
-show_render_pipe_profile_guid(struct device *kdev, struct device_attribute *attr, char *buf)
-{
-        return sprintf(buf, "99797dc2-b48f-4d83-b973-613cff01202b\n");
-}
-
-static struct device_attribute dev_attr_render_pipe_profile_guid = {
-        .attr = { .name = "guid", .mode = S_IRUGO },
-        .show = show_render_pipe_profile_guid,
-        .store = NULL,
 };
 
 static ssize_t
@@ -2482,26 +2444,13 @@ static struct device_attribute dev_attr_render_pipe_profile_id = {
 };
 
 static struct attribute *attrs_render_pipe_profile[] = {
-        &dev_attr_render_pipe_profile_guid.attr,
         &dev_attr_render_pipe_profile_id.attr,
         NULL,
 };
 
 static struct attribute_group group_render_pipe_profile = {
-        .name = "render_pipe_profile",
+        .name = "99797dc2-b48f-4d83-b973-613cff01202b",
         .attrs =  attrs_render_pipe_profile,
-};
-
-static ssize_t
-show_memory_reads_guid(struct device *kdev, struct device_attribute *attr, char *buf)
-{
-        return sprintf(buf, "afa148ea-77fb-48ee-b8f8-e5e971ecf589\n");
-}
-
-static struct device_attribute dev_attr_memory_reads_guid = {
-        .attr = { .name = "guid", .mode = S_IRUGO },
-        .show = show_memory_reads_guid,
-        .store = NULL,
 };
 
 static ssize_t
@@ -2517,26 +2466,13 @@ static struct device_attribute dev_attr_memory_reads_id = {
 };
 
 static struct attribute *attrs_memory_reads[] = {
-        &dev_attr_memory_reads_guid.attr,
         &dev_attr_memory_reads_id.attr,
         NULL,
 };
 
 static struct attribute_group group_memory_reads = {
-        .name = "memory_reads",
+        .name = "afa148ea-77fb-48ee-b8f8-e5e971ecf589",
         .attrs =  attrs_memory_reads,
-};
-
-static ssize_t
-show_memory_writes_guid(struct device *kdev, struct device_attribute *attr, char *buf)
-{
-        return sprintf(buf, "bfce7061-e6f1-4a78-bed8-c9cc69af70f9\n");
-}
-
-static struct device_attribute dev_attr_memory_writes_guid = {
-        .attr = { .name = "guid", .mode = S_IRUGO },
-        .show = show_memory_writes_guid,
-        .store = NULL,
 };
 
 static ssize_t
@@ -2552,26 +2488,13 @@ static struct device_attribute dev_attr_memory_writes_id = {
 };
 
 static struct attribute *attrs_memory_writes[] = {
-        &dev_attr_memory_writes_guid.attr,
         &dev_attr_memory_writes_id.attr,
         NULL,
 };
 
 static struct attribute_group group_memory_writes = {
-        .name = "memory_writes",
+        .name = "bfce7061-e6f1-4a78-bed8-c9cc69af70f9",
         .attrs =  attrs_memory_writes,
-};
-
-static ssize_t
-show_compute_extended_guid(struct device *kdev, struct device_attribute *attr, char *buf)
-{
-        return sprintf(buf, "c35ddcab-b1f2-452f-969a-a8209d531a00\n");
-}
-
-static struct device_attribute dev_attr_compute_extended_guid = {
-        .attr = { .name = "guid", .mode = S_IRUGO },
-        .show = show_compute_extended_guid,
-        .store = NULL,
 };
 
 static ssize_t
@@ -2587,26 +2510,13 @@ static struct device_attribute dev_attr_compute_extended_id = {
 };
 
 static struct attribute *attrs_compute_extended[] = {
-        &dev_attr_compute_extended_guid.attr,
         &dev_attr_compute_extended_id.attr,
         NULL,
 };
 
 static struct attribute_group group_compute_extended = {
-        .name = "compute_extended",
+        .name = "c35ddcab-b1f2-452f-969a-a8209d531a00",
         .attrs =  attrs_compute_extended,
-};
-
-static ssize_t
-show_compute_l3_cache_guid(struct device *kdev, struct device_attribute *attr, char *buf)
-{
-        return sprintf(buf, "2b0d0c83-706a-4cb6-b55e-d6bcf51fa6d3\n");
-}
-
-static struct device_attribute dev_attr_compute_l3_cache_guid = {
-        .attr = { .name = "guid", .mode = S_IRUGO },
-        .show = show_compute_l3_cache_guid,
-        .store = NULL,
 };
 
 static ssize_t
@@ -2622,26 +2532,13 @@ static struct device_attribute dev_attr_compute_l3_cache_id = {
 };
 
 static struct attribute *attrs_compute_l3_cache[] = {
-        &dev_attr_compute_l3_cache_guid.attr,
         &dev_attr_compute_l3_cache_id.attr,
         NULL,
 };
 
 static struct attribute_group group_compute_l3_cache = {
-        .name = "compute_l3_cache",
+        .name = "2b0d0c83-706a-4cb6-b55e-d6bcf51fa6d3",
         .attrs =  attrs_compute_l3_cache,
-};
-
-static ssize_t
-show_hdc_and_sf_guid(struct device *kdev, struct device_attribute *attr, char *buf)
-{
-        return sprintf(buf, "d084f6a9-f706-4b74-b98c-65daa5340517\n");
-}
-
-static struct device_attribute dev_attr_hdc_and_sf_guid = {
-        .attr = { .name = "guid", .mode = S_IRUGO },
-        .show = show_hdc_and_sf_guid,
-        .store = NULL,
 };
 
 static ssize_t
@@ -2657,26 +2554,13 @@ static struct device_attribute dev_attr_hdc_and_sf_id = {
 };
 
 static struct attribute *attrs_hdc_and_sf[] = {
-        &dev_attr_hdc_and_sf_guid.attr,
         &dev_attr_hdc_and_sf_id.attr,
         NULL,
 };
 
 static struct attribute_group group_hdc_and_sf = {
-        .name = "hdc_and_sf",
+        .name = "d084f6a9-f706-4b74-b98c-65daa5340517",
         .attrs =  attrs_hdc_and_sf,
-};
-
-static ssize_t
-show_l3_1_guid(struct device *kdev, struct device_attribute *attr, char *buf)
-{
-        return sprintf(buf, "c7ed493c-54ff-4152-baf4-07e31e7a24cb\n");
-}
-
-static struct device_attribute dev_attr_l3_1_guid = {
-        .attr = { .name = "guid", .mode = S_IRUGO },
-        .show = show_l3_1_guid,
-        .store = NULL,
 };
 
 static ssize_t
@@ -2692,26 +2576,13 @@ static struct device_attribute dev_attr_l3_1_id = {
 };
 
 static struct attribute *attrs_l3_1[] = {
-        &dev_attr_l3_1_guid.attr,
         &dev_attr_l3_1_id.attr,
         NULL,
 };
 
 static struct attribute_group group_l3_1 = {
-        .name = "l3_1",
+        .name = "c7ed493c-54ff-4152-baf4-07e31e7a24cb",
         .attrs =  attrs_l3_1,
-};
-
-static ssize_t
-show_l3_2_guid(struct device *kdev, struct device_attribute *attr, char *buf)
-{
-        return sprintf(buf, "43ad9300-198a-4734-8f3a-2a2151b9dab6\n");
-}
-
-static struct device_attribute dev_attr_l3_2_guid = {
-        .attr = { .name = "guid", .mode = S_IRUGO },
-        .show = show_l3_2_guid,
-        .store = NULL,
 };
 
 static ssize_t
@@ -2727,26 +2598,13 @@ static struct device_attribute dev_attr_l3_2_id = {
 };
 
 static struct attribute *attrs_l3_2[] = {
-        &dev_attr_l3_2_guid.attr,
         &dev_attr_l3_2_id.attr,
         NULL,
 };
 
 static struct attribute_group group_l3_2 = {
-        .name = "l3_2",
+        .name = "43ad9300-198a-4734-8f3a-2a2151b9dab6",
         .attrs =  attrs_l3_2,
-};
-
-static ssize_t
-show_l3_3_guid(struct device *kdev, struct device_attribute *attr, char *buf)
-{
-        return sprintf(buf, "ccfce3f2-6c63-4630-a043-f2a0243fed8f\n");
-}
-
-static struct device_attribute dev_attr_l3_3_guid = {
-        .attr = { .name = "guid", .mode = S_IRUGO },
-        .show = show_l3_3_guid,
-        .store = NULL,
 };
 
 static ssize_t
@@ -2762,26 +2620,13 @@ static struct device_attribute dev_attr_l3_3_id = {
 };
 
 static struct attribute *attrs_l3_3[] = {
-        &dev_attr_l3_3_guid.attr,
         &dev_attr_l3_3_id.attr,
         NULL,
 };
 
 static struct attribute_group group_l3_3 = {
-        .name = "l3_3",
+        .name = "ccfce3f2-6c63-4630-a043-f2a0243fed8f",
         .attrs =  attrs_l3_3,
-};
-
-static ssize_t
-show_rasterizer_and_pixel_backend_guid(struct device *kdev, struct device_attribute *attr, char *buf)
-{
-        return sprintf(buf, "2e564b28-98fa-42a0-8bbc-7915de3cc03c\n");
-}
-
-static struct device_attribute dev_attr_rasterizer_and_pixel_backend_guid = {
-        .attr = { .name = "guid", .mode = S_IRUGO },
-        .show = show_rasterizer_and_pixel_backend_guid,
-        .store = NULL,
 };
 
 static ssize_t
@@ -2797,26 +2642,13 @@ static struct device_attribute dev_attr_rasterizer_and_pixel_backend_id = {
 };
 
 static struct attribute *attrs_rasterizer_and_pixel_backend[] = {
-        &dev_attr_rasterizer_and_pixel_backend_guid.attr,
         &dev_attr_rasterizer_and_pixel_backend_id.attr,
         NULL,
 };
 
 static struct attribute_group group_rasterizer_and_pixel_backend = {
-        .name = "rasterizer_and_pixel_backend",
+        .name = "2e564b28-98fa-42a0-8bbc-7915de3cc03c",
         .attrs =  attrs_rasterizer_and_pixel_backend,
-};
-
-static ssize_t
-show_sampler_guid(struct device *kdev, struct device_attribute *attr, char *buf)
-{
-        return sprintf(buf, "a305533f-7e36-4fb6-8749-c6280bce3457\n");
-}
-
-static struct device_attribute dev_attr_sampler_guid = {
-        .attr = { .name = "guid", .mode = S_IRUGO },
-        .show = show_sampler_guid,
-        .store = NULL,
 };
 
 static ssize_t
@@ -2832,26 +2664,13 @@ static struct device_attribute dev_attr_sampler_id = {
 };
 
 static struct attribute *attrs_sampler[] = {
-        &dev_attr_sampler_guid.attr,
         &dev_attr_sampler_id.attr,
         NULL,
 };
 
 static struct attribute_group group_sampler = {
-        .name = "sampler",
+        .name = "a305533f-7e36-4fb6-8749-c6280bce3457",
         .attrs =  attrs_sampler,
-};
-
-static ssize_t
-show_tdl_1_guid(struct device *kdev, struct device_attribute *attr, char *buf)
-{
-        return sprintf(buf, "34ecd59f-6b52-4004-916f-afe9530a0442\n");
-}
-
-static struct device_attribute dev_attr_tdl_1_guid = {
-        .attr = { .name = "guid", .mode = S_IRUGO },
-        .show = show_tdl_1_guid,
-        .store = NULL,
 };
 
 static ssize_t
@@ -2867,26 +2686,13 @@ static struct device_attribute dev_attr_tdl_1_id = {
 };
 
 static struct attribute *attrs_tdl_1[] = {
-        &dev_attr_tdl_1_guid.attr,
         &dev_attr_tdl_1_id.attr,
         NULL,
 };
 
 static struct attribute_group group_tdl_1 = {
-        .name = "tdl_1",
+        .name = "34ecd59f-6b52-4004-916f-afe9530a0442",
         .attrs =  attrs_tdl_1,
-};
-
-static ssize_t
-show_tdl_2_guid(struct device *kdev, struct device_attribute *attr, char *buf)
-{
-        return sprintf(buf, "ee1990d9-6e93-4c7c-aa9e-b40e1ec4d41b\n");
-}
-
-static struct device_attribute dev_attr_tdl_2_guid = {
-        .attr = { .name = "guid", .mode = S_IRUGO },
-        .show = show_tdl_2_guid,
-        .store = NULL,
 };
 
 static ssize_t
@@ -2902,13 +2708,12 @@ static struct device_attribute dev_attr_tdl_2_id = {
 };
 
 static struct attribute *attrs_tdl_2[] = {
-        &dev_attr_tdl_2_guid.attr,
         &dev_attr_tdl_2_id.attr,
         NULL,
 };
 
 static struct attribute_group group_tdl_2 = {
-        .name = "tdl_2",
+        .name = "ee1990d9-6e93-4c7c-aa9e-b40e1ec4d41b",
         .attrs =  attrs_tdl_2,
 };
 
