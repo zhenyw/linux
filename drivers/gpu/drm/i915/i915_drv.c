@@ -285,12 +285,14 @@ static const struct intel_device_info intel_valleyview_d_info = {
 static const struct intel_device_info intel_haswell_d_info = {
 	HSW_FEATURES,
 	.is_haswell = 1,
+	.has_oa_perf = 1,
 };
 
 static const struct intel_device_info intel_haswell_m_info = {
 	HSW_FEATURES,
 	.is_haswell = 1,
 	.is_mobile = 1,
+	.has_oa_perf = 1,
 };
 
 #define BDW_FEATURES \
@@ -301,12 +303,14 @@ static const struct intel_device_info intel_broadwell_d_info = {
 	BDW_FEATURES,
 	.gen = 8,
 	.is_broadwell = 1,
+	.has_oa_perf = 1,
 };
 
 static const struct intel_device_info intel_broadwell_m_info = {
 	BDW_FEATURES,
 	.gen = 8, .is_mobile = 1,
 	.is_broadwell = 1,
+	.has_oa_perf = 1,
 };
 
 static const struct intel_device_info intel_broadwell_gt3d_info = {
@@ -314,6 +318,7 @@ static const struct intel_device_info intel_broadwell_gt3d_info = {
 	.gen = 8,
 	.is_broadwell = 1,
 	.ring_mask = RENDER_RING | BSD_RING | BLT_RING | VEBOX_RING | BSD2_RING,
+	.has_oa_perf = 1,
 };
 
 static const struct intel_device_info intel_broadwell_gt3m_info = {
@@ -321,6 +326,7 @@ static const struct intel_device_info intel_broadwell_gt3m_info = {
 	.gen = 8, .is_mobile = 1,
 	.is_broadwell = 1,
 	.ring_mask = RENDER_RING | BSD_RING | BLT_RING | VEBOX_RING | BSD2_RING,
+	.has_oa_perf = 1,
 };
 
 static const struct intel_device_info intel_cherryview_info = {
@@ -332,12 +338,14 @@ static const struct intel_device_info intel_cherryview_info = {
 	GEN_CHV_PIPEOFFSETS,
 	CURSOR_OFFSETS,
 	CHV_COLORS,
+	.has_oa_perf = 1,
 };
 
 static const struct intel_device_info intel_skylake_info = {
 	BDW_FEATURES,
 	.is_skylake = 1,
 	.gen = 9,
+	.has_oa_perf = 1,
 };
 
 static const struct intel_device_info intel_skylake_gt3_info = {
@@ -345,6 +353,7 @@ static const struct intel_device_info intel_skylake_gt3_info = {
 	.is_skylake = 1,
 	.gen = 9,
 	.ring_mask = RENDER_RING | BSD_RING | BLT_RING | VEBOX_RING | BSD2_RING,
+	.has_oa_perf = 1,
 };
 
 static const struct intel_device_info intel_broxton_info = {
