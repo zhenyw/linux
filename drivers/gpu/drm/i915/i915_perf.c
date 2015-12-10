@@ -1563,9 +1563,7 @@ void i915_perf_init(struct drm_device *dev)
 {
 	struct drm_i915_private *dev_priv = to_i915(dev);
 
-	if (!(IS_HASWELL(dev) ||
-	      IS_BROADWELL(dev) || IS_CHERRYVIEW(dev) ||
-	      IS_SKYLAKE(dev)))
+	if (!HAS_OA_PERF(dev))
 		return;
 
 	dev_priv->perf.sysctl_header = register_sysctl_table(dev_root);
