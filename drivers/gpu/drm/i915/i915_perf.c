@@ -962,7 +962,7 @@ static void gen8_legacy_ctx_switch_unlocked(struct intel_engine_cs *ring)
 
 	intel_ring_emit(ring, MI_LOAD_REGISTER_IMM(n_flex_regs + 1));
 
-	intel_ring_emit(ring, GEN8_OACTXCONTROL);
+	intel_ring_emit(ring, i915_mmio_reg_offset(GEN8_OACTXCONTROL));
 	intel_ring_emit(ring,
 			(dev_priv->perf.oa.period_exponent <<
 			 GEN8_OA_TIMER_PERIOD_SHIFT) |
@@ -971,7 +971,7 @@ static void gen8_legacy_ctx_switch_unlocked(struct intel_engine_cs *ring)
 			GEN8_OA_COUNTER_RESUME);
 
 	for (i = 0; i < n_flex_regs; i++) {
-		intel_ring_emit(ring, flex_regs[i].addr);
+		intel_ring_emit(ring, i915_mmio_reg_offset(flex_regs[i].addr));
 		intel_ring_emit(ring, flex_regs[i].value);
 	}
 	intel_ring_emit(ring, MI_NOOP);
@@ -1021,7 +1021,7 @@ static void gen8_update_reg_state_unlocked(struct intel_engine_cs *ring,
 	if (!atomic_read(&ring->oa_state_dirty))
 		return;
 
-	reg_state[ctx_oactxctrl] = GEN8_OACTXCONTROL;
+	reg_state[ctx_oactxctrl] = i915_mmio_reg_offset(GEN8_OACTXCONTROL);
 	reg_state[ctx_oactxctrl+1] = (dev_priv->perf.oa.period_exponent <<
 				      GEN8_OA_TIMER_PERIOD_SHIFT) |
 				     (dev_priv->perf.oa.periodic ?
@@ -1029,12 +1029,12 @@ static void gen8_update_reg_state_unlocked(struct intel_engine_cs *ring,
 				     GEN8_OA_COUNTER_RESUME;
 
 	for (i = 0; i < n_flex_regs; i++) {
-		uint32_t offset = flex_regs[i].addr;
+		uint32_t offset = i915_mmio_reg_offset(flex_regs[i].addr);
 
 		/* Map from mmio address to register state context
 		 * offset... */
 
-		offset -= EU_PERF_CNTL0;
+		offset -= i915_mmio_reg_offset(EU_PERF_CNTL0);
 
 		offset >>= 5; /* Flex EU mmio registers are separated by 256
 			       * bytes, here they are separated by 8 bytes */
@@ -1042,7 +1042,7 @@ static void gen8_update_reg_state_unlocked(struct intel_engine_cs *ring,
 		/* EU_PERF_CNTL0 offset in register state context... */
 		offset += ctx_flexeu0;
 
-		reg_state[offset] = flex_regs[i].addr;
+		reg_state[offset] = i915_mmio_reg_offset(flex_regs[i].addr);
 		reg_state[offset+1] = flex_regs[i].value;
 	}
 

@@ -1694,7 +1694,7 @@ struct i915_oa_format {
 };
 
 struct i915_oa_reg {
-	u32 addr;
+	i915_reg_t addr;
 	u32 value;
 };
 
