@@ -365,6 +365,7 @@ static const struct intel_device_info intel_broxton_info = {
 	GEN_DEFAULT_PIPEOFFSETS,
 	IVB_CURSOR_OFFSETS,
 	BDW_COLORS,
+	.has_oa_perf = 1,
 };
 
 static const struct intel_device_info intel_kabylake_info = {
