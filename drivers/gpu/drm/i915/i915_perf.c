@@ -3464,9 +3464,7 @@ void i915_perf_init(struct drm_device *dev)
 	struct i915_clock_info *clk_info = &dev_priv->ts_clk_info;
 	int i;
 
-	if (!(IS_HASWELL(dev) ||
-	      IS_BROADWELL(dev) || IS_CHERRYVIEW(dev) ||
-	      IS_SKYLAKE(dev)))
+	if (!HAS_OA_PERF(dev))
 		return;
 
 	dev_priv->perf.metrics_kobj =

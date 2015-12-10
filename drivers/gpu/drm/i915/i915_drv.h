@@ -754,7 +754,8 @@ struct intel_csr {
 	func(has_llc) sep \
 	func(has_snoop) sep \
 	func(has_ddi) sep \
-	func(has_fpga_dbg)
+	func(has_fpga_dbg) sep \
+	func(has_oa_perf)
 
 #define DEFINE_FLAG(name) u8 name:1
 #define SEP_SEMICOLON ;
@@ -2995,6 +2996,8 @@ struct drm_i915_cmd_table {
 /* DPF == dynamic parity feature */
 #define HAS_L3_DPF(dev) (IS_IVYBRIDGE(dev) || IS_HASWELL(dev))
 #define NUM_L3_SLICES(dev) (IS_HSW_GT3(dev) ? 2 : HAS_L3_DPF(dev))
+
+#define HAS_OA_PERF(dev) (INTEL_INFO(dev)->has_oa_perf)
 
 #define GT_FREQUENCY_MULTIPLIER 50
 #define GEN9_FREQ_SCALER 3
