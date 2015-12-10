@@ -31,6 +31,7 @@
 #include "i915_oa_bdw.h"
 #include "i915_oa_chv.h"
 #include "i915_oa_skl.h"
+#include "i915_oa_bxt.h"
 
 /* Must be a power of two */
 #define OA_BUFFER_SIZE		SZ_16M
@@ -1054,6 +1055,34 @@ static void skl_disable_metric_set(struct drm_i915_private *dev_priv)
 #warning "SKL: Do we need to write to CHICKEN2 to disable DOP clock gating when idle? (vpg does this)"
 }
 
+static int bxt_enable_metric_set(struct drm_i915_private *dev_priv)
+{
+	int ret = i915_oa_select_metric_set_bxt(dev_priv);
+
+	if (ret)
+		return ret;
+
+	I915_WRITE(GDT_CHICKEN_BITS, 0xA0);
+	config_oa_regs(dev_priv, dev_priv->perf.oa.mux_regs,
+		       dev_priv->perf.oa.mux_regs_len);
+	I915_WRITE(GDT_CHICKEN_BITS, 0x80);
+	config_oa_regs(dev_priv, dev_priv->perf.oa.b_counter_regs,
+		       dev_priv->perf.oa.b_counter_regs_len);
+
+	configure_all_contexts(dev_priv);
+
+	return 0;
+}
+
+static void bxt_disable_metric_set(struct drm_i915_private *dev_priv)
+{
+	I915_WRITE(GEN6_UCGCTL1, (I915_READ(GEN6_UCGCTL1) &
+				  ~GEN6_CSUNIT_CLOCK_GATE_DISABLE));
+	I915_WRITE(GEN7_MISCCPCTL, (I915_READ(GEN7_MISCCPCTL) |
+				    GEN7_DOP_CLOCK_GATE_ENABLE));
+#warning "BXT: Do we need to write to CHICKEN2 to disable DOP clock gating when idle? (vpg does this)"
+}
+
 static void gen7_update_oacontrol_locked(struct drm_i915_private *dev_priv)
 {
 	assert_spin_locked(&dev_priv->perf.hook_lock);
@@ -2028,6 +2057,18 @@ void i915_perf_init(struct drm_device *dev)
 
 			if (i915_perf_init_sysfs_skl(dev_priv))
 				goto sysfs_error;
+		} else if (IS_BROXTON(dev)) {
+			dev_priv->perf.oa.ops.enable_metric_set =
+				bxt_enable_metric_set;
+			dev_priv->perf.oa.ops.disable_metric_set =
+				bxt_disable_metric_set;
+			dev_priv->perf.oa.ctx_oactxctrl_off = 0x128;
+			dev_priv->perf.oa.ctx_flexeu0_off = 0x3de;
+			dev_priv->perf.oa.n_builtin_sets =
+				i915_oa_n_builtin_metric_sets_bxt;
+
+			if (i915_perf_init_sysfs_bxt(dev_priv))
+				goto sysfs_error;
 		}
 	}
 
@@ -2061,6 +2102,8 @@ void i915_perf_fini(struct drm_device *dev)
                 i915_perf_deinit_sysfs_chv(dev_priv);
         else if (IS_SKYLAKE(dev))
                 i915_perf_deinit_sysfs_skl(dev_priv);
+	else if (IS_BROXTON(dev))
+		i915_perf_deinit_sysfs_bxt(dev_priv);
 
 	kobject_put(dev_priv->perf.metrics_kobj);
 	dev_priv->perf.metrics_kobj = NULL;
