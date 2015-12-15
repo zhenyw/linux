@@ -703,6 +703,7 @@ static void broadwell_sseu_info_init(struct drm_device *dev)
 	const int s_max = 3, ss_max = 3, eu_max = 8;
 	int s, ss;
 	u32 fuse2, eu_disable[s_max], s_enable, ss_disable;
+	u32 ss_mask;
 
 	fuse2 = I915_READ(GEN8_FUSE2);
 	s_enable = (fuse2 & GEN8_F2_S_ENA_MASK) >> GEN8_F2_S_ENA_SHIFT;
@@ -723,8 +724,15 @@ static void broadwell_sseu_info_init(struct drm_device *dev)
 	
 	/*
 	 * The subslice disable field is global, i.e. it applies
-	 * to each of the enabled slices.
+	 * to each of the enabled slices. We generalise this into
+	 * a mask covering all slices...
 	 */
+	ss_mask = ss_disable ^ ((1 << ss_max) - 1);
+	for (s = 0; s < s_max; s++) {
+		if (s_enable & (0x1 << s))
+			info->subslice_mask |= ss_mask << (ss_max * s);
+	}
+	
 	info->subslice_per_slice = ss_max - hweight32(ss_disable);
 	info->subslice_total = info->slice_total * info->subslice_per_slice;
 
