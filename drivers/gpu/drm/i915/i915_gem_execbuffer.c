@@ -1269,11 +1269,15 @@ i915_gem_ringbuffer_submission(struct i915_execbuffer_params *params,
 	exec_start = params->batch_obj_vm_offset +
 		     params->args_batch_start_offset;
 
+	i915_emit_perf_data(params->request);
+
 	ret = ring->dispatch_execbuffer(params->request,
 					exec_start, exec_len,
 					params->dispatch_flags);
 	if (ret)
 		return ret;
+
+	i915_emit_perf_data(params->request);
 
 	trace_i915_gem_ring_dispatch(params->request, params->dispatch_flags);
 
