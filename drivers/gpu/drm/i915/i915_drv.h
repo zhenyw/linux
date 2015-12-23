@@ -1799,6 +1799,7 @@ struct i915_perf_cs_data_node {
 	u32 end_offset;
 	u32 oa_offset;
 	u32 ts_offset;
+	u32 mmio_offset;
 
 	/* Other metadata */
 	u32 ctx_id;
@@ -2066,6 +2067,9 @@ struct drm_i915_private {
 		struct hrtimer poll_check_timer;
 		struct i915_perf_stream *exclusive_stream[I915_NUM_RINGS];
 		wait_queue_head_t poll_wq[I915_NUM_RINGS];
+
+		u32 num_mmio;
+		u32 mmio_list[I915_PERF_MMIO_NUM_MAX];
 
 		spinlock_t hook_lock;
 
