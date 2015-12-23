@@ -378,7 +378,7 @@ static void i915_stream_emit_data(struct i915_perf_stream *stream,
 	}
 
 	entry->ctx_id = req->ctx->global_id;
-	entry->pid = current->pid;
+	entry->pid = pid_nr(req->pid);
 	entry->tag = tag;
 	i915_gem_request_assign(&entry->request, req);
 
