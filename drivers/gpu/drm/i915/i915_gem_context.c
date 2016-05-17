@@ -843,6 +843,8 @@ static int do_rcs_switch(struct drm_i915_gem_request *req)
 		to->legacy_hw_ctx.initialized = true;
 	}
 
+	i915_oa_legacy_ctx_switch_notify(req);
+
 	return 0;
 
 unpin_out:

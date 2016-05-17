@@ -886,6 +886,7 @@ struct intel_context {
 		u64 lrc_desc;
 		uint32_t *lrc_reg_state;
 		bool initialised;
+		atomic_t oa_state_dirty;
 	} engine[I915_NUM_ENGINES];
 
 	struct list_head link;
@@ -1829,6 +1830,7 @@ struct i915_oa_ops {
 	void (*update_oacontrol)(struct drm_i915_private *dev_priv);
 	void (*update_hw_ctx_id_locked)(struct drm_i915_private *dev_priv,
 					u32 ctx_id);
+	void (*legacy_ctx_switch_unlocked)(struct drm_i915_gem_request *req);
 	int (*read)(struct i915_perf_stream *stream,
 		    struct i915_perf_read_state *read_state);
 	bool (*oa_buffer_is_empty)(struct drm_i915_private *dev_priv);
@@ -2154,11 +2156,14 @@ struct drm_i915_private {
 				struct drm_i915_gem_object *obj;
 				u32 gtt_offset;
 				u8 *addr;
+				u32 last_ctx_id;
 				int format;
 				int format_size;
 			} oa_buffer;
 
 			u32 gen7_latched_oastatus1;
+			u32 ctx_oactxctrl_off;
+			u32 ctx_flexeu0_off;
 
 			struct i915_oa_ops ops;
 			const struct i915_oa_format *oa_formats;
@@ -3546,6 +3551,10 @@ int i915_perf_open_ioctl(struct drm_device *dev, void *data,
 			 struct drm_file *file);
 void i915_oa_context_pin_notify(struct drm_i915_private *dev_priv,
 				struct intel_context *context);
+void i915_oa_legacy_ctx_switch_notify(struct drm_i915_gem_request *req);
+void i915_oa_update_reg_state(struct intel_engine_cs *engine,
+			      struct intel_context *ctx,
+			      uint32_t *reg_state);
 
 /* i915_gem_evict.c */
 int __must_check i915_gem_evict_something(struct drm_device *dev,
