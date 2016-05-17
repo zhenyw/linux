@@ -446,7 +446,6 @@ static const struct drm_i915_reg_descriptor gen7_render_regs[] = {
 	REG64(PS_INVOCATION_COUNT),
 	REG64(PS_DEPTH_COUNT),
 	REG64_IDX(RING_TIMESTAMP, RENDER_RING_BASE),
-	REG32(GEN7_OACONTROL), /* Only allowed for LRI and SRM. See below. */
 	REG64(MI_PREDICATE_SRC0),
 	REG64(MI_PREDICATE_SRC1),
 	REG32(GEN7_3DPRIM_END_OFFSET),
@@ -1045,8 +1044,7 @@ bool i915_needs_cmd_parser(struct intel_engine_cs *engine)
 static bool check_cmd(const struct intel_engine_cs *engine,
 		      const struct drm_i915_cmd_descriptor *desc,
 		      const u32 *cmd, u32 length,
-		      const bool is_master,
-		      bool *oacontrol_set)
+		      const bool is_master)
 {
 	if (desc->flags & CMD_DESC_REJECT) {
 		DRM_DEBUG_DRIVER("CMD: Rejected command: 0x%08X\n", *cmd);
@@ -1081,31 +1079,6 @@ static bool check_cmd(const struct intel_engine_cs *engine,
 				DRM_DEBUG_DRIVER("CMD: Rejected register 0x%08X in command: 0x%08X (ring=%d)\n",
 						 reg_addr, *cmd, engine->id);
 				return false;
-			}
-
-			/*
-			 * OACONTROL requires some special handling for
-			 * writes. We want to make sure that any batch which
-			 * enables OA also disables it before the end of the
-			 * batch. The goal is to prevent one process from
-			 * snooping on the perf data from another process. To do
-			 * that, we need to check the value that will be written
-			 * to the register. Hence, limit OACONTROL writes to
-			 * only MI_LOAD_REGISTER_IMM commands.
-			 */
-			if (reg_addr == i915_mmio_reg_offset(GEN7_OACONTROL)) {
-				if (desc->cmd.value == MI_LOAD_REGISTER_MEM) {
-					DRM_DEBUG_DRIVER("CMD: Rejected LRM to OACONTROL\n");
-					return false;
-				}
-
-				if (desc->cmd.value == MI_LOAD_REGISTER_REG) {
-					DRM_DEBUG_DRIVER("CMD: Rejected LRR to OACONTROL\n");
-					return false;
-				}
-
-				if (desc->cmd.value == MI_LOAD_REGISTER_IMM(1))
-					*oacontrol_set = (cmd[offset + 1] != 0);
 			}
 
 			/*
@@ -1198,7 +1171,6 @@ int i915_parse_cmds(struct intel_engine_cs *engine,
 {
 	u32 *cmd, *batch_base, *batch_end;
 	struct drm_i915_cmd_descriptor default_desc = { 0 };
-	bool oacontrol_set = false; /* OACONTROL tracking. See check_cmd() */
 	int ret = 0;
 
 	batch_base = copy_batch(shadow_batch_obj, batch_obj,
@@ -1255,18 +1227,12 @@ int i915_parse_cmds(struct intel_engine_cs *engine,
 			break;
 		}
 
-		if (!check_cmd(engine, desc, cmd, length, is_master,
-			       &oacontrol_set)) {
+		if (!check_cmd(engine, desc, cmd, length, is_master)) {
 			ret = -EACCES;
 			break;
 		}
 
 		cmd += length;
-	}
-
-	if (oacontrol_set) {
-		DRM_DEBUG_DRIVER("CMD: batch set OACONTROL but did not clear it\n");
-		ret = -EINVAL;
 	}
 
 	if (cmd >= batch_end) {
