@@ -605,7 +605,7 @@ static void gen9_sseu_info_init(struct drm_device *dev)
 {
 	struct drm_i915_private *dev_priv = dev->dev_private;
 	struct intel_device_info *info;
-	int s_max = 3, ss_max = 3, eu_max = 8;
+	int s_max = 3, ss_max = 4, eu_max = 8;
 	int s, ss;
 	u32 fuse2, s_enable, ss_disable, eu_disable, ss_mask;
 	u8 eu_mask = 0xff;
