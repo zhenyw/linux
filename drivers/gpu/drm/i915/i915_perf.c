@@ -1207,12 +1207,19 @@ static void i915_oa_context_pin_notify_locked(struct drm_i915_private *dev_priv,
 	}
 }
 
+#define OA_STREAM_ACTIVE(dev_priv) (dev_priv->perf.oa.exclusive_stream && \
+				    dev_priv->perf.oa.exclusive_stream->enabled)
+
+
 void i915_oa_context_pin_notify(struct drm_i915_private *dev_priv,
 				struct intel_context *context)
 {
 	unsigned long flags;
 
 	if (!dev_priv->perf.initialized)
+		return;
+
+	if (!OA_STREAM_ACTIVE(dev_priv))
 		return;
 
 	spin_lock_irqsave(&dev_priv->perf.hook_lock, flags);
@@ -1261,6 +1268,9 @@ void i915_oa_legacy_ctx_switch_notify(struct drm_i915_gem_request *req)
 	struct drm_i915_private *dev_priv = req->i915;
 
 	if (!dev_priv->perf.initialized)
+		return;
+
+	if (!OA_STREAM_ACTIVE(dev_priv))
 		return;
 
 	if (dev_priv->perf.oa.ops.legacy_ctx_switch_unlocked == NULL)
@@ -1332,6 +1342,9 @@ void i915_oa_update_reg_state(struct intel_engine_cs *ring, uint32_t *reg_state)
 	if (!dev_priv->perf.initialized)
 		return;
 
+	if (!OA_STREAM_ACTIVE(dev_priv))
+		return;
+	
 	/* XXX: We don't take a lock here and this may run async with
 	 * respect to stream methods. Notably we don't want to block
 	 * context switches by long i915 perf read() operations.
