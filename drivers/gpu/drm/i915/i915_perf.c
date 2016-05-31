@@ -687,7 +687,7 @@ static int alloc_oa_buffer(struct drm_i915_private *dev_priv)
 			goto err_unpin;
 		}
 	} else {
-		ret = i915_gem_obj_ggtt_pin(bo, SZ_16, PIN_MAPPABLE);
+		ret = i915_gem_obj_ggtt_pin(bo, 0, PIN_MAPPABLE | PIN_NONBLOCK);
 		if (ret)
 			goto err_unref;
 
@@ -700,7 +700,7 @@ static int alloc_oa_buffer(struct drm_i915_private *dev_priv)
 
 		dev_priv->perf.oa.oa_buffer.addr =
 			ioremap_wc(dev_priv->gtt.mappable_base +
-				   i915_gem_obj_ggtt_offset(bo), SZ_16);
+				   i915_gem_obj_ggtt_offset(bo), OA_BUFFER_SIZE);
 		if (dev_priv->perf.oa.oa_buffer.addr == NULL) {
 			ret = -EINVAL;
 			goto err_unpin;
