@@ -2145,6 +2145,7 @@ struct drm_i915_private {
 			} oa_buffer;
 
 			u32 gen7_latched_oastatus1;
+			u32 ctx_valid_off;
 			u32 ctx_oactxctrl_off;
 			u32 ctx_flexeu0_off;
 
