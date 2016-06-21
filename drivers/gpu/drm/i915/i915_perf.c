@@ -1172,6 +1172,7 @@ static int gen8_append_oa_reports(struct i915_perf_stream *stream,
 		u32 *report32 = (void *)report;
 		u32 ctx_id = report32[2];
 		u32 report_ts = report32[1];
+		u32 report_id = report32[0];
 
 		/* Report timestamp should not exceed passed in ts */
 		if (report_ts > ts)
@@ -1196,7 +1197,8 @@ static int gen8_append_oa_reports(struct i915_perf_stream *stream,
 			ctx_id &= 0xfffff;
 		}
 
-		if (ctx_id == 0) {
+		if ((report_id & (1 << dev_priv->perf.oa.ctx_valid_off)) &&
+		    (ctx_id == 0)) {
 			DRM_ERROR("Skipping spurious, invalid OA report\n");
 			continue;
 		}
@@ -3567,6 +3569,7 @@ void i915_perf_init(struct drm_device *dev)
 				bdw_disable_metric_set;
 			dev_priv->perf.oa.ctx_oactxctrl_off = 0x120;
 			dev_priv->perf.oa.ctx_flexeu0_off = 0x2ce;
+			dev_priv->perf.oa.ctx_valid_off = 25;
 			dev_priv->perf.oa.n_builtin_sets =
 				i915_oa_n_builtin_metric_sets_bdw;
 
@@ -3579,6 +3582,7 @@ void i915_perf_init(struct drm_device *dev)
 				chv_disable_metric_set;
 			dev_priv->perf.oa.ctx_oactxctrl_off = 0x120;
 			dev_priv->perf.oa.ctx_flexeu0_off = 0x2ce;
+			dev_priv->perf.oa.ctx_valid_off = 25;
 			dev_priv->perf.oa.n_builtin_sets =
 				i915_oa_n_builtin_metric_sets_chv;
 
@@ -3591,6 +3595,7 @@ void i915_perf_init(struct drm_device *dev)
 				skl_disable_metric_set;
 			dev_priv->perf.oa.ctx_oactxctrl_off = 0x128;
 			dev_priv->perf.oa.ctx_flexeu0_off = 0x3de;
+			dev_priv->perf.oa.ctx_valid_off = 16;
 			dev_priv->perf.oa.n_builtin_sets =
 				i915_oa_n_builtin_metric_sets_skl;
 
@@ -3603,6 +3608,7 @@ void i915_perf_init(struct drm_device *dev)
 				bxt_disable_metric_set;
 			dev_priv->perf.oa.ctx_oactxctrl_off = 0x128;
 			dev_priv->perf.oa.ctx_flexeu0_off = 0x3de;
+			dev_priv->perf.oa.ctx_valid_off = 16;
 			dev_priv->perf.oa.n_builtin_sets =
 				i915_oa_n_builtin_metric_sets_bxt;
 
