@@ -51,6 +51,8 @@
 #include <drm/drm_auth.h>
 #include <drm/drm_cache.h>
 
+#include <linux/cgroup_gpu.h>
+
 #include "i915_params.h"
 #include "i915_reg.h"
 #include "i915_utils.h"

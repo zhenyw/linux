@@ -363,6 +363,8 @@ i915_gem_create_context(struct drm_i915_private *dev_priv,
 		ctx->ppgtt = ppgtt;
 	}
 
+	ctx->priority = gpucg_get_priority(current);
+
 	trace_i915_context_create(ctx);
 
 	return ctx;

@@ -1174,6 +1174,13 @@ config CGROUP_DEBUG
 
 	  Say N.
 
+config CGROUP_GPU
+	bool "GPU controller"
+	depends on DRM
+	default n
+	help
+	  Provides GPU cgroup controller.
+
 config SOCK_CGROUP_DATA
 	bool
 	default n
