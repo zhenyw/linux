@@ -775,8 +775,12 @@ drm_gem_object_release(struct drm_gem_object *obj)
 {
 	WARN_ON(obj->dma_buf);
 
-	if (obj->filp)
+	if (obj->filp) {
+		struct drm_file *file_priv = obj->filp->private_data;
+		if (file_priv)
+			drm_gem_obj_del_mem(file_priv, obj->size);
 		fput(obj->filp);
+	}
 
 	drm_gem_free_mmap_offset(obj);
 }
@@ -1004,3 +1008,40 @@ int drm_gem_mmap(struct file *filp, struct vm_area_struct *vma)
 	return ret;
 }
 EXPORT_SYMBOL(drm_gem_mmap);
+
+int drm_gem_obj_check_max_mem(struct drm_file *file_priv, u64 size)
+{
+	int ret = 0;
+	struct task_struct *task;
+	
+	spin_lock(&file_priv->obj_stat_lock);
+
+	task = get_pid_task(file_priv->pid, PIDTYPE_PID);
+	if (task) {
+		if (file_priv->obj_mem + size > gpucg_get_max_mem(task)) {
+			ret = 1;
+			DRM_DEBUG_DRIVER("ZHEN: hit max mem %d\n", task->pid);
+		}
+		put_task_struct(task);
+	}
+	spin_unlock(&file_priv->obj_stat_lock);
+
+	return ret;
+}
+EXPORT_SYMBOL(drm_gem_obj_check_max_mem);
+
+void drm_gem_obj_add_mem(struct drm_file *file_priv, u64 size)
+{
+	spin_lock(&file_priv->obj_stat_lock);
+	file_priv->obj_mem += size;
+	spin_unlock(&file_priv->obj_stat_lock);
+}
+EXPORT_SYMBOL(drm_gem_obj_add_mem);
+
+void drm_gem_obj_del_mem(struct drm_file *file_priv, u64 size)
+{
+	spin_lock(&file_priv->obj_stat_lock);
+	file_priv->obj_mem -= size;
+	spin_unlock(&file_priv->obj_stat_lock);
+}
+EXPORT_SYMBOL(drm_gem_obj_del_mem);

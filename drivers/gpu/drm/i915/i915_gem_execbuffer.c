@@ -1648,6 +1648,9 @@ i915_gem_do_execbuffer(struct drm_device *dev, void *data,
 
 	i915_gem_context_get(ctx);
 
+	/* a little hack for cg prio setting anyway */
+	ctx->priority = (int)gpucg_get_priority(current);
+	
 	if (ctx->ppgtt)
 		vm = &ctx->ppgtt->base;
 	else

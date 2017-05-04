@@ -377,6 +377,8 @@ i915_gem_create_context(struct drm_i915_private *dev_priv,
 		ctx->desc_template = default_desc_template(dev_priv, ppgtt);
 	}
 
+	ctx->priority = gpucg_get_priority(current);
+
 	trace_i915_context_create(ctx);
 
 	return ctx;
