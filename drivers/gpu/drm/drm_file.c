@@ -222,7 +222,6 @@ static int drm_open_helper(struct file *filp, struct drm_minor *minor)
 	INIT_LIST_HEAD(&priv->pending_event_list);
 	INIT_LIST_HEAD(&priv->event_list);
 	init_waitqueue_head(&priv->event_wait);
-	spin_lock_init(&priv->obj_stat_lock);
 	priv->event_space = 4096; /* set aside 4k for event buffer */
 
 	mutex_init(&priv->event_read_lock);

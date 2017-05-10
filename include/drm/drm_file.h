@@ -312,12 +312,6 @@ struct drm_file {
 
 	/* private: */
 	unsigned long lock_count; /* DRI1 legacy lock count */
-
-	/**
-	 * per-client mem accounting
-	 */
-	spinlock_t obj_stat_lock;
-	u64 obj_mem;
 };
 
 /**

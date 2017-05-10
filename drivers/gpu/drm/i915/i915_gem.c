@@ -657,7 +657,7 @@ i915_gem_create(struct drm_file *file,
 	if (size == 0)
 		return -EINVAL;
 
-	if (drm_gem_obj_check_max_mem(file, size))
+	if (drm_gem_obj_check_max_mem(&dev_priv->drm, current, size))
 		return -ENOMEM;
 	
 	/* Allocate the new object */
@@ -671,7 +671,7 @@ i915_gem_create(struct drm_file *file,
 	if (ret)
 		return ret;
 
-	drm_gem_obj_add_mem(file, size);
+	drm_gem_obj_add_mem(&dev_priv->drm, current, size);
 	*handle_p = handle;
 	return 0;
 }

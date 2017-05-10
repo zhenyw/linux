@@ -11,5 +11,7 @@
 
 extern s64 gpucg_get_priority(struct task_struct *task);
 extern u64 gpucg_get_max_mem(struct task_struct *task);
+extern u64 gpucg_get_cur_mem(struct task_struct *task);
+extern void gpucg_adjust_mem(struct task_struct *task, u64 size, bool);
 
 #endif

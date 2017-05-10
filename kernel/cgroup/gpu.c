@@ -18,6 +18,7 @@ struct gpu_cgroup {
 	struct cgroup_subsys_state css;
 	s64 prio;
 	u64 max_mem_in_bytes;
+	u64 cur_mem;
 };
 
 static DEFINE_MUTEX(gpucg_mutex);
@@ -90,7 +91,7 @@ static struct cftype gpu_css_files[] = {
 		.write_u64 = gpu_css_set_max_mem,
 		.read_u64 = gpu_css_get_max_mem,
 		.flags = CFTYPE_NOT_ON_ROOT,
-	},
+	}
 };
 
 s64 gpucg_get_priority(struct task_struct *task)
@@ -110,6 +111,29 @@ u64 gpucg_get_max_mem(struct task_struct *task)
 }
 EXPORT_SYMBOL(gpucg_get_max_mem);
 
+u64 gpucg_get_cur_mem(struct task_struct *task)
+{
+	struct gpu_cgroup *cg = get_task_gpucg(task);
+	BUG_ON(!cg);
+	return cg->cur_mem;
+}
+EXPORT_SYMBOL(gpucg_get_cur_mem);
+
+void gpucg_adjust_mem(struct task_struct *task, u64 size, bool add)
+{
+	struct gpu_cgroup *cg = get_task_gpucg(task);
+
+	BUG_ON(!cg);
+
+	mutex_lock(&gpucg_mutex);
+	if (add)
+		cg->cur_mem += size;
+	else
+		cg->cur_mem -= size;
+	mutex_unlock(&gpucg_mutex);
+}
+EXPORT_SYMBOL(gpucg_adjust_mem);
+
 static struct cgroup_subsys_state *
 gpu_css_alloc(struct cgroup_subsys_state *parent_css)
 {
@@ -121,6 +145,7 @@ gpu_css_alloc(struct cgroup_subsys_state *parent_css)
 
 	cg->prio = 0;
 	cg->max_mem_in_bytes = ULONG_MAX;
+
 	return &cg->css;
 }
 

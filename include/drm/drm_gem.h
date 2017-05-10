@@ -321,9 +321,9 @@ int drm_gem_dumb_destroy(struct drm_file *file,
 			 struct drm_device *dev,
 			 uint32_t handle);
 
-int drm_gem_obj_check_max_mem(struct drm_file *file_priv, u64 size);
-void drm_gem_obj_add_mem(struct drm_file *file_priv, u64 size);
-void drm_gem_obj_del_mem(struct drm_file *file_priv, u64 size);
+int drm_gem_obj_check_max_mem(struct drm_device *dev, struct task_struct *t, u64 size);
+void drm_gem_obj_add_mem(struct drm_device *dev, struct task_struct *t, u64 size);
+void drm_gem_obj_del_mem(struct drm_device *dev, struct task_struct *t, u64 size);
 
 
 #endif /* __DRM_GEM_H__ */
